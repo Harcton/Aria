@@ -1,0 +1,63 @@
+﻿# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+#Ignored file extensions
+*.TMP
+*.log
+*.dll
+*.sdf
+#Ignored directories
+Solution/Dependencies/
+Solution/bin/
+Solution/Aria/bin/
+Solution/Codex/bin/
+Solution/Ghost0/bin/
+Solution/Shell0/bin/
+Solution/Aria/obj/
+Solution/Codex/obj/
+Solution/Ghost0/obj/
+Solution/Shell0/obj/
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+# =========================
+# Operating System Files
+# =========================
+
+# OSX
+# =========================
+
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+*.suo
+*.v12.suo
+*.opensdf
