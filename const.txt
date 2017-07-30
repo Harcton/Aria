@@ -1,0 +1,16 @@
+First things to try when shit goes down with the pi:
+	1. Rebuild
+	2. Turn on verbose build output: Tools>Options>Build&Run>...output verbosity
+	
+ld returned 1 exit status -> Check Linker/library dependencies.
+	/usr/bin/ld: cannot find -l... check the following:
+		Generated .a file is named with the lib- prefix
+		NO l- or lib- prefix in the linker input!
+	
+Cannot insert breakpoint -1 -> Rebuild(?)
+
+Unable to start debugging, remote connection closed ->
+	1. Rebuild the solution?
+	2. Once this happens, it doesn't seem to revert by reverting whatever you were doing at the time...
+	3. Removing library dependency "removes the problem" for a while.
+	

@@ -2,5 +2,11 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <DebuggerFlavor>LinuxDebugger</DebuggerFlavor>
+    <RemoteTarget>
+    </RemoteTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <RemoteTarget>
+    </RemoteTarget>
   </PropertyGroup>
 </Project>

@@ -3,26 +3,14 @@
 #include <iostream>
 
 
-int main()
+int main(int argc, char** argv)
 {
 	boost::asio::io_service ioService;
 	boost::asio::ip::tcp::socket socketTCP(ioService);
-	std::cout << "\nShell0 initializing2...";
+	std::cout << "\nShell0 initializing...";
 
-	//codex::log::info("Codex test");
-	
+	codex::log::info((const unsigned char*)"Codex test");
+
 	std::getchar();
 	return 0;
 }
-//int main(int argc, char** argv)
-//{
-//	std::cout << "\nShell0 initializing...";
-//
-//	//codex::log::info("Codex test");
-//
-//	for (int i = 0; i < argc; i++)
-//		std::cout << "\n" << argv[i];
-//
-//	std::getchar();
-//	return 0;
-//}

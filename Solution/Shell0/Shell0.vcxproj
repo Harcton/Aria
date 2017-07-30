@@ -39,9 +39,11 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
+    <RemoteRootDir>~/projects/Aria</RemoteRootDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
+    <RemoteRootDir>~/projects/Aria</RemoteRootDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
@@ -69,21 +71,47 @@
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
-      <AdditionalIncludeDirectories>/usr/boost;$(SolutionDir);$(SPEHSENGINE_ROOT)/Dependencies/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>/home/pi/projects/Aria/;/usr/boost;$(SolutionDir)/;$(SPEHSENGINE_ROOT)/Dependencies/include/;</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>PLATFORM_ARM;</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>pthread;boost_system;</LibraryDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/boost/stage/lib/static/;</AdditionalLibraryDirectories>
+      <LibraryDependencies>pthread;boost_system;Codex;</LibraryDependencies>
+      <AdditionalLibraryDirectories>/usr/boost/stage/lib/static/;/home/pi/projects/Aria/Codex/bin/$(Platform)/$(Configuration);</AdditionalLibraryDirectories>
+      <ShowProgress>true</ShowProgress>
+      <PrintMap>true</PrintMap>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
-      <AdditionalIncludeDirectories>/usr/boost;$(SolutionDir);$(SPEHSENGINE_ROOT)/Dependencies/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>/home/pi/projects/Aria/;/usr/boost;$(SolutionDir)/;$(SPEHSENGINE_ROOT)/Dependencies/include/;</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>PLATFORM_ARM;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>pthread;boost_system;</LibraryDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);/usr/boost/stage/lib/static/;</AdditionalLibraryDirectories>
+      <LibraryDependencies>pthread;boost_system;Codex;</LibraryDependencies>
+      <AdditionalLibraryDirectories>/usr/boost/stage/lib/static/;/home/pi/projects/Aria/Codex/bin/$(Platform)/$(Configuration);</AdditionalLibraryDirectories>
+      <ShowProgress>true</ShowProgress>
+      <PrintMap>true</PrintMap>
     </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>PLATFORM_X64;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <ClCompile>
+      <PreprocessorDefinitions>PLATFORM_X86;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <ClCompile>
+      <PreprocessorDefinitions>PLATFORM_X86;</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>PLATFORM_X64;</PreprocessorDefinitions>
+    </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

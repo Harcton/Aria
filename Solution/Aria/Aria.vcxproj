@@ -139,9 +139,6 @@
     <ProjectReference Include="..\..\..\SpehsEngine\SpehsEngine\SpehsEngine.vcxproj">
       <Project>{545a88bb-7447-428b-8a73-a1e8f2bbdb33}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Codex\Codex.vcxproj">
-      <Project>{cf15f3ca-53e2-495b-afca-33ea4b735932}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -16,7 +16,7 @@ namespace codex
 	public:
 		SocketTCP(const packet_size receiveBufferSize);
 		~SocketTCP();
-
+		
 		bool connect(const char* address_ipv4, const packet_size port);
 		void disconnect();
 		bool sendPacket(const unsigned char* data, const packet_size bytes);

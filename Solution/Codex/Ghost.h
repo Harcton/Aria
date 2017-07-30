@@ -1,4 +1,5 @@
 #pragma once
+#include <stdlib.h>
 
 /**
 	Interface to be used in the Aria system.
