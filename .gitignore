@@ -12,10 +12,14 @@ Solution/Dependencies/
 Solution/bin/
 Solution/Aria/bin/
 Solution/Codex/bin/
+Solution/CodexLinux/bin/
+Solution/CodexPC/bin/
 Solution/Ghost0/bin/
 Solution/Shell0/bin/
 Solution/Aria/obj/
 Solution/Codex/obj/
+Solution/CodexLinux/obj/
+Solution/CodexPC/obj/
 Solution/Ghost0/obj/
 Solution/Shell0/obj/
 

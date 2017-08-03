@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{45d41acc-2c3c-43d2-bc10-02aa73ffc7c7}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Ghost.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Log.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Shell.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SocketTCP.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SocketUDP.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Ghost.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Log.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Packet.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Shell.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SocketTCP.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SocketUDP.h" />
+  </ItemGroup>
+</Project>
