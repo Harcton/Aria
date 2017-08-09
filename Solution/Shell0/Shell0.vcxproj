@@ -9,22 +9,6 @@
       <Configuration>Release</Configuration>
       <Platform>ARM</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x86">
-      <Configuration>Debug</Configuration>
-      <Platform>x86</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x86">
-      <Configuration>Release</Configuration>
-      <Platform>x86</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5df77ceb-6398-461e-ad1f-878a612e091e}</ProjectGuid>
@@ -44,18 +28,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
     <RemoteRootDir>~/projects/Aria</RemoteRootDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
-    <UseDebugLibraries>true</UseDebugLibraries>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
-    <UseDebugLibraries>false</UseDebugLibraries>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <UseDebugLibraries>true</UseDebugLibraries>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <UseDebugLibraries>false</UseDebugLibraries>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
@@ -81,12 +53,12 @@
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
-      <AdditionalIncludeDirectories>/usr/boost;~/projects/Aria;$(SolutionDir);$(SPEHSENGINE_ROOT)/Dependencies/include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>/usr/boost;~/projects/Aria;$(SolutionDir);$(SPEHSENGINE_ROOT)/Dependencies/include;$(SolutionDir)/Codex/Dependencies/include;$(SolutionDir)/CodexLinux/Dependencies/include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_ARM;</PreprocessorDefinitions>
       <AdditionalOptions>-I "/home/pi/projects/Aria" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>pthread;boost_system;Codex;</LibraryDependencies>
+      <LibraryDependencies>pthread;boost_system;Codex;bcm2835;</LibraryDependencies>
       <AdditionalLibraryDirectories>/usr/boost/stage/lib/static/;/home/pi/projects/Aria/Codex/bin/$(Platform)/$(Configuration);</AdditionalLibraryDirectories>
       <ShowProgress>true</ShowProgress>
       <PrintMap>true</PrintMap>
@@ -94,36 +66,16 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
-      <AdditionalIncludeDirectories>/usr/boost;~/projects/Aria;$(SolutionDir);$(SPEHSENGINE_ROOT)/Dependencies/include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>/usr/boost;~/projects/Aria;$(SolutionDir);$(SPEHSENGINE_ROOT)/Dependencies/include;$(SolutionDir)/Codex/Dependencies/include;$(SolutionDir)/CodexLinux/Dependencies/include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_ARM;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>-I "/home/pi/projects/Aria" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>pthread;boost_system;Codex;</LibraryDependencies>
+      <LibraryDependencies>pthread;boost_system;Codex;bcm2835;</LibraryDependencies>
       <AdditionalLibraryDirectories>/usr/boost/stage/lib/static/;/home/pi/projects/Aria/Codex/bin/$(Platform)/$(Configuration);</AdditionalLibraryDirectories>
       <ShowProgress>true</ShowProgress>
       <PrintMap>true</PrintMap>
     </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <PreprocessorDefinitions>PLATFORM_X64;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <ClCompile>
-      <PreprocessorDefinitions>PLATFORM_X86;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <ClCompile>
-      <PreprocessorDefinitions>PLATFORM_X86;</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <PreprocessorDefinitions>PLATFORM_X64;</PreprocessorDefinitions>
-    </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

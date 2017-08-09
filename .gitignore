@@ -14,6 +14,8 @@ Solution/Aria/bin/
 Solution/Codex/bin/
 Solution/CodexLinux/bin/
 Solution/CodexPC/bin/
+Solution/CodexPC/x64/
+Solution/CodexPC/x86/
 Solution/Ghost0/bin/
 Solution/Shell0/bin/
 Solution/Aria/obj/
@@ -22,6 +24,8 @@ Solution/CodexLinux/obj/
 Solution/CodexPC/obj/
 Solution/Ghost0/obj/
 Solution/Shell0/obj/
+#Specific files
+Solution/Solution.VC.db
 
 # Folder config file
 Desktop.ini
