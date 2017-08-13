@@ -14,18 +14,21 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Ghost.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Codex.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Log.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Shell.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Protocol.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SocketTCP.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)SocketUDP.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Time.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Ghost.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Assert.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Codex.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GPIO.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Log.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Packet.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Shell.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Protocol.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Servo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SocketTCP.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)SocketUDP.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Time.h" />
   </ItemGroup>
 </Project>

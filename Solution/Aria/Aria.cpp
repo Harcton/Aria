@@ -6,7 +6,7 @@
 #include <SpehsEngine/Console.h>
 #include <SpehsEngine/Window.h>
 #include <SpehsEngine/Time.h>
-#include "Codex/SocketTCP.h"
+//#include "Codex/SocketTCP.h"
 #include "Aria.h"
 #include <Windows.h>
 
@@ -41,7 +41,7 @@ namespace aria
 		}
 
 
-		codex::SocketTCP socketTCP(1024);
+		//codex::SocketTCP socketTCP(1024);
 
 
 		spehs::initialize("Aria");

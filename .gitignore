@@ -7,25 +7,28 @@ ehthumbs.db
 *.log
 *.dll
 *.sdf
+
 #Ignored directories
 Solution/Dependencies/
 Solution/bin/
 Solution/Aria/bin/
-Solution/Codex/bin/
-Solution/CodexLinux/bin/
-Solution/CodexPC/bin/
-Solution/CodexPC/x64/
-Solution/CodexPC/x86/
-Solution/Ghost0/bin/
-Solution/Shell0/bin/
 Solution/Aria/obj/
+Solution/Codex/bin/
 Solution/Codex/obj/
-Solution/CodexLinux/obj/
-Solution/CodexPC/obj/
-Solution/Ghost0/obj/
-Solution/Shell0/obj/
+Solution/ShellCodex/bin/
+Solution/ShellCodex/obj/
+Solution/GhostCodex/bin/
+Solution/GhostCodex/obj/
+Solution/GhostCodex/x64/
+Solution/GhostCodex/x86/
+Solution/Robots/Robot0/Ghost0/bin/
+Solution/Robots/Robot0/Ghost0/obj/
+Solution/Robots/Robot0/Shell0/bin/
+Solution/Robots/Robot0/Shell0/obj/
+
 #Specific files
 Solution/Solution.VC.db
+Solution/Solution.VC.VC.db
 
 # Folder config file
 Desktop.ini

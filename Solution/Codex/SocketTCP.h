@@ -5,6 +5,8 @@
 #include <type_traits>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include "Protocol.h"
+
 
 namespace codex
 {
@@ -12,18 +14,16 @@ namespace codex
 	class SocketTCP
 	{
 	public:
-		typedef uint16_t packet_size;
-	public:
-		SocketTCP(const packet_size receiveBufferSize);
+		SocketTCP();
 		~SocketTCP();
 		
-		bool connect(const char* address_ipv4, const packet_size port);
+		bool connect(const char* address_ipv4, const uint16_t port);
 		void disconnect();
-		bool sendPacket(const unsigned char* data, const packet_size bytes);
+		bool sendPacket(const protocol::WriteBuffer& buffer);
 		/* Returns false if the memory allocation fails, or the socket is currently receiving data. */
-		bool resizeReceiveBuffer(const packet_size newSize);
-		bool startReceiving(const std::function<void(const unsigned char*, packet_size)> callbackFunction);
-		void receiveHandler(const boost::system::error_code error, const packet_size bytes);
+		bool resizeReceiveBuffer(const size_t newSize);
+		bool startReceiving(const std::function<void(const void*, size_t)> callbackFunction);
+		void receiveHandler(const boost::system::error_code error, const size_t bytes);
 
 		boost::asio::ip::tcp::endpoint getRemoteEndpoint() const { return remoteEndpoint; }
 
@@ -34,10 +34,12 @@ namespace codex
 		boost::asio::ip::tcp::endpoint remoteEndpoint;
 
 		std::recursive_mutex receiveMutex;
-		std::function<void(const unsigned char*, packet_size)> receiveHandlerCallback;
-		packet_size expectedBytes;
+		std::function<void(const void*, size_t)> receiveHandlerCallback;
+		size_t expectedBytes;
 		unsigned char* receiveBuffer;
-		packet_size receiveBufferSize;
+		size_t receiveBufferSize;
 		bool isReceiving;
+	private:
+		typedef uint32_t PacketHeaderBytesType;
 	};
 }

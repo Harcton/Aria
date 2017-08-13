@@ -13,13 +13,13 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4565722d-9ef2-4df6-8085-8dbb5f8e2d66}</ProjectGuid>
     <Keyword>Linux</Keyword>
-    <RootNamespace>CodexLinux</RootNamespace>
+    <RootNamespace>ShellCodex</RootNamespace>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <ApplicationType>Linux</ApplicationType>
     <ApplicationTypeRevision>1.0</ApplicationTypeRevision>
     <TargetLinuxPlatform>Generic</TargetLinuxPlatform>
     <LinuxProjectType>{2238F9CD-F817-4ECC-BD14-2524D2669B35}</LinuxProjectType>
-    <ProjectName>CodexLinux</ProjectName>
+    <ProjectName>ShellCodex</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
@@ -44,26 +44,30 @@
     <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
     <TargetName>libCodex</TargetName>
     <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);</SourcesToCopyRemotelyOverride>
-    <OutDir>bin/$(Platform)/$(Configuration)</OutDir>
-    <IntDir>obj/$(Platform)/$(Configuration)</IntDir>
-    <RemoteProjectDir>$(RemoteRootDir)/Codex</RemoteProjectDir>
+    <OutDir>bin/$(Platform)/$(Configuration)/</OutDir>
+    <IntDir>obj/$(Platform)/$(Configuration)/</IntDir>
+    <RemoteProjectDir>$(RemoteRootDir)/Codex/</RemoteProjectDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <TargetExt>.a</TargetExt>
     <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
     <TargetName>libCodex</TargetName>
     <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);</SourcesToCopyRemotelyOverride>
-    <OutDir>bin/$(Platform)/$(Configuration)</OutDir>
-    <IntDir>obj/$(Platform)/$(Configuration)</IntDir>
-    <RemoteProjectDir>$(RemoteRootDir)/Codex</RemoteProjectDir>
+    <OutDir>bin/$(Platform)/$(Configuration)/</OutDir>
+    <IntDir>obj/$(Platform)/$(Configuration)/</IntDir>
+    <RemoteProjectDir>$(RemoteRootDir)/Codex/</RemoteProjectDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <Lib>
       <Verbose>true</Verbose>
     </Lib>
     <ClCompile>
-      <AdditionalIncludeDirectories>/usr/boost/;$(SPEHSENGINE_ROOT)/;~/projects/Aria/Codex;$(ProjectDir)/Dependencies/include;</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_ARM;</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>/usr/boost/;~/projects/Aria/Codex;$(SPEHSENGINE_ROOT)/;$(SPEHSENGINE_ROOT)/Dependencies/include/;$(ProjectDir)/Dependencies/include;$(SolutionDir)/Codex/Dependencies/include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);SHELL_CODEX;PLATFORM_ARM;</PreprocessorDefinitions>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <CAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-pointer-sign;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CAdditionalWarning)</CAdditionalWarning>
+      <CppAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CppAdditionalWarning)</CppAdditionalWarning>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
@@ -71,8 +75,12 @@
       <Verbose>true</Verbose>
     </Lib>
     <ClCompile>
-      <AdditionalIncludeDirectories>/usr/boost/;$(SPEHSENGINE_ROOT)/;~/projects/Aria/Codex;$(ProjectDir)/Dependencies/include;</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_ARM;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>/usr/boost/;~/projects/Aria/Codex;$(SPEHSENGINE_ROOT)/;$(SPEHSENGINE_ROOT)/Dependencies/include/;$(ProjectDir)/Dependencies/include;$(SolutionDir)/Codex/Dependencies/include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);SHELL_CODEX;PLATFORM_ARM;NDEBUG;</PreprocessorDefinitions>
+      <CAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-pointer-sign;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CAdditionalWarning)</CAdditionalWarning>
+      <CppAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CppAdditionalWarning)</CppAdditionalWarning>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

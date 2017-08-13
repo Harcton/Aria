@@ -23,11 +23,11 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
-    <RemoteRootDir>~/projects/Aria</RemoteRootDir>
+    <RemoteRootDir>~/projects/Aria/</RemoteRootDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
-    <RemoteRootDir>~/projects/Aria</RemoteRootDir>
+    <RemoteRootDir>~/projects/Aria/</RemoteRootDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
@@ -38,24 +38,33 @@
     <AdditionalSourcesToCopyMapping>
     </AdditionalSourcesToCopyMapping>
     <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);</SourcesToCopyRemotelyOverride>
-    <OutDir>bin/$(Platform)/$(Configuration)</OutDir>
-    <IntDir>obj/$(Platform)/$(Configuration)</IntDir>
+    <OutDir>bin/$(Platform)/$(Configuration)/</OutDir>
+    <IntDir>obj/$(Platform)/$(Configuration)/</IntDir>
     <RemoteLinkLocalCopyOutput>true</RemoteLinkLocalCopyOutput>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);</SourcesToCopyRemotelyOverride>
-    <OutDir>bin/$(Platform)/$(Configuration)</OutDir>
-    <IntDir>obj/$(Platform)/$(Configuration)</IntDir>
+    <OutDir>bin/$(Platform)/$(Configuration)/</OutDir>
+    <IntDir>obj/$(Platform)/$(Configuration)/</IntDir>
     <RemoteLinkLocalCopyOutput>true</RemoteLinkLocalCopyOutput>
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\ShellCodex\ShellCodex.vcxproj">
+      <Project>{4565722d-9ef2-4df6-8085-8dbb5f8e2d66}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
-      <AdditionalIncludeDirectories>/usr/boost;~/projects/Aria;$(SolutionDir);$(SPEHSENGINE_ROOT)/Dependencies/include;$(SolutionDir)/Codex/Dependencies/include;$(SolutionDir)/CodexLinux/Dependencies/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>/usr/boost;~/projects/Aria;$(SPEHSENGINE_ROOT)/Dependencies/include;$(SolutionDir);$(SolutionDir)/Codex/Dependencies/include;$(SolutionDir)/ShellCodex/Dependencies/include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_ARM;</PreprocessorDefinitions>
       <AdditionalOptions>-I "/home/pi/projects/Aria" %(AdditionalOptions)</AdditionalOptions>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <CAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-pointer-sign;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CAdditionalWarning)</CAdditionalWarning>
+      <CppAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CppAdditionalWarning)</CppAdditionalWarning>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
     </ClCompile>
     <Link>
       <LibraryDependencies>pthread;boost_system;Codex;bcm2835;</LibraryDependencies>
@@ -66,9 +75,13 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
-      <AdditionalIncludeDirectories>/usr/boost;~/projects/Aria;$(SolutionDir);$(SPEHSENGINE_ROOT)/Dependencies/include;$(SolutionDir)/Codex/Dependencies/include;$(SolutionDir)/CodexLinux/Dependencies/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>/usr/boost;~/projects/Aria;$(SPEHSENGINE_ROOT)/Dependencies/include;$(SolutionDir);$(SolutionDir)/Codex/Dependencies/include;$(SolutionDir)/ShellCodex/Dependencies/include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_ARM;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>-I "/home/pi/projects/Aria" %(AdditionalOptions)</AdditionalOptions>
+      <CAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-pointer-sign;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CAdditionalWarning)</CAdditionalWarning>
+      <CppAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CppAdditionalWarning)</CppAdditionalWarning>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <LibraryDependencies>pthread;boost_system;Codex;bcm2835;</LibraryDependencies>

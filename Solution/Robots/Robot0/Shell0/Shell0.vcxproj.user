@@ -9,4 +9,7 @@
     <RemoteTarget>
     </RemoteTarget>
   </PropertyGroup>
+  <PropertyGroup>
+    <ShowAllFiles>true</ShowAllFiles>
+  </PropertyGroup>
 </Project>

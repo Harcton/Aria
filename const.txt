@@ -13,4 +13,8 @@ Unable to start debugging, remote connection closed ->
 	1. Rebuild the solution?
 	2. Once this happens, it doesn't seem to revert by reverting whatever you were doing at the time...
 	3. Removing library dependency "removes the problem" for a while.
-	
+
+Doesn's build when changes are being made? Check the currently active configuration...
+
+A load of weird build errors?
+	Try searching output for "ld returned 1 exit status"

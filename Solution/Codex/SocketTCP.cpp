@@ -6,14 +6,11 @@
 
 namespace codex
 {
-	SocketTCP::SocketTCP(const packet_size _receiveBufferSize) : ioService(), socket(ioService), expectedBytes(0), receiveBuffer(nullptr), receiveBufferSize(0), isReceiving(false)
+	SocketTCP::SocketTCP() : ioService(), socket(ioService), expectedBytes(0), receiveBuffer(nullptr), receiveBufferSize(0), isReceiving(false)
 	{
 		//Start asio io service
 		boost::asio::io_service::work work(ioService);
 		ioServiceThread = new std::thread(boost::bind(&boost::asio::io_service::run, &ioService));
-
-		//Allocate receive buffer
-		resizeReceiveBuffer(_receiveBufferSize);
 	}
 	SocketTCP::~SocketTCP()
 	{
@@ -39,7 +36,7 @@ namespace codex
 		receiveMutex.unlock();
 	}
 
-	bool SocketTCP::connect(const char* address_ipv4, packet_size port)
+	bool SocketTCP::connect(const char* address_ipv4, uint16_t port)
 	{
 		boost::system::error_code error;
 		boost::asio::ip::tcp::resolver resolverTCP(ioService);
@@ -66,11 +63,12 @@ namespace codex
 		}
 	}
 
-	bool SocketTCP::sendPacket(const unsigned char* data, const packet_size bytes)
+	bool SocketTCP::sendPacket(const protocol::WriteBuffer& buffer)
 	{
 		boost::system::error_code error;		
 
 		//Header
+		const PacketHeaderBytesType bytes = buffer.getSize();
 		socket.send(boost::asio::buffer(&bytes, 2), 0, error);
 		if (error)
 		{//Error occured while sending the header...
@@ -82,7 +80,7 @@ namespace codex
 		size_t sent = 0;
 		while (sent < bytes)
 		{//Keep sending data until all data has been sent
-			sent = socket.write_some(boost::asio::buffer(&data[offset], bytes - sent), error);
+			sent = socket.write_some(boost::asio::buffer(buffer[offset], bytes - sent), error);
 			if (error)
 			{//Error occured while sending data...
 				return false;
@@ -92,7 +90,7 @@ namespace codex
 		return true;
 	}
 
-	bool SocketTCP::resizeReceiveBuffer(const packet_size newSize)
+	bool SocketTCP::resizeReceiveBuffer(const size_t newSize)
 	{
 		std::lock_guard<std::recursive_mutex> lock(receiveMutex);
 		if (isReceiving)
@@ -124,7 +122,7 @@ namespace codex
 		}
 	}
 
-	bool SocketTCP::startReceiving(const std::function<void(const unsigned char*, packet_size)> callbackFunction)
+	bool SocketTCP::startReceiving(const std::function<void(const void*, size_t)> callbackFunction)
 	{
 		std::lock_guard<std::recursive_mutex> lock(receiveMutex);
 		if (socket.is_open() && receiveBufferSize > 0)
@@ -151,7 +149,7 @@ namespace codex
 			return false;
 	}
 	
-	void SocketTCP::receiveHandler(const boost::system::error_code error, const packet_size bytes)
+	void SocketTCP::receiveHandler(const boost::system::error_code error, const size_t bytes)
 	{
 		std::lock_guard<std::recursive_mutex> lock(receiveMutex);
 		isReceiving = false;
