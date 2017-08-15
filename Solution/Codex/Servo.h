@@ -21,7 +21,7 @@ namespace codex
 			, runThread(nullptr)
 			, keepRunning(false)
 		{
-			std::cout << "\nCreating a servo...";
+			std::cout << "\nCreating a servo... 2";
 		}
 		~Servo()
 		{

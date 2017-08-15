@@ -62,8 +62,8 @@
       <Verbose>true</Verbose>
     </Lib>
     <ClCompile>
-      <AdditionalIncludeDirectories>/usr/boost/;~/projects/Aria/Codex;$(SPEHSENGINE_ROOT)/;$(SPEHSENGINE_ROOT)/Dependencies/include/;$(ProjectDir)/Dependencies/include;$(SolutionDir)/Codex/Dependencies/include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);SHELL_CODEX;PLATFORM_ARM;</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>/usr/boost/;~/projects/Aria/Codex;$(SPEHSENGINE_ROOT);$(SPEHSENGINE_ROOT)Dependencies/include/;$(ProjectDir)Dependencies/include;$(SolutionDir)Codex/Dependencies/include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);SHELL_CODEX;PLATFORM_LINUX;</PreprocessorDefinitions>
       <TreatWarningAsError>false</TreatWarningAsError>
       <CAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-pointer-sign;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CAdditionalWarning)</CAdditionalWarning>
       <CppAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CppAdditionalWarning)</CppAdditionalWarning>
@@ -75,8 +75,8 @@
       <Verbose>true</Verbose>
     </Lib>
     <ClCompile>
-      <AdditionalIncludeDirectories>/usr/boost/;~/projects/Aria/Codex;$(SPEHSENGINE_ROOT)/;$(SPEHSENGINE_ROOT)/Dependencies/include/;$(ProjectDir)/Dependencies/include;$(SolutionDir)/Codex/Dependencies/include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);SHELL_CODEX;PLATFORM_ARM;NDEBUG;</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>/usr/boost/;~/projects/Aria/Codex;$(SPEHSENGINE_ROOT);$(SPEHSENGINE_ROOT)Dependencies/include/;$(ProjectDir)Dependencies/include;$(SolutionDir)Codex/Dependencies/include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);SHELL_CODEX;PLATFORM_LINUX;NDEBUG;</PreprocessorDefinitions>
       <CAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-pointer-sign;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CAdditionalWarning)</CAdditionalWarning>
       <CppAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CppAdditionalWarning)</CppAdditionalWarning>
       <WarningLevel>EnableAllWarnings</WarningLevel>

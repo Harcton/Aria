@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include "SocketTCP.h"
+#include "Acceptor.h"
 #include "Log.h"
 
 
@@ -201,5 +202,27 @@ namespace codex
 		}
 
 		startReceiving(receiveHandlerCallback);
+	}
+
+	void SocketTCP::startAccepting(Acceptor& acceptor, const std::function<void(bool, SocketTCP&)> callbackFunction)
+	{
+		boost::system::error_code error;
+		acceptor.acceptor.async_accept(socket, boost::bind(&SocketTCP::onAccept, this, error));
+		if (error)
+		{
+			log::error("Failed to start accepting. Boost asio error: " + error.message());
+			return;
+		}
+		onAcceptCallback = callbackFunction;
+	}
+
+	void SocketTCP::onAccept(const boost::system::error_code error)
+	{
+		if (error)
+		{
+			log::error("Failed to accept an incoming connection! Boost asio error: " + error.message());
+			return;
+		}
+		onAcceptCallback((error), *this);
 	}
 }

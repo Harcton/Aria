@@ -19,8 +19,9 @@ void receiveHandler(const void* data, const size_t bytes)
 int main(int argc, char** argv)
 {
 	codex::initialize();
-	codex::log::info("Shell0 initializing...");
-
+	codex::log::info("Shell0 initializing... 2");
+	
+	/*
 	uint64_t someData;
 	codex::protocol::WriteBuffer writeBuffer;
 	writeBuffer.resize(sizeof(someData));
@@ -38,16 +39,16 @@ int main(int argc, char** argv)
 	codex::log::info("Awaiting for a response...");
 	while (receivedHandlerCallCount == 0)
 	{
-		/*Blocks*/
+		//Blocks
 	}
-	std::getchar();
+	std::getchar();*/
 
 	//Create servo
 	codex::Servo servo;
 	servo.setPin(codex::gpio::pin_3);
 	servo.mapPosition(codex::time::milliseconds(0), codex::time::milliseconds(2));
 	servo.run();
-
+	
 	bool run = true;
 	while (run)
 	{

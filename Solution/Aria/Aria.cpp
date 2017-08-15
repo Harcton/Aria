@@ -1,3 +1,9 @@
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+#include <atomic>
+#include <functional>
+#include <boost/asio.hpp>
 #include <SpehsEngine/SpehsEngine.h>
 #include <SpehsEngine/InputManager.h>
 #include <SpehsEngine/BatchManager.h>
@@ -6,16 +12,28 @@
 #include <SpehsEngine/Console.h>
 #include <SpehsEngine/Window.h>
 #include <SpehsEngine/Time.h>
-//#include "Codex/SocketTCP.h"
+#include <Codex/SocketTCP.h>
+#include <Codex/Acceptor.h>
 #include "Aria.h"
-#include <Windows.h>
+
 
 namespace aria
 {
+
+
+	void onAccept(const bool result, codex::SocketTCP& socket)
+	{
+		if (result)
+		{
+			codex::log::info("Acceptor successfully accepted an incoming connection.");
+		}
+	}
+
 	void run(const AriaInitializationParameters& parameters)
 	{
 		if (false)
 		{
+#ifdef _WIN32
 			// additional information
 			STARTUPINFO si;
 			PROCESS_INFORMATION pi;
@@ -38,11 +56,12 @@ namespace aria
 			// Close process and thread handles. 
 			CloseHandle(pi.hProcess);
 			CloseHandle(pi.hThread);
+#endif
 		}
 
-
-		//codex::SocketTCP socketTCP(1024);
-
+		codex::SocketTCP socket;
+		codex::Acceptor acceptor;
+		socket.startAccepting(acceptor, std::bind(&onAccept, std::placeholders::_1, std::placeholders::_2));
 
 		spehs::initialize("Aria");
 		spehs::Camera2D camera;

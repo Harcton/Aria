@@ -71,24 +71,24 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)/Dependencies/lib/</OutDir>
-    <IntDir>$(ProjectDir)/obj/$(Platform)/$(Configuration)/</IntDir>
+    <OutDir>$(SolutionDir)Dependencies/lib/</OutDir>
+    <IntDir>$(ProjectDir)obj/$(Configuration)</IntDir>
     <TargetName>Codex-d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)/Dependencies/lib/</OutDir>
-    <IntDir>$(ProjectDir)/obj/$(Platform)/$(Configuration)/</IntDir>
+    <OutDir>$(SolutionDir)Dependencies/lib/</OutDir>
+    <IntDir>$(ProjectDir)obj/$(Configuration)</IntDir>
     <TargetName>Codex</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)/Dependencies/lib/</OutDir>
-    <IntDir>$(ProjectDir)/obj/$(Platform)/$(Configuration)/</IntDir>
+    <OutDir>$(SolutionDir)Dependencies/lib/</OutDir>
+    <IntDir>$(ProjectDir)obj/$(Configuration)</IntDir>
     <TargetName>Codex-d</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)/Dependencies/lib/</OutDir>
-    <IntDir>$(ProjectDir)/obj/$(Platform)/$(Configuration)/</IntDir>
+    <OutDir>$(SolutionDir)Dependencies/lib/</OutDir>
+    <IntDir>$(ProjectDir)obj/$(Configuration)</IntDir>
     <TargetName>Codex</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
@@ -98,7 +98,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory);$(SPEHSENGINE_ROOT)/Dependencies/include/;$(SolutionDir)/Codex/Dependencies/include/;$(SolutionDir)/Codex/;$(SolutionDir)/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>CODEX_GHOST;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);GHOST_CODEX;PLATFORM_WINDOWS;_MBCS;</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SPEHSENGINE_ROOT)/Dependencies/lib/;</AdditionalLibraryDirectories>
@@ -110,7 +110,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory);$(SPEHSENGINE_ROOT)/Dependencies/include/;$(SolutionDir)/Codex/Dependencies/include/;$(SolutionDir)/Codex/;$(SolutionDir)/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>CODEX_GHOST;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);GHOST_CODEX;PLATFORM_WINDOWS;_MBCS;</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -121,7 +121,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory);$(SPEHSENGINE_ROOT)/Dependencies/include/;$(SolutionDir)/Codex/Dependencies/include/;$(SolutionDir)/Codex/;$(SolutionDir)/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>CODEX_GHOST;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);GHOST_CODEX;PLATFORM_WINDOWS;_MBCS;NDEBUG;</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -137,7 +137,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory);$(SPEHSENGINE_ROOT)/Dependencies/include/;$(SolutionDir)/Codex/Dependencies/include/;$(SolutionDir)/Codex/;$(SolutionDir)/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>CODEX_GHOST;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);GHOST_CODEX;PLATFORM_WINDOWS;_MBCS;NDEBUG;</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

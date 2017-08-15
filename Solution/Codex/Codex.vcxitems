@@ -14,6 +14,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Acceptor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Codex.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Log.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Protocol.cpp" />
@@ -21,6 +22,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Time.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Acceptor.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Assert.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Codex.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)GPIO.h" />

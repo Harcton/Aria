@@ -8,7 +8,6 @@ int main(int argc, char** argv)
 	initializationParameters.launchGUI = true;
 
 	std::cout << "\nLaunching Aria...";
-	codex::log::info((const unsigned char*)"codex test4");
 	aria::run(initializationParameters);
 	std::cout << "\nAria has stopped.";
 

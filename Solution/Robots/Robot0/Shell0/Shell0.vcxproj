@@ -38,15 +38,17 @@
     <AdditionalSourcesToCopyMapping>
     </AdditionalSourcesToCopyMapping>
     <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);</SourcesToCopyRemotelyOverride>
-    <OutDir>bin/$(Platform)/$(Configuration)/</OutDir>
-    <IntDir>obj/$(Platform)/$(Configuration)/</IntDir>
+    <OutDir>bin/$(Platform)$(Configuration)</OutDir>
+    <IntDir>obj/$(Platform)$(Configuration)</IntDir>
     <RemoteLinkLocalCopyOutput>true</RemoteLinkLocalCopyOutput>
+    <RemoteProjectDir>$(RemoteRootDir)$(ProjectName)</RemoteProjectDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);</SourcesToCopyRemotelyOverride>
-    <OutDir>bin/$(Platform)/$(Configuration)/</OutDir>
-    <IntDir>obj/$(Platform)/$(Configuration)/</IntDir>
+    <OutDir>bin/$(Platform)$(Configuration)</OutDir>
+    <IntDir>obj/$(Platform)$(Configuration)</IntDir>
     <RemoteLinkLocalCopyOutput>true</RemoteLinkLocalCopyOutput>
+    <RemoteProjectDir>$(RemoteRootDir)$(ProjectName)</RemoteProjectDir>
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
@@ -58,8 +60,8 @@
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
-      <AdditionalIncludeDirectories>/usr/boost;~/projects/Aria;$(SPEHSENGINE_ROOT)/Dependencies/include;$(SolutionDir);$(SolutionDir)/Codex/Dependencies/include;$(SolutionDir)/ShellCodex/Dependencies/include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_ARM;</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>/usr/boost;~/projects/Aria;$(SPEHSENGINE_ROOT)Dependencies/include;$(SolutionDir);$(SolutionDir)Codex/Dependencies/include;$(SolutionDir)ShellCodex/Dependencies/include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>PLATFORM_LINUX;</PreprocessorDefinitions>
       <AdditionalOptions>-I "/home/pi/projects/Aria" %(AdditionalOptions)</AdditionalOptions>
       <TreatWarningAsError>false</TreatWarningAsError>
       <CAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-pointer-sign;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CAdditionalWarning)</CAdditionalWarning>
@@ -75,8 +77,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
-      <AdditionalIncludeDirectories>/usr/boost;~/projects/Aria;$(SPEHSENGINE_ROOT)/Dependencies/include;$(SolutionDir);$(SolutionDir)/Codex/Dependencies/include;$(SolutionDir)/ShellCodex/Dependencies/include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_ARM;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>/usr/boost;~/projects/Aria;$(SPEHSENGINE_ROOT)Dependencies/include;$(SolutionDir);$(SolutionDir)Codex/Dependencies/include;$(SolutionDir)ShellCodex/Dependencies/include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>PLATFORM_LINUX;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>-I "/home/pi/projects/Aria" %(AdditionalOptions)</AdditionalOptions>
       <CAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-pointer-sign;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CAdditionalWarning)</CAdditionalWarning>
       <CppAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CppAdditionalWarning)</CppAdditionalWarning>
