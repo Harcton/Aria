@@ -20,3 +20,5 @@ A load of weird build errors?
 	Try searching output for "ld returned 1 exit status"
 	
 A load of weird build errors and runs=
+
+Do not trust std::cout

@@ -1,5 +1,7 @@
 #include "Time.h"
 #include "Log.h"
+#include <iostream>
+#include <string>
 #ifdef PLATFORM_LINUX
 //Linux includes
 #include <time.h>
@@ -17,9 +19,16 @@ namespace codex
 		{
 #ifdef PLATFORM_LINUX
 			timespec t1;
-			t1.tv_sec = 0;
-			t1.tv_nsec = (long int)time;
+			if (time >= 1000000000)
+			{
+				t1.tv_sec = time / 1000000000;
+				time -= t1.tv_sec * 1000000000;
+			}
+			else
+				t1.tv_sec = 0;
+			t1.tv_nsec = time;
 			timespec t2;
+			//std::cout << "\nDelaying " << t1.tv_sec << " seconds " << t1.tv_nsec << " nanoseconds";
 			nanosleep(&t1, &t2);
 			return;
 #endif

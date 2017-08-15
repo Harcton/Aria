@@ -19,15 +19,15 @@ namespace codex
 		}
 		void info(const char* message)
 		{
-			std::cout << "\n" << message;
+			std::cout << message << std::endl;
 		}
 		void warning(const char* message)
 		{
-			std::cout << "\nWarning: " << message;
+			std::cout << "Warning: " << message << std::endl;
 		}
 		void error(const char* message)
 		{
-			std::cout << "\nError: " << message << "\nPress enter to continue...\n";
+			std::cout << "Error: " << message << "\nPress enter to continue..." << std::endl;
 			std::getchar();
 		}
 	}
