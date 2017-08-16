@@ -7,6 +7,9 @@ ehthumbs.db
 *.log
 *.dll
 *.sdf
+*.VC.db
+*.VC.VC.db
+*.VC.VC.opendb
 
 #Ignored directories
 Solution/Dependencies/
@@ -27,9 +30,6 @@ Solution/Robots/Robot0/Shell0/bin/
 Solution/Robots/Robot0/Shell0/obj/
 
 #Specific files
-Solution/Solution.VC.db
-Solution/Solution.VC.VC.db
-Solution/Solution.VC.VC.opendb
 
 # Folder config file
 Desktop.ini

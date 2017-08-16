@@ -1,7 +1,5 @@
-#include "Time.h"
+#include "CodexTime.h"
 #include "Log.h"
-#include <iostream>
-#include <string>
 #ifdef PLATFORM_LINUX
 //Linux includes
 #include <time.h>

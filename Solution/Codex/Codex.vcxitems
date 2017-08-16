@@ -20,11 +20,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Log.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Protocol.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SocketTCP.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Time.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)CodexTime.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Acceptor.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Assert.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)CodexAssert.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Codex.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)DCMotor.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)GPIO.h" />
@@ -33,6 +33,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Protocol.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Servo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SocketTCP.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Time.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)CodexTime.h" />
   </ItemGroup>
 </Project>

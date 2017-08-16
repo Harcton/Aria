@@ -98,11 +98,14 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory);$(SPEHSENGINE_ROOT)/Dependencies/include/;$(SolutionDir)/Codex/Dependencies/include/;$(SolutionDir)/Codex/;$(SolutionDir)/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);GHOST_CODEX;PLATFORM_WINDOWS;_MBCS;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);GHOST_CODEX;PLATFORM_WINDOWS;WIN32_LEAN_AND_MEAN;_MBCS;</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SPEHSENGINE_ROOT)/Dependencies/lib/;</AdditionalLibraryDirectories>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SPEHSENGINE_ROOT)/Dependencies/lib/;$(SolutionDir)/Dependencies/lib/;</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -121,13 +124,16 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory);$(SPEHSENGINE_ROOT)/Dependencies/include/;$(SolutionDir)/Codex/Dependencies/include/;$(SolutionDir)/Codex/;$(SolutionDir)/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);GHOST_CODEX;PLATFORM_WINDOWS;_MBCS;NDEBUG;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);GHOST_CODEX;PLATFORM_WINDOWS;WIN32_LEAN_AND_MEAN;_MBCS;NDEBUG;</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(SPEHSENGINE_ROOT)/Dependencies/lib/;</AdditionalLibraryDirectories>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SPEHSENGINE_ROOT)/Dependencies/lib/;$(SolutionDir)/Dependencies/lib/;</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

@@ -1,6 +1,3 @@
-#ifdef _WIN32
-#include <Windows.h>
-#endif
 #include <atomic>
 #include <functional>
 #include <boost/asio.hpp>
@@ -15,6 +12,9 @@
 #include <Codex/SocketTCP.h>
 #include <Codex/Acceptor.h>
 #include "Aria.h"
+#ifdef _WIN32
+#include <Windows.h>//NOTE: must be included after boost asio stuff...
+#endif
 
 
 namespace aria
@@ -25,7 +25,7 @@ namespace aria
 	{
 		if (result)
 		{
-			codex::log::info("Acceptor successfully accepted an incoming connection.");
+			codex::log::info("Acceptor successfully accepted an incoming connection: " + socket.getRemoteEndpoint().address().to_string());
 		}
 	}
 

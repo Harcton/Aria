@@ -1,10 +1,10 @@
 #pragma once
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
 #include <mutex>
 #include <thread>
 #include <functional>
 #include <type_traits>
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
 #include "Protocol.h"
 
 namespace codex

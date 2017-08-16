@@ -4,8 +4,8 @@
 #include <iostream>
 #include <bcm2835.h>
 #include "GPIO.h"
-#include "Time.h"
-#include "Assert.h"
+#include "CodexTime.h"
+#include "CodexAssert.h"
 
 
 namespace codex

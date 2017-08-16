@@ -46,11 +46,17 @@ namespace codex
 
 		remoteEndpoint = *resolverTCP.resolve(query, error);
 		if (error)
+		{
+			log::info("SocketTCP::connect() failed to resolve the endpoint. Boost asio error: " + error.message());
 			return false;
+		}
 
 		socket.connect(remoteEndpoint, error);
 		if (error)
+		{
+			log::info("SocketTCP::connect() failed to connect. Boost asio error: " + error.message());
 			return false;
+		}
 
 		return true;
 	}
@@ -126,28 +132,34 @@ namespace codex
 	bool SocketTCP::startReceiving(const std::function<void(const void*, size_t)> callbackFunction)
 	{
 		std::lock_guard<std::recursive_mutex> lock(receiveMutex);
-		if (socket.is_open() && receiveBufferSize > 0)
+		if (socket.is_open())
 		{
-			isReceiving = true;
-			receiveHandlerCallback = callbackFunction;
-			if (expectedBytes)
-			{//Receive data
-				boost::asio::async_read(socket, boost::asio::buffer(receiveBuffer, expectedBytes),
-					boost::bind(&SocketTCP::receiveHandler,
-						this, boost::asio::placeholders::error,
-						boost::asio::placeholders::bytes_transferred));
-			}
-			else
-			{//Receive header
-				boost::asio::async_read(socket, boost::asio::buffer(receiveBuffer, sizeof(expectedBytes)),
-					boost::bind(&SocketTCP::receiveHandler,
-						this, boost::asio::placeholders::error,
-						boost::asio::placeholders::bytes_transferred));
-			}
-			return true;
+			log::info("SocketTCP failed to start receiving. Socket has not been connected!");
+			return false;
+		}
+		if (receiveBufferSize > 0)
+		{
+			log::info("SocketTCP failed to start receiving. Receive buffer size is set to 0!");
+			return false;
+		}
+
+		isReceiving = true;
+		receiveHandlerCallback = callbackFunction;
+		if (expectedBytes)
+		{//Receive data
+			boost::asio::async_read(socket, boost::asio::buffer(receiveBuffer, expectedBytes),
+				boost::bind(&SocketTCP::receiveHandler,
+					this, boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred));
 		}
 		else
-			return false;
+		{//Receive header
+			boost::asio::async_read(socket, boost::asio::buffer(receiveBuffer, sizeof(expectedBytes)),
+				boost::bind(&SocketTCP::receiveHandler,
+					this, boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred));
+		}
+		return true;
 	}
 	
 	void SocketTCP::receiveHandler(const boost::system::error_code error, const size_t bytes)
@@ -159,10 +171,12 @@ namespace codex
 		{
 			if (error == boost::asio::error::eof)
 			{//Connection gracefully closed
+				log::info("SocketTCP closed.");
 				return;
 			}
 			else if (error == boost::asio::error::connection_reset)
 			{//Disconnect
+				log::info("SocketTCP disconnected.");
 				return;
 			}
 			else if (error == boost::asio::error::connection_aborted ||
@@ -170,16 +184,20 @@ namespace codex
 				error == boost::asio::error::bad_descriptor ||
 				error == boost::asio::error::operation_aborted)
 			{
-				std::cout << "\nBoost asio error: " + std::to_string(error.value());
-				if (error == boost::asio::error::connection_aborted) std::cout << "\n\tClosing client: boost asio error: connection_aborted";
-				if (error == boost::asio::error::connection_refused) std::cout << "\n\tClosing client: boost asio error: connection_refused";
-				if (error == boost::asio::error::bad_descriptor) std::cout << "\n\tClosing client: boost asio error: bad_descriptor";
-				if (error == boost::asio::error::operation_aborted) std::cout << "\n\tClosing client: boost asio error: operation_aborted";
+				log::info("Boost asio error: " + std::to_string(error.value()));
+				if (error == boost::asio::error::connection_aborted)
+					log::info("Closing client: boost asio error: connection_aborted");
+				if (error == boost::asio::error::connection_refused)
+					log::info("Closing client: boost asio error: connection_refused");
+				if (error == boost::asio::error::bad_descriptor)
+					log::info("Closing client: boost asio error: bad_descriptor");
+				if (error == boost::asio::error::operation_aborted)
+					log::info("Closing client: boost asio error: operation_aborted");
 				return;
 			}
 			else
 			{//Ignored error
-				std::cout << "\nIgnored ASIO error: " + std::to_string(error.value()) + ": " + error.message();
+				log::info("Ignored ASIO error: " + std::to_string(error.value()) + ": " + error.message());
 			}
 
 			startReceiving(receiveHandlerCallback);
@@ -210,7 +228,7 @@ namespace codex
 		acceptor.acceptor.async_accept(socket, boost::bind(&SocketTCP::onAccept, this, error));
 		if (error)
 		{
-			log::error("Failed to start accepting. Boost asio error: " + error.message());
+			log::error("SocketTCP failed to start accepting. Boost asio error: " + error.message());
 			return;
 		}
 		onAcceptCallback = callbackFunction;
@@ -220,7 +238,7 @@ namespace codex
 	{
 		if (error)
 		{
-			log::error("Failed to accept an incoming connection! Boost asio error: " + error.message());
+			log::error("SocketTCP failed to accept an incoming connection! Boost asio error: " + error.message());
 			return;
 		}
 		onAcceptCallback((error), *this);
