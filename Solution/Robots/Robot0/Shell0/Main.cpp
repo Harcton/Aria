@@ -4,7 +4,7 @@
 #include <Codex/Log.h>
 #include <Codex/GPIO.h>
 #include <Codex/Servo.h>
-#include <Codex/Time.h>
+#include <Codex/CodexTime.h>
 #include <Codex/Codex.h>
 #include <Codex/Protocol.h>
 #include <Codex/SocketTCP.h>
@@ -26,8 +26,6 @@ int main(int argc, char** argv)
 {
 	codex::initialize();
 	codex::log::info("Shell0 initializing... 1");
-
-
 	
 	uint64_t someData;
 	codex::protocol::WriteBuffer writeBuffer;
