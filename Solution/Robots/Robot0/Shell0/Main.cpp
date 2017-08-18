@@ -24,7 +24,7 @@ void receiveHandler(const void* data, const size_t bytes)
 int main(int argc, char** argv)
 {
 	codex::initialize();
-	codex::log::info("Shell0 initializing... 2");
+	codex::log::info("Shell0 initializing... 5");
 	
 	
 	uint64_t someData;

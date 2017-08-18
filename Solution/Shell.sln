@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Shell0", "Robots\Robot0\Shell0\Shell0.vcxproj", "{5DF77CEB-6398-461E-AD1F-878A612E091E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66} = {4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Robots", "Robots", "{2C068ED6-A43D-418F-9F2A-9634EF5B7768}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Robot0", "Robot0", "{63C2786C-0A87-4D15-AA0C-BAD689BEF3A2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShellCodex", "ShellCodex\ShellCodex.vcxproj", "{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Codex", "Codex\Codex.vcxitems", "{45D41ACC-2C3C-43D2-BC10-02AA73FFC7C7}"
+EndProject
+Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Codex\Codex.vcxitems*{4565722d-9ef2-4df6-8085-8dbb5f8e2d66}*SharedItemsImports = 4
+		Codex\Codex.vcxitems*{45d41acc-2c3c-43d2-bc10-02aa73ffc7c7}*SharedItemsImports = 9
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|ARM = Release|ARM
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5DF77CEB-6398-461E-AD1F-878A612E091E}.Debug|ARM.ActiveCfg = Debug|ARM
+		{5DF77CEB-6398-461E-AD1F-878A612E091E}.Debug|ARM.Build.0 = Debug|ARM
+		{5DF77CEB-6398-461E-AD1F-878A612E091E}.Debug|ARM.Deploy.0 = Debug|ARM
+		{5DF77CEB-6398-461E-AD1F-878A612E091E}.Debug|x64.ActiveCfg = Debug|ARM
+		{5DF77CEB-6398-461E-AD1F-878A612E091E}.Debug|x86.ActiveCfg = Debug|ARM
+		{5DF77CEB-6398-461E-AD1F-878A612E091E}.Release|ARM.ActiveCfg = Release|ARM
+		{5DF77CEB-6398-461E-AD1F-878A612E091E}.Release|ARM.Build.0 = Release|ARM
+		{5DF77CEB-6398-461E-AD1F-878A612E091E}.Release|x64.ActiveCfg = Release|ARM
+		{5DF77CEB-6398-461E-AD1F-878A612E091E}.Release|x86.ActiveCfg = Release|ARM
+		{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}.Debug|ARM.ActiveCfg = Debug|ARM
+		{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}.Debug|ARM.Build.0 = Debug|ARM
+		{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}.Debug|x64.ActiveCfg = Debug|ARM
+		{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}.Debug|x86.ActiveCfg = Debug|ARM
+		{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}.Release|ARM.ActiveCfg = Release|ARM
+		{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}.Release|ARM.Build.0 = Release|ARM
+		{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}.Release|x64.ActiveCfg = Release|ARM
+		{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}.Release|x86.ActiveCfg = Release|ARM
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5DF77CEB-6398-461E-AD1F-878A612E091E} = {63C2786C-0A87-4D15-AA0C-BAD689BEF3A2}
+		{63C2786C-0A87-4D15-AA0C-BAD689BEF3A2} = {2C068ED6-A43D-418F-9F2A-9634EF5B7768}
+	EndGlobalSection
+EndGlobal
