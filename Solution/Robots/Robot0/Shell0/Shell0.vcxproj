@@ -69,7 +69,7 @@
       <WarningLevel>EnableAllWarnings</WarningLevel>
     </ClCompile>
     <Link>
-      <LibraryDependencies>pthread;boost_system;Codex;bcm2835;</LibraryDependencies>
+      <LibraryDependencies>pthread;boost_system;ShellCodex;bcm2835;</LibraryDependencies>
       <AdditionalLibraryDirectories>/usr/boost/stage/lib/static/;/home/pi/projects/Aria/Codex/bin/$(Platform)/$(Configuration);</AdditionalLibraryDirectories>
       <ShowProgress>true</ShowProgress>
       <PrintMap>true</PrintMap>
@@ -86,7 +86,7 @@
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
-      <LibraryDependencies>pthread;boost_system;Codex;bcm2835;</LibraryDependencies>
+      <LibraryDependencies>pthread;boost_system;ShellCodex;bcm2835;</LibraryDependencies>
       <AdditionalLibraryDirectories>/usr/boost/stage/lib/static/;/home/pi/projects/Aria/Codex/bin/$(Platform)/$(Configuration);</AdditionalLibraryDirectories>
       <ShowProgress>true</ShowProgress>
       <PrintMap>true</PrintMap>

@@ -15,6 +15,8 @@ namespace codex
 			acceptor.cancel();
 			acceptor.close();
 		}
+		ioService.stop();
+		ioServiceThread.join();
 	}
 
 	bool Acceptor::open(const uint16_t _port)

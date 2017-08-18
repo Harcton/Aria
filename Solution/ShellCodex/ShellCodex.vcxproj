@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <TargetExt>.a</TargetExt>
     <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
-    <TargetName>libCodex</TargetName>
+    <TargetName>libShellCodex</TargetName>
     <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);</SourcesToCopyRemotelyOverride>
     <OutDir>bin/$(Platform)/$(Configuration)/</OutDir>
     <IntDir>obj/$(Platform)/$(Configuration)/</IntDir>
@@ -51,7 +51,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <TargetExt>.a</TargetExt>
     <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
-    <TargetName>libCodex</TargetName>
+    <TargetName>libShellCodex</TargetName>
     <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);</SourcesToCopyRemotelyOverride>
     <OutDir>bin/$(Platform)/$(Configuration)/</OutDir>
     <IntDir>obj/$(Platform)/$(Configuration)/</IntDir>

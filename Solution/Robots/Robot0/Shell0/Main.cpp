@@ -21,11 +21,11 @@ void receiveHandler(const void* data, const size_t bytes)
 
 
 
-
 int main(int argc, char** argv)
 {
 	codex::initialize();
-	codex::log::info("Shell0 initializing... 1");
+	codex::log::info("Shell0 initializing... 2");
+	
 	
 	uint64_t someData;
 	codex::protocol::WriteBuffer writeBuffer;
@@ -73,8 +73,7 @@ int main(int argc, char** argv)
 	}
 	*/
 
-
-
+	
 	codex::uninitialize();
 	return 0;
 }
