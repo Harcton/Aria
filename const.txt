@@ -28,3 +28,6 @@ time/assert related errors?
 	Don't use source code files with generic names like Time.h/Assert.h
 
 Do not trust std::cout to work perfectly when remote debugging.
+
+
+Raspberry g++: (Raspbian 4.9.2-10) 4.9.2

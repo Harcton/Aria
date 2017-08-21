@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "CodexTime.h"
 #include "Log.h"
 #ifdef PLATFORM_LINUX
@@ -6,7 +7,7 @@
 #endif
 #ifdef PLATFORM_WINDOWS
 //Windows includes
-
+#include <windows.h>
 #endif
 
 namespace codex
@@ -16,6 +17,7 @@ namespace codex
 		void delay(TimeType time)
 		{
 #ifdef PLATFORM_LINUX
+
 			timespec t1;
 			if (time >= 1000000000)
 			{
@@ -28,14 +30,16 @@ namespace codex
 			timespec t2;
 			//std::cout << "\nDelaying " << t1.tv_sec << " seconds " << t1.tv_nsec << " nanoseconds";
 			nanosleep(&t1, &t2);
-			return;
+
+#elif PLATFORM_WINDOWS
+			assert(time >= 1000000);
+			//On windows we don't have - and most likely don't need - a time interval more accurate than that of the millisecond.
+			Sleep(time / 1000000);
+#else
+
+			static_assert(false, "Platform needs CodexTime implementation!");
+
 #endif
-#ifdef PLATFORM_WINDOWS
-			log::error("Windows delay not yet implemented!");
-			return;
-#endif
-			log::error("codex::time::delay error: unknown platform!");
-			return;
 		}
 	}
 }

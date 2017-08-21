@@ -5,31 +5,78 @@
 #include <SpehsEngine/InputManager.h>
 #include <SpehsEngine/BatchManager.h>
 #include <SpehsEngine/AudioEngine.h>
+#include <SpehsEngine/StringOperations.h>
 #include <SpehsEngine/Camera2D.h>
 #include <SpehsEngine/Console.h>
 #include <SpehsEngine/Window.h>
 #include <SpehsEngine/Time.h>
 #include <Codex/SocketTCP.h>
-#include <Codex/Acceptor.h>
+#include <Codex/IOService.h>
+#include <Codex/CodexTime.h>
 #include "Aria.h"
 #ifdef _WIN32
 #include <Windows.h>//NOTE: must be included after boost asio stuff...
 #endif
 
+//Shell
+std::atomic<bool> keepRunningShell(true);
+bool clientReceiveHandler(codex::protocol::ReadBuffer& buffer)
+{
+	codex::log::info("Client receive handler received " + std::to_string(buffer.getCapacity()) + " bytes");
+	for (size_t i = 0; i < buffer.getWrittenSize(); i++)
+	{
+		uint8_t byte;
+		buffer.read(&byte, sizeof(byte));
+		codex::log::info(spehs::toHexString(byte));
+	}
+	return true;
+}
+void runShell()
+{
+	//Buffer
+	uint64_t someData = 0x0123456789ABCDEF;
+	codex::protocol::WriteBuffer writeBuffer(codex::protocol::Endianness::inverted);
+	writeBuffer.write(&someData, sizeof(someData));
+	writeBuffer.write(&someData, sizeof(someData));
+
+	//Shell socket
+	codex::SocketTCP shellSocket;
+	shellSocket.resizeReceiveBuffer(64000);
+	if (shellSocket.connect("192.168.10.52", 41623))
+		codex::log::info("Successfully connected the tcp socket!");
+	if (shellSocket.startReceiving(std::bind(&clientReceiveHandler, std::placeholders::_1)))
+		codex::log::info("TCP socket has began successfully receiving data!");
+	//codex::time::delay(codex::time::milliseconds(500));
+	if (shellSocket.sendPacket(writeBuffer))
+		codex::log::info("TCP socket successfully sent a packet!");
+
+	//Loop
+	while (keepRunningShell)
+	{
+		//Blocks
+	}
+}
 
 namespace aria
 {
-
-
-	void onAccept(const bool result, codex::SocketTCP& socket)
+	//Server
+	bool serverReceiveHandler(codex::protocol::ReadBuffer& buffer)
 	{
-		if (result)
+		codex::log::info("Server receive handler received " + std::to_string(buffer.getWrittenSize()) + " bytes");
+		for (size_t i = 0; i < buffer.getWrittenSize(); i++)
 		{
-			codex::log::info("Acceptor successfully accepted an incoming connection: " + socket.getRemoteEndpoint().address().to_string());
+			uint8_t byte;
+			buffer.read(&byte, sizeof(byte));
+			codex::log::info(spehs::toHexString(byte));
 		}
+		return true;
 	}
-
-	void run(const AriaInitializationParameters& parameters)
+	void onAccept(codex::SocketTCP& socket)
+	{
+		codex::log::info("Acceptor successfully accepted an incoming connection from " + socket.getRemoteAddress());
+		socket.startReceiving(std::bind(&serverReceiveHandler, std::placeholders::_1));
+	}
+	void run()
 	{
 		if (false)
 		{
@@ -53,16 +100,24 @@ namespace aria
 				&si,            // Pointer to STARTUPINFO structure
 				&pi             // Pointer to PROCESS_INFORMATION structure (removed extra parentheses)
 			);
-			// Close process and thread handles. 
+			// Close process and thread handles.
 			CloseHandle(pi.hProcess);
 			CloseHandle(pi.hThread);
 #endif
 		}
+		
+		//IO service
+		std::shared_ptr<codex::IOService> ioService(new codex::IOService());
 
-		codex::SocketTCP socket;
-		codex::Acceptor acceptor;
-		socket.startAccepting(acceptor, std::bind(&onAccept, std::placeholders::_1, std::placeholders::_2));
+		//Aria socket
+		codex::SocketTCP ariaSocket(ioService);
+		ariaSocket.resizeReceiveBuffer(64000);
+		ariaSocket.startAccepting(41623, std::bind(&onAccept, std::placeholders::_1));
+		
+		//Shell emulation...
+		std::thread shellThread(&runShell);
 
+		//Aria main loop
 		spehs::initialize("Aria");
 		spehs::Camera2D camera;
 		spehs::BatchManager batchManager(&camera, "Aria");
@@ -80,6 +135,11 @@ namespace aria
 			spehs::console::render();
 			spehs::getMainWindow()->renderEnd();
 		}
+
+		//Stop shell
+		keepRunningShell = false;
+		shellThread.join();
+
 		spehs::uninitialize();
 		return;
 	}

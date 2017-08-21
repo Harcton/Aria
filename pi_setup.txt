@@ -1,0 +1,29 @@
+
+raspberry pi configuration window:
+system tab -> expand filesystem
+interfaces tab -> enable pretty much everything...
+localization tab -> set keyboard
+
+//Needed
+sudo apt-get install openssh-server g++ gdb gdbserver
+sudo apt-get update
+sudo apt-get upgrade
+
+////Boost
+download: http://www.boost.org/users/download/
+documentation: http://www.boost.org/doc/libs/1_64_0/more/getting_started/unix-variants.html
+//preparing files
+sudo tar --bzip2 -xf home/pi/Downloads/boost_1_64_0.tar.bz2		//This might take a while...
+//Build binaries
+Go to the directory home/pi/Downloads/boost_1_64_0
+sudo ./bootstrap.sh --prefix=/usr/localization					//where PREFIX is the directory where you want Boost. Build to be installed. Add PREFIX/bin to your PATH environment variable.
+sudo ./b2
+
+//The bcm835 library
+# download the latest version of the library, say bcm2835-1.xx.tar.gz, then:
+tar zxvf bcm2835-1.xx.tar.gz
+cd bcm2835-1.xx
+./configure
+make
+sudo make check
+sudo make install

@@ -1,10 +1,15 @@
 #include <boost/bind.hpp>
 #include "Acceptor.h"
+#include "SocketTCP.h"
 #include "Log.h"
 
 namespace codex
 {
-	Acceptor::Acceptor() : port(0), ioServiceWork(ioService), acceptor(ioService), ioServiceThread(boost::bind(&boost::asio::io_service::run, &ioService))
+	Acceptor::Acceptor()
+		: port(0)
+		, ioServiceWork(ioService)
+		, ioServiceThread(boost::bind(&boost::asio::io_service::run, &ioService))
+		, acceptor(ioService)
 	{
 	}
 

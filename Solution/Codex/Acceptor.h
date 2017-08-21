@@ -20,7 +20,7 @@ namespace codex
 		uint16_t port;
 		boost::asio::io_service ioService;
 		boost::asio::io_service::work ioServiceWork;
-		boost::asio::ip::tcp::acceptor acceptor;
 		std::thread ioServiceThread;
+		boost::asio::ip::tcp::acceptor acceptor;
 	};
 }

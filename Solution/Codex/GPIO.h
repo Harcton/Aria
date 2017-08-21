@@ -53,5 +53,9 @@ namespace codex
 		{
 			bcm2835_gpio_write(pin, LOW);
 		}
+		PinState read(const Pin pin)
+		{
+			return bcm2835_gpio_lev(pin) == HIGH ? PinState::high : PinState::low;
+		}
 	}
 }

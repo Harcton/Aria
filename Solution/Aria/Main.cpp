@@ -4,12 +4,9 @@
 
 int main(int argc, char** argv)
 {
-	aria::AriaInitializationParameters initializationParameters;
-	initializationParameters.launchGUI = true;
-
-	std::cout << "\nLaunching Aria...";
-	aria::run(initializationParameters);
-	std::cout << "\nAria has stopped.";
+	codex::log::info("Launching Aria...");
+	aria::run();
+	codex::log::info("Aria has stopped.");
 
 	std::getchar();
 }

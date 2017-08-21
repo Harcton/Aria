@@ -24,9 +24,57 @@ void receiveHandler(const void* data, const size_t bytes)
 int main(int argc, char** argv)
 {
 	codex::initialize();
-	codex::log::info("Shell0 initializing... 5");
+	codex::log::info("Shell0 initializing... 7");
 	
-	
+
+
+
+	codex::gpio::Pin trigPin = codex::gpio::pin_13;
+	codex::gpio::Pin echoPin = codex::gpio::pin_12;
+
+	bcm2835_gpio_fsel(trigPin, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_fsel(echoPin, BCM2835_GPIO_FSEL_INPT);
+
+	codex::gpio::enable(trigPin);
+	codex::time::delay(codex::time::seconds(1));
+	while(1)
+	{
+		codex::gpio::disable(trigPin);
+		codex::time::delay(codex::time::milliseconds(2));
+		codex::gpio::enable(trigPin);
+		codex::time::delay(codex::time::milliseconds(10));
+		codex::gpio::disable(trigPin);
+
+		while (codex::gpio::read(echoPin) == codex::gpio::PinState::high)
+		{
+			codex::log::info("loop1");
+			codex::time::delay(codex::time::seconds(1));
+			//Blocks until pin is low
+		}
+		while (codex::gpio::read(echoPin) == codex::gpio::PinState::low)
+		{
+			codex::log::info("loop2");
+			codex::time::delay(codex::time::seconds(1));
+			//Blocks until pin is high
+		}
+		codex::time::TimeType duration = 0;
+		do
+		{
+			codex::log::info("loop3");
+			codex::time::delay(codex::time::seconds(1));
+			static const codex::time::TimeType precision = codex::time::nanoseconds(1000);
+			codex::time::delay(precision);
+			duration += precision;
+		} while (codex::gpio::read(echoPin) == codex::gpio::PinState::high);
+
+		const long distance = (duration / 2) / 29.1;
+
+		codex::log::info("distance: " + std::to_string(distance));
+
+		codex::time::delay(codex::time::milliseconds(500));
+	}
+
+	/*
 	uint64_t someData;
 	codex::protocol::WriteBuffer writeBuffer;
 	writeBuffer.resize(sizeof(someData));
@@ -34,7 +82,7 @@ int main(int argc, char** argv)
 
 	codex::SocketTCP socketTCP;
 	socketTCP.resizeReceiveBuffer(64000);
-	if (socketTCP.connect("192.168.10.52", 41523))
+	if (socketTCP.connect("192.168.10.52", 41623))
 		codex::log::info("Successfully connected the tcp socket!");
 	if (socketTCP.startReceiving(std::bind(&receiveHandler, std::placeholders::_1, std::placeholders::_2)))
 		codex::log::info("TCP socket has began successfully receiving data!");
@@ -47,7 +95,7 @@ int main(int argc, char** argv)
 	//Blocks
 	}
 	std::getchar();
-	
+	*/
 	
 	/*
 	//Create servo

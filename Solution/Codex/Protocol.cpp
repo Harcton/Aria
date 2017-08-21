@@ -1,145 +1,200 @@
 #include "Protocol.h"
+#include <assert.h>
+#include <cstring>
 
 namespace codex
 {
 	namespace protocol
 	{
-		Endianness getEndianness(const ContactPacketType contactPacketType)
-		{//Detects endianness based on the sent contact packet
-			const uint8_t leastSignificantByteBits = (uint16_t)contactPacketType;
-			if (leastSignificantByteBits == 0xFF)
-				return Endianness::inverted;
-			const uint8_t mostSignificantByteBits = ((uint16_t)contactPacketType >> 8);
-			if (mostSignificantByteBits == 0xFF)
-				return Endianness::equal;
-			return Endianness::invalid;
-		}
-
-
-		BaseBuffer::BaseBuffer()
-			: data(nullptr)
-			, size(0)
-			, offset(0)
+		static const uint16_t systemEndianness = 0x00FF;
+		CodexHandshake::CodexHandshake()
+			: endianness(systemEndianness)
+			, handshakeVersion(0xF00DAABB)
+			, valid(true)
 		{
 
 		}
-		BaseBuffer::BaseBuffer(const size_t _size)
-			: size(_size)
-			, data(new unsigned char[_size])
-		{
 
-		}
-		BaseBuffer::BaseBuffer(const void* buffer, const size_t length)
-			: size(length)
-			, data(new unsigned char[length])
+		Endianness CodexHandshake::getEndianness() const
 		{
-			memcpy(data, buffer, length);
-		}
-		BaseBuffer::~BaseBuffer()
-		{
-			delete[] data;
+			return systemEndianness == endianness ? Endianness::equal : Endianness::inverted;
 		}
 
-		bool BaseBuffer::resize(const size_t newSize)
+		bool CodexHandshake::isValid() const
 		{
-			if (data)
-				delete[] data;
-			data = new unsigned char[newSize];
-			if (data)
-			{//Allocation successful
-				size = newSize;
-				return true;
+			return valid;
+		}
+
+		size_t CodexHandshake::write(WriteBuffer& buffer) const
+		{
+			size_t offset = 0;
+			offset += buffer.write(&endianness, sizeof(endianness));
+			offset += buffer.write(&handshakeVersion, sizeof(handshakeVersion));
+			return offset;
+		}
+
+		size_t CodexHandshake::read(ReadBuffer& buffer)
+		{//NOTE: buffer can contain invalid data! If so, set the valid boolean to false
+			size_t offset = 0;
+			valid = true;
+
+			//Endianness
+			if (buffer.getBytesRemaining() < sizeof(endianness))
+			{
+				valid = false;
+				return offset;
 			}
 			else
-			{//Failed to allocate!
-				size = 0;
-				return false;
+				offset += buffer.read(&endianness, sizeof(endianness));
+			buffer.setReversedByteOrder(getEndianness() == Endianness::inverted);
+			//Handshake version
+			if (buffer.getBytesRemaining() < sizeof(handshakeVersion))
+			{
+				valid = false;
+				return offset;
 			}
-		}
+			else
+				offset += buffer.read(&handshakeVersion, sizeof(handshakeVersion));		
 
-		size_t BaseBuffer::getSize() const
-		{
-			return size;
-		}
-		const unsigned char* BaseBuffer::getData() const
-		{
-			return data;
+			return offset;
 		}
 
 
-		WriteBuffer::WriteBuffer()
-		{
 
-		}
 
-		WriteBuffer::WriteBuffer(const size_t _size)
-			: BaseBuffer(_size)
+
+		BufferBase::BufferBase()
+			: capacity(0)
+			, offset(0)
+			, reversedByteOrder(false)
 		{
 
 		}
 
-		WriteBuffer::WriteBuffer(const void* buffer, const size_t length)
-			: BaseBuffer(buffer, length)
+		BufferBase::~BufferBase()
 		{
 
+		}
+
+		size_t BufferBase::getCapacity() const
+		{
+			return capacity;
+		}
+
+		size_t BufferBase::getWrittenSize() const
+		{
+			return offset;
+		}
+
+		WriteBuffer::WriteBuffer(const Endianness writeEndianness)
+			: data(nullptr)
+		{
+			reversedByteOrder = writeEndianness == Endianness::inverted;
+		}
+
+		WriteBuffer::WriteBuffer(const Endianness writeEndianness, const size_t _capacity)
+			: data(nullptr)
+		{
+			reversedByteOrder = writeEndianness == Endianness::inverted;
+			if (_capacity > 0)
+			{
+				capacity = _capacity;
+				data = new unsigned char[_capacity];
+			}
 		}
 
 		WriteBuffer::~WriteBuffer()
 		{
-
+			delete[] data;
 		}
 
-		size_t WriteBuffer::write(const void* buffer, const size_t length)
+		size_t WriteBuffer::write(const void* buffer, const size_t bytes)
 		{
-			if (offset + length > size)
+			if (offset + bytes > capacity && !extend(offset + bytes - capacity))
 			{
-				log::error("Cannot write past the buffer!");
+				log::error("Cannot write to buffer! Cannot extend the buffer!");
 				return 0;
 			}
-			memcpy(&data[offset], buffer, length);
-			offset += length;
-			return length;
+
+			if (reversedByteOrder)
+			{//Write in reversed byte order
+				const size_t endOffset = bytes - 1;
+				for (size_t i = 0; i < bytes; i++)
+					memcpy(&data[offset + i], &(((const unsigned char*)buffer)[endOffset - i]), 1);
+			}
+			else
+			{//Write using the native byte order
+				memcpy(&data[offset], buffer, bytes);
+			}
+			offset += bytes;
+			return bytes;
 		}
 
-		const unsigned char* WriteBuffer::operator[](const size_t index) const
+		bool WriteBuffer::extend(const size_t addedBytes)
 		{
-			return &data[index];
+			if (addedBytes == 0)
+				return true;
+
+			unsigned char* allocation = new unsigned char[capacity + addedBytes];
+			if (!allocation)
+				return false;//Failed to allocate...
+
+			//Relocate data
+			if (data)
+				memcpy(allocation, data, capacity);
+
+			//Increment the capacity
+			capacity += addedBytes;
+
+			//Deallocate previous allocation
+			if (data)
+				delete[] data;
+
+			//Set data to point to the new allocation
+			data = allocation;
+
+			return true;
 		}
-
-
-
-		ReadBuffer::ReadBuffer()
+		
+		ReadBuffer::ReadBuffer(const void* pointedMemory, const size_t length)
+			: data((const unsigned char*)pointedMemory)
 		{
-
-		}
-
-		ReadBuffer::ReadBuffer(const size_t _size)
-			: BaseBuffer(_size)
-		{
-
-		}
-
-		ReadBuffer::ReadBuffer(const void* buffer, const size_t length)
-			: BaseBuffer(buffer, length)
-		{
-
+			assert(pointedMemory);
+			assert(length > 0);
+			capacity = length;
 		}
 
 		ReadBuffer::~ReadBuffer()
 		{
-		
+			//NOTE: do not deallocate data! data is owned by an external source!
 		}
 
-		size_t ReadBuffer::read(const void* buffer, const size_t length)
+		size_t ReadBuffer::read(void* destination, const size_t bytes)
 		{
-			if (offset + length > size)
+			if (offset + bytes > capacity)
 			{
 				log::error("Cannot write past the buffer!");
 				return 0;
 			}
-			memcpy(&data[offset], buffer, length);
-			offset += length;
-			return length;
+
+			if (reversedByteOrder)
+			{//Read in reversed byte order
+				const size_t endOffset = offset + bytes - 1;
+				for (size_t i = 0; i < bytes; i++)
+					memcpy(&(((unsigned char*)destination)[i]), &data[endOffset - i], 1);
+			}
+			else
+			{//Read in native byte order
+				memcpy(destination, &data[offset], bytes);
+			}
+
+			offset += bytes;
+			return bytes;
+		}
+
+		size_t ReadBuffer::getBytesRemaining() const
+		{
+			return capacity - offset;
 		}
 	}
 }

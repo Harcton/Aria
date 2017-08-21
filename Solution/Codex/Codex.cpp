@@ -20,6 +20,17 @@ namespace codex
 #ifdef GHOST_CODEX
 		log::info("Initializing GhostCodex...");
 #endif
+		
+		//Check available integer widths
+		if (sizeof(int8_t) != 1 || sizeof(uint8_t) != 1)
+			log::warning("8 bit integer width not available!");
+		if (sizeof(int16_t) != 2 || sizeof(uint16_t) != 2)
+			log::warning("16 bit integer width not available!");
+		if (sizeof(int32_t) != 4 || sizeof(uint32_t) != 4)
+			log::warning("32 bit integer width not available!");
+		if (sizeof(int64_t) != 8 || sizeof(uint64_t) != 8)
+			log::warning("64 bit integer width not available!");
+
 		return 0;
 	}
 	void uninitialize()
