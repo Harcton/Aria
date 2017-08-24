@@ -4,15 +4,14 @@
 #include <boost/system/error_code.hpp>
 #include <type_traits>
 #include <functional>
-#include <memory>
 #include <thread>
 #include <mutex>
 
 #include "Protocol.h"
+#include "IOService.h"
 
 namespace codex
 {
-	class IOService;
 	namespace protocol
 	{
 		class WriteBuffer;
@@ -26,7 +25,8 @@ namespace codex
 	public:
 
 		/* If a shared IOService pointer is provided, the socket uses that IOService. Otherwise, creates its own IOSerice. */
-		SocketTCP(std::shared_ptr<IOService> ioServicePtr = nullptr);
+		
+		SocketTCP(IOService& ioService);
 		~SocketTCP();
 		
 		/* Perform a synchronous connection attempt. */
@@ -53,9 +53,6 @@ namespace codex
 		/* Returns the address of the remotely connected socket. */
 		std::string getRemoteAddress();
 		
-		/* Returns a shared pointer to the used IO service. */
-		std::shared_ptr<IOService> getIOService();
-
 		bool isReceiving() const { return receiving; }
 		bool isConnected() const { return connected; }
 
@@ -72,7 +69,7 @@ namespace codex
 		void receiveHandler(const boost::system::error_code& error, std::size_t bytes);
 
 		std::recursive_mutex mutex;
-		std::shared_ptr<IOService> ioService;
+		IOService& ioService;
 		boost::asio::ip::tcp::socket socket;
 		boost::asio::ip::tcp::acceptor* acceptor;
 		std::function<bool(codex::protocol::ReadBuffer&)> onReceiveCallback;

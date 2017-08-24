@@ -6,63 +6,6 @@ namespace codex
 {
 	namespace protocol
 	{
-		static const uint16_t systemEndianness = 0x00FF;
-		CodexHandshake::CodexHandshake()
-			: endianness(systemEndianness)
-			, handshakeVersion(0xF00DAABB)
-			, valid(true)
-		{
-
-		}
-
-		Endianness CodexHandshake::getEndianness() const
-		{
-			return systemEndianness == endianness ? Endianness::equal : Endianness::inverted;
-		}
-
-		bool CodexHandshake::isValid() const
-		{
-			return valid;
-		}
-
-		size_t CodexHandshake::write(WriteBuffer& buffer) const
-		{
-			size_t offset = 0;
-			offset += buffer.write(&endianness, sizeof(endianness));
-			offset += buffer.write(&handshakeVersion, sizeof(handshakeVersion));
-			return offset;
-		}
-
-		size_t CodexHandshake::read(ReadBuffer& buffer)
-		{//NOTE: buffer can contain invalid data! If so, set the valid boolean to false
-			size_t offset = 0;
-			valid = true;
-
-			//Endianness
-			if (buffer.getBytesRemaining() < sizeof(endianness))
-			{
-				valid = false;
-				return offset;
-			}
-			else
-				offset += buffer.read(&endianness, sizeof(endianness));
-			buffer.setReversedByteOrder(getEndianness() == Endianness::inverted);
-			//Handshake version
-			if (buffer.getBytesRemaining() < sizeof(handshakeVersion))
-			{
-				valid = false;
-				return offset;
-			}
-			else
-				offset += buffer.read(&handshakeVersion, sizeof(handshakeVersion));		
-
-			return offset;
-		}
-
-
-
-
-
 		BufferBase::BufferBase()
 			: capacity(0)
 			, offset(0)
@@ -155,7 +98,7 @@ namespace codex
 
 			return true;
 		}
-		
+
 		ReadBuffer::ReadBuffer(const void* pointedMemory, const size_t length)
 			: data((const unsigned char*)pointedMemory)
 		{
@@ -173,7 +116,7 @@ namespace codex
 		{
 			if (offset + bytes > capacity)
 			{
-				log::error("Cannot write past the buffer!");
+				log::warning("Cannot read past the buffer!");
 				return 0;
 			}
 
@@ -192,9 +135,86 @@ namespace codex
 			return bytes;
 		}
 
+		void ReadBuffer::translate(const int translationOffset)
+		{
+			offset += translationOffset;
+		}
+
 		size_t ReadBuffer::getBytesRemaining() const
 		{
 			return capacity - offset;
+		}
+
+		namespace aria
+		{
+			Serializable* Serializable::deserializeFromReadBuffer(ReadBuffer& buffer)
+			{
+				Type type;
+				buffer.read(&type, sizeof(type));
+				Serializable* serializable = nullptr;
+				switch (type)
+				{
+				default: log::warning("codex::protocol::aria::Serializable::deserializeFromReadBuffer: invalid Type!"); return nullptr;
+				case Type::Handshake: serializable = new Handshake();
+				case Type::String: serializable = new String();
+				case Type::GhostQuery: serializable = new GhostQuery();
+				case Type::GhostOffer: serializable = new GhostOffer();
+				}
+				serializable->read(buffer);
+				return serializable;
+			}
+
+			static const uint16_t systemEndianness = 0x00FF;
+			Handshake::Handshake()
+				: endianness(systemEndianness)
+				, handshakeVersion(1)
+				, valid(true)
+			{
+			}
+
+			Endianness Handshake::getEndianness() const
+			{
+				return systemEndianness == endianness ? Endianness::equal : Endianness::inverted;
+			}
+
+			bool Handshake::isValid() const
+			{
+				return valid;
+			}
+
+			size_t Handshake::write(WriteBuffer& buffer) const
+			{
+				size_t offset = Serializable::write(buffer);
+				offset += buffer.write(&endianness, sizeof(endianness));
+				offset += buffer.write(&handshakeVersion, sizeof(handshakeVersion));
+				return offset;
+			}
+
+			size_t Handshake::read(ReadBuffer& buffer)
+			{//NOTE: buffer can contain invalid data! If so, set the valid boolean to false
+				size_t offset = Serializable::read(buffer);
+				valid = true;
+
+				//Endianness
+				if (buffer.getBytesRemaining() < sizeof(endianness))
+				{
+					valid = false;
+					return offset;
+				}
+				else
+					offset += buffer.read(&endianness, sizeof(endianness));
+				buffer.setReversedByteOrder(getEndianness() == Endianness::inverted);
+				//Handshake version
+				if (buffer.getBytesRemaining() < sizeof(handshakeVersion))
+				{
+					valid = false;
+					return offset;
+				}
+				else
+					offset += buffer.read(&handshakeVersion, sizeof(handshakeVersion));
+
+				return offset;
+			}
 		}
 	}
 }

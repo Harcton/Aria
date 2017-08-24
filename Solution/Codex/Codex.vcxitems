@@ -17,9 +17,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Acceptor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Codex.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)DCMotor.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)GPIO.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)IOService.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Log.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Protocol.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Servo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SocketTCP.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)CodexTime.cpp" />
   </ItemGroup>

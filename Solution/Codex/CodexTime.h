@@ -9,13 +9,13 @@ namespace codex
 	{
 		typedef uint64_t TimeType;
 
-		inline TimeType seconds(const uint64_t seconds)
+		inline TimeType seconds(const float seconds)
 		{
-			return seconds * 1000000000;
+			return seconds * 1000000000.0f;
 		}
-		inline TimeType milliseconds(const uint64_t milliseconds)
+		inline TimeType milliseconds(const float milliseconds)
 		{
-			return milliseconds * 1000000;
+			return milliseconds * 1000000.0f;
 		}
 		inline TimeType nanoseconds(const uint64_t nanoseconds)
 		{

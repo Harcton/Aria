@@ -40,15 +40,15 @@ void runShell()
 	writeBuffer.write(&someData, sizeof(someData));
 
 	//Shell socket
-	codex::SocketTCP shellSocket;
+	codex::IOService ioService;
+	codex::SocketTCP shellSocket(ioService);
 	shellSocket.resizeReceiveBuffer(64000);
 	if (shellSocket.connect("192.168.10.52", 41623))
 		codex::log::info("Successfully connected the tcp socket!");
 	if (shellSocket.startReceiving(std::bind(&clientReceiveHandler, std::placeholders::_1)))
 		codex::log::info("TCP socket has began successfully receiving data!");
-	//codex::time::delay(codex::time::milliseconds(500));
 	if (shellSocket.sendPacket(writeBuffer))
-		codex::log::info("TCP socket successfully sent a packet!");
+		codex::log::info("Testing: TCP socket successfully sent a packet!");
 
 	//Loop
 	while (keepRunningShell)
@@ -107,13 +107,18 @@ namespace aria
 		}
 		
 		//IO service
-		std::shared_ptr<codex::IOService> ioService(new codex::IOService());
+		codex::IOService ioService;
 
 		//Aria socket
 		codex::SocketTCP ariaSocket(ioService);
 		ariaSocket.resizeReceiveBuffer(64000);
 		ariaSocket.startAccepting(41623, std::bind(&onAccept, std::placeholders::_1));
 		
+		while (true)
+		{
+
+		}
+
 		//Shell emulation...
 		std::thread shellThread(&runShell);
 

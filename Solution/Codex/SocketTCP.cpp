@@ -10,9 +10,9 @@
 
 namespace codex
 {
-	SocketTCP::SocketTCP(std::shared_ptr<IOService> ioServicePtr)
-		: ioService(ioServicePtr ? ioServicePtr : std::shared_ptr<IOService>(new IOService()))
-		, socket(ioService->ioService)
+	SocketTCP::SocketTCP(IOService& _ioService)
+		: ioService(_ioService)
+		, socket(_ioService.getImplementationRef())
 		, acceptor(nullptr)
 		, onReceiveCallback()
 		, onAcceptCallback()
@@ -50,7 +50,7 @@ namespace codex
 			mutex.lock();
 			wait = receiving;
 			mutex.unlock();
-			time::delay(time::milliseconds(1));
+			time::delay(time::milliseconds(1.0f));
 			if (--millisecondTimeout == 0)
 				return false;
 		}
@@ -61,7 +61,7 @@ namespace codex
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
 		boost::system::error_code error;
-		boost::asio::ip::tcp::resolver resolverTCP(ioService->ioService);
+		boost::asio::ip::tcp::resolver resolverTCP(ioService.getImplementationRef());
 		boost::asio::ip::tcp::resolver::query query(address_ipv4, std::to_string(port));
 		boost::asio::ip::tcp::endpoint endpoint = *resolverTCP.resolve(query, error);
 		if (error)
@@ -77,9 +77,9 @@ namespace codex
 			return false;
 		}
 
-		//Finish with a codex connection handshake
+		//Finish the connection with an aria handshake
 		protocol::WriteBuffer buffer(protocol::Endianness::inverted);
-		protocol::CodexHandshake handshake;
+		protocol::aria::Handshake handshake;
 		handshake.write(buffer);
 		
 		connected = true;//Set as connected, so that sendPacket can pass
@@ -119,8 +119,8 @@ namespace codex
 			return false;
 		}
 
-		if (buffer.hasReversedByteOrder() != reverseByteOrdering)
-			codex::log::warning("SocketTCP byte ordering different from passed WriteBuffer's byte order!");
+		//if (buffer.hasReversedByteOrder() != reverseByteOrdering)
+			//codex::log::warning("SocketTCP byte ordering different from passed WriteBuffer's byte order!");
 
 		//Header
 		const ExpectedBytesType bytes = buffer.getWrittenSize();
@@ -201,7 +201,7 @@ namespace codex
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
 
-		protocol::CodexHandshake handshake;
+		protocol::aria::Handshake handshake;
 		handshake.read(buffer);
 		if (handshake.isValid())
 		{//VALID HANDSHAKE
@@ -218,7 +218,7 @@ namespace codex
 		}
 		else
 		{//INVALID HANDSHAKE -> DISCARD
-			log::error("Received invalid codex handshake! Resuming accepting another connection.");
+			log::error("Received invalid aria handshake! Resuming accepting another connection.");
 
 			//Deallocate acceptor
 			mutex.lock();
@@ -228,7 +228,7 @@ namespace codex
 			acceptor = nullptr;
 			mutex.unlock();
 
-			//Disconnect from current endpoint as it gave no codex handshake
+			//Disconnect from current endpoint as it gave no aria handshake
 			disconnect();
 
 			//Resume accepting...
@@ -320,7 +320,7 @@ namespace codex
 			return false;
 		}
 
-		acceptor = new boost::asio::ip::tcp::acceptor(ioService->ioService);
+		acceptor = new boost::asio::ip::tcp::acceptor(ioService.getImplementationRef());
 		boost::system::error_code error;
 		const boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), port);
 
@@ -373,7 +373,7 @@ namespace codex
 		else
 			connected = true;
 		
-		//Finish accepting by getting the codex handshake...
+		//Finish accepting by getting the aria handshake...
 		startReceiving(std::bind(&SocketTCP::handshakeReceiveHandler, this, std::placeholders::_1));
 	}
 
@@ -388,10 +388,5 @@ namespace codex
 		boost::asio::ip::address address = endpoint.address();
 		boost::asio::ip::address_v4 address_v4 = address.to_v4();
 		return address_v4.to_string();
-	}
-
-	std::shared_ptr<IOService> SocketTCP::getIOService()
-	{
-		return ioService;
 	}
 }

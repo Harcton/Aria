@@ -1,25 +1,21 @@
-First things to try when shit goes down with the pi:
+// Here are some of my (definitely bad) advice learned from using Visual Studio for Linux development extension. //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Advice hall of fame:
 	1. Rebuild
 	2. Turn on verbose build output: Tools>Options>Build&Run>...output verbosity
+	3. Check the output window, the error list won't help you 9 times out of 8.
+	4. On raspberry, the class members need to be initialized in order.
+	5. On raspberry, 'friend class MyClass' needs a prior forward declaration.
+	6. Try searching output for "ld returned 1 exit status"
+	7. Do not trust std::cout to work perfectly when remote debugging. Especially when you are flooding the thing with output...
 	
 ld returned 1 exit status -> Check Linker/library dependencies.
 	/usr/bin/ld: cannot find -l... check the following:
 		Generated .a file is named with the lib- prefix
 		NO l- or lib- prefix in the linker input!
 	
-Cannot insert breakpoint -1 -> Rebuild(?)
-
-Unable to start debugging, remote connection closed ->
-	1. Rebuild the solution?
-	2. Once this happens, it doesn't seem to revert by reverting whatever you were doing at the time...
-	3. Removing library dependency "removes the problem" for a while.
-
-Doesn't build when changes are being made? Check the currently active configuration...
-
-A load of weird build errors?
-	Try searching output for "ld returned 1 exit status"
-	
-A load of weird build errors and runs=
+Unable to start debugging, remote connection closed -> clean & rebuild
 
 WinSock.h has already been included?
 	Check that no Windows.h is included before boost
@@ -27,7 +23,6 @@ WinSock.h has already been included?
 time/assert related errors?
 	Don't use source code files with generic names like Time.h/Assert.h
 
-Do not trust std::cout to work perfectly when remote debugging.
-
+Avoid std::shared_ptr... gives otherworldly errors, not related to std::shared_ptr at all (I got like 16k lines of output from using one, and there)
 
 Raspberry g++: (Raspbian 4.9.2-10) 4.9.2

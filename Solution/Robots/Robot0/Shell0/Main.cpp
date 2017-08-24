@@ -4,31 +4,132 @@
 #include <Codex/Log.h>
 #include <Codex/GPIO.h>
 #include <Codex/Servo.h>
+#include <Codex/DCMotor.h>
 #include <Codex/CodexTime.h>
 #include <Codex/Codex.h>
 #include <Codex/Protocol.h>
 #include <Codex/SocketTCP.h>
+#include <Codex/IOService.h>
 #include <bcm2835.h>
 
 
 
-std::atomic<int> receivedHandlerCallCount(0);
-void receiveHandler(const void* data, const size_t bytes)
+bool clientReceiveHandler(codex::protocol::ReadBuffer& buffer)
 {
-	codex::log::info("Receive handler received " + std::to_string(bytes) + " bytes");
-	receivedHandlerCallCount++;
+	codex::log::info("Client receive handler received " + std::to_string(buffer.getCapacity()) + " bytes");
+	for (size_t i = 0; i < buffer.getWrittenSize(); i++)
+	{
+		uint8_t byte;
+		buffer.read(&byte, sizeof(byte));
+	}
+	return true;
 }
-
 
 
 int main(int argc, char** argv)
 {
 	codex::initialize();
-	codex::log::info("Shell0 initializing... 7");
+	codex::log::info("Shell0 initializing... 10");
 	
 
 
 
+	//Buffer
+	uint64_t someData = 0x0123456789ABCDEF;
+	codex::protocol::WriteBuffer writeBuffer(codex::protocol::Endianness::inverted);
+	writeBuffer.write((void*)&someData, sizeof(someData));
+	writeBuffer.write((void*)&someData, sizeof(someData));
+
+	////Shell socket
+	codex::IOService ioservice;
+	codex::SocketTCP shellSocket(ioservice);
+	shellSocket.resizeReceiveBuffer(64000);
+	if (shellSocket.connect("192.168.10.52", 41623))
+		codex::log::info("Successfully connected the tcp socket!");
+	if (shellSocket.startReceiving(std::bind(&clientReceiveHandler, std::placeholders::_1)))
+		codex::log::info("TCP socket has began successfully receiving data!");
+	if (shellSocket.sendPacket(writeBuffer))
+		codex::log::info("Testing: TCP socket successfully sent a packet!");
+	//Loop
+	while (true)
+	{
+		//Blocks
+	}
+
+
+
+	{
+		codex::DCMotor dcMotor;
+		dcMotor.setPins(codex::gpio::pin_5, codex::gpio::pin_13, codex::gpio::pin_11);
+		dcMotor.run();
+		bool run = true;
+		while (run)
+		{
+			int position;
+			codex::log::info("Input position\n>");
+			std::cin >> position;
+
+			//Stop
+			if (position < 0)
+			{
+				run = false;
+			}
+		}
+		dcMotor.stop();
+	}
+
+	/*
+	//Just some example code to get things started...
+	codex::gpio::Pin aPulseWidth = codex::gpio::pin_5;
+	codex::gpio::Pin aInput1 = codex::gpio::pin_13;
+	codex::gpio::Pin aInput2 = codex::gpio::pin_11;
+	bcm2835_gpio_fsel(aPulseWidth, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_fsel(aInput1, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_fsel(aInput2, BCM2835_GPIO_FSEL_OUTP);
+	codex::gpio::disable(aInput1);
+	codex::gpio::enable(aInput2);
+	const codex::time::TimeType pulseInterval = codex::time::nanoseconds(2000000);
+	int direction = 1;
+	codex::time::TimeType data = 0;
+	while (1)
+	{
+		if (data <= 0)
+			direction = 1000;
+		else if (data >= pulseInterval)
+			direction = -1000;
+		data += direction;
+		codex::gpio::enable(aPulseWidth);
+		codex::time::delay(data);
+		codex::gpio::disable(aPulseWidth);
+		codex::time::delay(pulseInterval - data);
+	}
+	*/
+
+	/*
+	//Create servo
+	codex::Servo servo;
+	servo.setPin(codex::gpio::pin_3);
+	servo.mapPosition(codex::time::milliseconds(0.7f), codex::time::milliseconds(1.75f));
+	servo.run();
+
+	bool run = true;
+	while (run)
+	{
+		int position;
+		codex::log::info("Input position\n>");
+		std::cin >> position;
+		servo.setPosition((unsigned char)position);
+
+		//Stop
+		if (position < 0)
+		{
+			run = false;
+			servo.stop();
+		}
+	}
+	*/
+
+	/*
 	codex::gpio::Pin trigPin = codex::gpio::pin_13;
 	codex::gpio::Pin echoPin = codex::gpio::pin_12;
 
@@ -73,6 +174,7 @@ int main(int argc, char** argv)
 
 		codex::time::delay(codex::time::milliseconds(500));
 	}
+	*/
 
 	/*
 	uint64_t someData;
