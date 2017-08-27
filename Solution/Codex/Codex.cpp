@@ -6,7 +6,9 @@
 
 namespace codex
 {
-	int initialize()
+	std::string workingDirectory;
+
+	int initialize(const int argc, const char** argv)
 	{
 #ifdef SHELL_CODEX
 		log::info("Initializing ShellCodex...");
@@ -19,6 +21,8 @@ namespace codex
 #endif
 #ifdef GHOST_CODEX
 		log::info("Initializing GhostCodex...");
+		if (argc > 0)
+			codex::workingDirectory = argv[0];
 #endif
 		
 		//Check available integer widths

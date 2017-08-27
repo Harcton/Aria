@@ -3,6 +3,6 @@
 
 namespace codex
 {
-	int initialize();
+	int initialize(const int argc, const char** argv);
 	void uninitialize();
 }

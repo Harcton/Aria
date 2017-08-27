@@ -6,10 +6,13 @@
 #include "IOService.h"
 #include "Log.h"
 #include "CodexTime.h"
+#include "FileStream.h"
 
 
 namespace codex
 {
+	extern std::string workingDirectory;
+
 	SocketTCP::SocketTCP(IOService& _ioService)
 		: ioService(_ioService)
 		, socket(_ioService.getImplementationRef())
@@ -23,6 +26,7 @@ namespace codex
 		, reverseByteOrdering(false)
 	{
 	}
+
 	SocketTCP::~SocketTCP()
 	{
 		disconnect();
@@ -79,7 +83,7 @@ namespace codex
 
 		//Finish the connection with an aria handshake
 		protocol::WriteBuffer buffer(protocol::Endianness::inverted);
-		protocol::aria::Handshake handshake;
+		protocol::Handshake handshake;
 		handshake.write(buffer);
 		
 		connected = true;//Set as connected, so that sendPacket can pass
@@ -97,11 +101,17 @@ namespace codex
 		connected = false;
 	}
 
+	void SocketTCP::stopReceiving()
+	{
+		std::lock_guard<std::recursive_mutex> lock(mutex);
+		socket.close();//TODO: this actually cancels all asynchronous operations, not just receiving...
+	}
+
 	void SocketTCP::stopAccepting()
 	{
+		std::lock_guard<std::recursive_mutex> lock(mutex);
 		if (acceptor)
 		{
-			acceptor->cancel();
 			acceptor->close();
 			delete acceptor;
 			acceptor = nullptr;
@@ -201,7 +211,7 @@ namespace codex
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
 
-		protocol::aria::Handshake handshake;
+		protocol::Handshake handshake;
 		handshake.read(buffer);
 		if (handshake.isValid())
 		{//VALID HANDSHAKE
@@ -365,6 +375,7 @@ namespace codex
 
 	void SocketTCP::onAccept(const boost::system::error_code error)
 	{
+		std::lock_guard<std::recursive_mutex> lock(mutex);
 		if (error)
 		{
 			log::warning("SocketTCP failed to accept an incoming connection! Boost asio error: " + error.message() + "Accepting has stopped.");
@@ -379,9 +390,10 @@ namespace codex
 
 	std::string SocketTCP::getRemoteAddress()
 	{
+		std::lock_guard<std::recursive_mutex> lock(mutex);
 		if (!connected)
 		{
-			codex::log::warning("SocketTCP: cannot retrieve remote access! Socket is not connected!");
+			codex::log::warning("SocketTCP: cannot retrieve remote endpoint address! Socket is not connected!");
 			return "0.0.0.0";
 		}
 		boost::asio::ip::tcp::endpoint endpoint = socket.remote_endpoint();
@@ -389,4 +401,169 @@ namespace codex
 		boost::asio::ip::address_v4 address_v4 = address.to_v4();
 		return address_v4.to_string();
 	}
+
+	uint16_t SocketTCP::getRemotePort()
+	{
+		std::lock_guard<std::recursive_mutex> lock(mutex);
+		if (!connected)
+		{
+			codex::log::warning("SocketTCP: cannot retrieve remote endpoint port! Socket is not connected!");
+			return 0;
+		}
+		boost::asio::ip::tcp::endpoint endpoint = socket.remote_endpoint();
+		return endpoint.port();
+	}
+
+
+	static const uint64_t magicYes = 0xBAABAABBBBADAB00;
+
+	ShellSocketTCP::ShellSocketTCP(IOService& io)
+		: SocketTCP(io)
+		, requestGhostResponseReceived(false)
+	{
+
+	}
+
+	ShellSocketTCP::~ShellSocketTCP()
+	{
+
+	}
+
+	bool ShellSocketTCP::internalReceiveHandler(codex::protocol::ReadBuffer& buffer)
+	{
+		requestGhostResponseReceived = true;
+		buffer.read(requestGhostReceivedResponse);
+		if (requestGhostReceivedResponse == magicYes)
+		{//Read the rest
+			buffer.read(requestGhostReceivedResponseAddress);
+			buffer.read(requestGhostReceivedResponsePort);
+		}
+		return false;
+	}
+
+	bool ShellSocketTCP::requestGhost(const std::string& ghostName)
+	{
+		//TODO: do not limit this function for just one thread...
+		if (!requestGhostMutex.try_lock())
+		{
+			log::warning("requestGhost() failed: another thread is already runnig this process!");
+			return false;
+		}
+		requestGhostMutex.unlock();
+		std::lock_guard<std::mutex> lock(requestGhostMutex);
+
+		if (!isConnected())
+		{
+			log::warning("requestGhost() failed: passed socket is not connected to an endpoint! Connect first, then request the ghost!");
+			return false;
+		}
+		if (isReceiving())
+		{
+			log::warning("requestGhost() failed: passed socket is already receiving!");
+			return false;
+		}
+
+		codex::protocol::WriteBuffer buffer(codex::protocol::Endianness::equal);
+		buffer.write(ghostName);
+		if (!sendPacket(buffer))
+		{
+			log::info("requestGhost() failed: sending a packet failed!");
+			return false;
+		}
+
+		requestGhostReceivedResponse = false;
+		startReceiving(std::bind(&ShellSocketTCP::internalReceiveHandler, this, std::placeholders::_1));
+		codex::time::TimeType startTime = time::getRunTime();
+		while (!requestGhostReceivedResponse)
+		{
+			codex::time::delay(codex::time::milliseconds(1));
+			if (time::getRunTime() - startTime > codex::time::seconds(5))
+			{
+				codex::log::info("requestGhost() failed: the remote socket did not respond within the given time window.");
+				stopReceiving();
+				return false;
+			}
+		}
+
+		if (requestGhostReceivedResponse == magicYes)
+		{//Ghost has been deployed to the specified endpoint
+			const std::string remoteAddress = getRemoteAddress();
+			const uint16_t remotePort = getRemotePort();
+			disconnect();
+
+			//Connect to ghost
+			if (!connect(requestGhostReceivedResponseAddress.c_str(), requestGhostReceivedResponsePort))
+			{
+				codex::log::info("requestGhost() failed: could not connect to the provided ghost.");
+				//Try to reconnect to the previously connected endpoint
+				if (!connect(remoteAddress.c_str(), remotePort))
+					codex::log::info("requestGhost() failed to reconnect back to the previous endpoint!");
+
+				return false;
+			}
+
+		}
+		else
+		{
+			codex::log::info("requestGhost() failed: the remote socket responded, but it could not currently provide a ghost with the specified name.");
+			return true;
+		}
+	}
+
+
+#ifndef SHELL_CODEX
+	AriaSocketTCP::AriaSocketTCP(IOService& io)
+		: SocketTCP(io)
+	{
+
+	}
+
+	AriaSocketTCP::~AriaSocketTCP()
+	{
+
+	}
+
+	bool AriaSocketTCP::ghostRequestHandler(codex::protocol::ReadBuffer& buffer)
+	{
+		std::string ghostName;
+		buffer.read(ghostName);
+		const std::string ghostPath = workingDirectory + "/" + ghostName + ".exe";
+		if (fileExists(ghostPath))
+		{//Ghost file exists
+			//Search for the specified ghost program on local drive. If ghost program exists, launch it and pass it the remote endpoint to connect to.
+
+#ifdef _WIN32
+			// additional information
+			STARTUPINFO si;
+			PROCESS_INFORMATION pi;
+			// set the size of the structures
+			ZeroMemory(&si, sizeof(si));
+			si.cb = sizeof(si);
+			ZeroMemory(&pi, sizeof(pi));
+			// start the program up
+			CreateProcess(ghostPath.c_str(), // format: "E:/Ohjelmointi/Projects/Aria/Solution/bin/Ghost0.exe"
+				"param0",		// Command line
+				NULL,           // Process handle not inheritable
+				NULL,           // Thread handle not inheritable
+				FALSE,          // Set handle inheritance to FALSE
+				CREATE_NEW_CONSOLE,//Creation flags
+				NULL,           // Use parent's environment block
+				NULL,           // Use parent's starting directory 
+				&si,            // Pointer to STARTUPINFO structure
+				&pi             // Pointer to PROCESS_INFORMATION structure (removed extra parentheses)
+			);
+			// Close process and thread handles.
+			CloseHandle(pi.hProcess);
+			CloseHandle(pi.hThread);
+#elif
+#warning Missing implementation for ghost launching on current platform
+#endif
+		}
+		else
+		{//Ghost file doesn't exist
+
+		}
+		return false;//=do not start receiving again
+	}
+#endif
 }

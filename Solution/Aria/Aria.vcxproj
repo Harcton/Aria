@@ -84,11 +84,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Aria.h" />
-    <ClInclude Include="Network.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Aria.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -6,6 +6,7 @@
 
 namespace codex
 {
+	class SocketTCP;
 	namespace protocol
 	{
 		typedef uint16_t OfferVersionType;
@@ -13,6 +14,8 @@ namespace codex
 		typedef uint32_t VersionType;
 		class WriteBuffer;
 		class ReadBuffer;
+
+		extern const uint16_t defaultAriaPort;
 
 		enum class ContactPacketHeaderType : uint16_t
 		{/////////////////////////0xFF00 endianness detection
@@ -67,6 +70,16 @@ namespace codex
 
 			/* Writes to data*/
 			size_t write(const void* buffer, const size_t length);
+			size_t write(const uint8_t value);
+			size_t write(const int8_t value);
+			size_t write(const uint16_t value);
+			size_t write(const int16_t value);
+			size_t write(const uint32_t value);
+			size_t write(const int32_t value);
+			size_t write(const uint64_t value);
+			size_t write(const int64_t value);
+			size_t write(const bool value);
+			size_t write(const std::string& value);
 
 			const unsigned char* operator[](const size_t index) const { return &data[index]; }
 
@@ -86,6 +99,16 @@ namespace codex
 
 			/* Reads bytes into destination, taking into account byte endianness. */
 			size_t read(void* destination, const size_t bytes);
+			size_t read(uint8_t& value);
+			size_t read(int8_t& value);
+			size_t read(uint16_t& value);
+			size_t read(int16_t& value);
+			size_t read(uint32_t& value);
+			size_t read(int32_t& value);
+			size_t read(uint64_t& value);
+			size_t read(int64_t& value);
+			size_t read(bool& value);
+			size_t read(std::string& value);
 
 			/* Translates offset by set amount of bytes. */
 			void translate(const int translationOffset);
@@ -102,139 +125,28 @@ namespace codex
 		private:
 			const unsigned char* data;
 		};
-
 		
+		/*
+			Data exchanged between codex sockets upon connecting.
+		*/
+		class Handshake
+		{
+		public:
+			Handshake();
+
+			size_t write(WriteBuffer& buffer) const;
+			size_t read(ReadBuffer& buffer);
+
+			Endianness getEndianness() const;
+			bool isValid() const;
+
+		private:
+			//Hidden attributes, set automatically
+			uint16_t endianness;//2 Endianness bytes to determine the system's endianness
+			VersionType handshakeVersion;//Version of handshake protocol.
+			bool valid;
+		};
 
 
-		namespace aria
-		{//Aria protocol
-			
-			class Serializable
-			{
-			public:
-				/*
-					A single byte type is not affected by endianness, yet large enough to cover our needs.
-					To add new serializables:
-						1. Add the type enumeration. The enumeration name should match the class name.
-						2. Add instantiation to deserializeFromReadBuffer implementation.
-						3. Add CODEX_ARIA_SERIALIZABLE(ClassName) macro to the serializable class declaration (under public).
-						4. Add write() and read() pure virtual method implementations. The implementations must call the base class implementations first!
-				*/
-				enum class Type : unsigned char
-				{
-					Handshake,
-					String,
-					GhostQuery,
-					GhostOffer,
-				};
-				/* Reads the Serializable Type from buffer, creates serializable instance and reads it. */
-				static Serializable* deserializeFromReadBuffer(ReadBuffer& buffer);				
-			public:
-				virtual Type getSerializableType() const = 0;
-				virtual Serializable* clone() const = 0;
-				virtual size_t write(WriteBuffer& buffer) const
-				{
-					const Type type = getSerializableType();
-					buffer.write(&type, sizeof(type));
-					return sizeof(type);
-				}
-				virtual size_t read(ReadBuffer& buffer)
-				{
-					Type type;
-					buffer.read(&type, sizeof(type));
-					assert(type == getSerializableType());
-					return sizeof(type);
-				}
-			public:
-			};
-/////////////////////////////////////////////////////////////////////
-#define CODEX_PROTOCOL_ARIA_SERIALIZABLE(ClassName) \
-			Type getSerializableType() const override { return Serializable::Type::ClassName; } \
-			Serializable* clone() const override { return new ClassName(); } \
-/////////////////////////////////////////////////////////////////////
-
-			class Handshake : public Serializable
-			{
-			public:
-				CODEX_PROTOCOL_ARIA_SERIALIZABLE(Handshake)
-			public:
-				Handshake();
-
-				size_t write(WriteBuffer& buffer) const override;
-				size_t read(ReadBuffer& buffer) override;
-
-				Endianness getEndianness() const;
-				bool isValid() const;
-
-			private:
-				//Hidden attributes, set automatically
-				uint16_t endianness;//2 Endianness bytes to determine the system's endianness
-				VersionType handshakeVersion;//Version of handshake protocol.
-				bool valid;
-			};
-						
-			class String : public std::string, public Serializable
-			{
-			public:
-				CODEX_PROTOCOL_ARIA_SERIALIZABLE(String)
-			public:
-				String() = default;
-				String(const char* str) : std::string(str) {}
-				size_t write(WriteBuffer& buffer) const override
-				{
-					size_t offset = Serializable::write(buffer);
-					uint32_t length = size();
-					offset += buffer.write(&length, sizeof(length));
-					return offset;
-				}
-				size_t read(ReadBuffer& buffer) override
-				{
-					size_t offset = Serializable::read(buffer);
-					return offset;
-				}
-			};
-
-			class GhostQuery : public Serializable
-			{
-			public:
-				CODEX_PROTOCOL_ARIA_SERIALIZABLE(GhostQuery)
-			public:
-				GhostQuery(){}
-				size_t write(WriteBuffer& buffer) const override
-				{
-					size_t offset = Serializable::write(buffer);
-					offset += ghostName.write(buffer);
-					return offset;
-				}
-				size_t read(ReadBuffer& buffer) override
-				{
-					size_t offset = Serializable::read(buffer);
-					offset += ghostName.read(buffer);
-					return offset;
-				}
-				String ghostName;
-			};
-
-			class GhostOffer : public Serializable
-			{
-			public:
-				CODEX_PROTOCOL_ARIA_SERIALIZABLE(GhostOffer)
-			public:
-				GhostOffer(){}
-				size_t write(WriteBuffer& buffer) const override
-				{
-					size_t offset = Serializable::write(buffer);
-					offset += buffer.write(&port, sizeof(port));
-					return offset;
-				}
-				size_t read(ReadBuffer& buffer) override
-				{
-					size_t offset = Serializable::read(buffer);
-					offset += buffer.read(&port, sizeof(port));
-					return offset;
-				}
-				uint16_t port;
-			};
-		}
 	}
 }

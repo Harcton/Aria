@@ -26,30 +26,31 @@ bool clientReceiveHandler(codex::protocol::ReadBuffer& buffer)
 }
 
 
-int main(int argc, char** argv)
+int main(const int argc, const char** argv)
 {
-	codex::initialize();
+	codex::initialize(argc, argv);
 	codex::log::info("Shell0 initializing... 10");
 	
 
 
 
-	//Buffer
-	uint64_t someData = 0x0123456789ABCDEF;
-	codex::protocol::WriteBuffer writeBuffer(codex::protocol::Endianness::inverted);
-	writeBuffer.write((void*)&someData, sizeof(someData));
-	writeBuffer.write((void*)&someData, sizeof(someData));
 
 	////Shell socket
 	codex::IOService ioservice;
-	codex::SocketTCP shellSocket(ioservice);
-	shellSocket.resizeReceiveBuffer(64000);
-	if (shellSocket.connect("192.168.10.52", 41623))
-		codex::log::info("Successfully connected the tcp socket!");
-	if (shellSocket.startReceiving(std::bind(&clientReceiveHandler, std::placeholders::_1)))
-		codex::log::info("TCP socket has began successfully receiving data!");
-	if (shellSocket.sendPacket(writeBuffer))
-		codex::log::info("Testing: TCP socket successfully sent a packet!");
+	codex::ShellSocketTCP socket(ioservice);
+	socket.resizeReceiveBuffer(64000);
+	do
+	{
+		codex::time::delay(codex::time::seconds(1));
+		if (socket.connect("192.168.10.52", codex::protocol::defaultAriaPort))
+			codex::log::info("Successfully connected the tcp socket!");
+	} while (!socket.isConnected());
+	
+	if (socket.requestGhost("Ghost0"))
+		codex::log::info("Ghost retrieved!");
+	else
+		codex::log::info("Could not retrieve ghost!");
+
 	//Loop
 	while (true)
 	{

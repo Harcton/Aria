@@ -17,6 +17,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Acceptor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Codex.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)DCMotor.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FileStream.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)GPIO.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)IOService.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Log.cpp" />
@@ -30,6 +31,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)CodexAssert.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Codex.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)DCMotor.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FileStream.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)GPIO.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)IOService.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Log.h" />
