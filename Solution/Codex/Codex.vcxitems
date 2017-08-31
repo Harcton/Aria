@@ -35,7 +35,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)GPIO.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)IOService.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Log.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Packet.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Protocol.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Robots\Robot0.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Servo.h" />

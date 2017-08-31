@@ -19,9 +19,7 @@ namespace codex
 		TimeType getRunTime()
 		{
 			return clock() * conversionRate::second / CLOCKS_PER_SEC;
-//#if _WIN32
-//			return GetTickCount();
-//#endif
+			//return GetTickCount();//Windows
 		}
 
 		void delay(TimeType time)

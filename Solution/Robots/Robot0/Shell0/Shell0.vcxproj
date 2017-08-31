@@ -61,7 +61,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
       <AdditionalIncludeDirectories>/usr/boost;~/projects/Aria;$(SPEHSENGINE_ROOT)Dependencies/include;$(SolutionDir);$(SolutionDir)Codex/Dependencies/include;$(SolutionDir)ShellCodex/Dependencies/include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_LINUX;SHELL_CODEX;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_LINUX;SHELL_CODEX;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <AdditionalOptions>-I "/home/pi/projects/Aria" %(AdditionalOptions)</AdditionalOptions>
       <TreatWarningAsError>false</TreatWarningAsError>
       <CAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-pointer-sign;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CAdditionalWarning)</CAdditionalWarning>
@@ -69,7 +69,8 @@
       <WarningLevel>EnableAllWarnings</WarningLevel>
     </ClCompile>
     <Link>
-      <LibraryDependencies>pthread;boost_system;boost_thread;ShellCodex;bcm2835;</LibraryDependencies>
+      <LibraryDependencies>
+      </LibraryDependencies>
       <AdditionalLibraryDirectories>/usr/boost/stage/lib/static/;/home/pi/projects/Aria/Codex/bin/$(Platform)/$(Configuration);</AdditionalLibraryDirectories>
       <ShowProgress>true</ShowProgress>
       <PrintMap>true</PrintMap>
@@ -78,7 +79,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
       <AdditionalIncludeDirectories>/usr/boost;~/projects/Aria;$(SPEHSENGINE_ROOT)Dependencies/include;$(SolutionDir);$(SolutionDir)Codex/Dependencies/include;$(SolutionDir)ShellCodex/Dependencies/include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_LINUX;SHELL_CODEX;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_LINUX;SHELL_CODEX;%(PreprocessorDefinitions);NDEBUG;</PreprocessorDefinitions>
       <AdditionalOptions>-I "/home/pi/projects/Aria" %(AdditionalOptions)</AdditionalOptions>
       <CAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-pointer-sign;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CAdditionalWarning)</CAdditionalWarning>
       <CppAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CppAdditionalWarning)</CppAdditionalWarning>
@@ -86,7 +87,8 @@
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
-      <LibraryDependencies>pthread;boost_system;boost_thread;ShellCodex;bcm2835;</LibraryDependencies>
+      <LibraryDependencies>
+      </LibraryDependencies>
       <AdditionalLibraryDirectories>/usr/boost/stage/lib/static/;/home/pi/projects/Aria/Codex/bin/$(Platform)/$(Configuration);</AdditionalLibraryDirectories>
       <ShowProgress>true</ShowProgress>
       <PrintMap>true</PrintMap>

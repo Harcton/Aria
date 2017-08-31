@@ -1,56 +1,56 @@
-#include <iostream>
-#include <functional>
-#include <atomic>
-#include <Codex/Log.h>
-#include <Codex/GPIO.h>
-#include <Codex/Servo.h>
-#include <Codex/DCMotor.h>
-#include <Codex/CodexTime.h>
-#include <Codex/Codex.h>
-#include <Codex/Protocol.h>
-#include <Codex/SocketTCP.h>
-#include <Codex/IOService.h>
-#include <bcm2835.h>
+//#include <iostream>
+//#include <functional>
+//#include <atomic>
+//#include <Codex/Log.h>
+//#include <Codex/GPIO.h>
+//#include <Codex/Servo.h>
+//#include <Codex/DCMotor.h>
+//#include <Codex/CodexTime.h>
+//#include <Codex/Codex.h>
+//#include <Codex/Protocol.h>
+//#include <Codex/SocketTCP.h>
+//#include <Codex/IOService.h>
+//#include <bcm2835.h>
 
 
-int shell(codex::SocketTCP& socket)
-{
-	codex::log::info("Shell program running...");
-	while (1)
-	{
-		//...
-		if (!socket.isConnected())
-		{
-			codex::log::info("Ghost disconnected.");
-			break;
-		}
-	}
-	return 0;
-}
-
-std::atomic<bool> onAcceptEnded(false);
-bool onAccept(codex::SocketTCP& socket)
-{
-	codex::log::info("Remote connection accepted.");
-	if (socket.isConnected())
-	{
-		shell(socket);
-		socket.disconnect();
-	}
-	onAcceptEnded = true;
-	return false;
-}
-
-bool clientReceiveHandler(codex::protocol::ReadBuffer& buffer)
-{
-	codex::log::info("Client receive handler received " + std::to_string(buffer.getCapacity()) + " bytes");
-	while (buffer.getBytesRemaining() > 0)
-	{
-		uint8_t byte;
-		buffer.read(&byte, sizeof(byte));
-	}
-	return true;
-}
+//int shell(codex::SocketTCP& socket)
+//{
+//	codex::log::info("Shell program running...");
+//	//while (1)
+//	//{
+//	//	//...
+//	//	if (!socket.isConnected())
+//	//	{
+//	//		codex::log::info("Ghost disconnected.");
+//	//		break;
+//	//	}
+//	//}
+//	return 0;
+//}
+//
+////std::atomic<bool> onAcceptEnded(false);
+//bool onAccept(codex::SocketTCP& socket)
+//{
+//	//codex::log::info("Remote connection accepted.");
+//	//if (socket.isConnected())
+//	//{
+//	//	shell(socket);
+//	//	socket.disconnect();
+//	//}
+//	//onAcceptEnded = true;
+//	return false;
+//}
+//
+//bool clientReceiveHandler(codex::protocol::ReadBuffer& buffer)
+//{
+//	codex::log::info("Client receive handler received " + std::to_string(buffer.getCapacity()) + " bytes");
+//	while (buffer.getBytesRemaining() > 0)
+//	{
+//		uint8_t byte;
+//		buffer.read(&byte, sizeof(byte));
+//	}
+//	return true;
+//}
 
 
 /*
@@ -66,87 +66,87 @@ bool clientReceiveHandler(codex::protocol::ReadBuffer& buffer)
 */
 int main(const int argc, const char** argv)
 {
-	codex::initialize(argc, argv);
-	codex::log::info("Shell0 initializing...");
-	
-	//Shell socket
-	codex::IOService ioservice;
-	codex::ShellSocketTCP socket(ioservice);
-	socket.resizeReceiveBuffer(64000);
-	
-	//Determine initial course of action based on given command line arguments
-	if (argc == 2)
-	{//Remain waiting
+	//codex::initialize(argc, argv);
+	//codex::log::info("Shell0 initializing...");
+	//
+	////Shell socket
+	////codex::IOService ioservice;
+	////codex::SocketTCP socket(ioservice);
+	////socket.resizeReceiveBuffer(64000);
+	//
+	////Determine initial course of action based on given command line arguments
+	//if (argc == 2)
+	//{//Remain waiting
 
-		//Local endpoint
-		const int port = std::atoi(argv[1]);
-		if (port < 0 || port > std::numeric_limits<uint16_t>::max())
-		{
-			codex::log::error("Provided server port is invalid: " + std::string(argv[1]));
-			return 1;
-		}
+	//	//Local endpoint
+	//	const int port = std::atoi(argv[1]);
+	//	if (port < 0 || port > std::numeric_limits<uint16_t>::max())
+	//	{
+	//		codex::log::error("Provided server port is invalid: " + std::string(argv[1]));
+	//		return 1;
+	//	}
 
-		codex::log::info("No server endpoint provided in the command line arguments. Awaiting for the ghost to connect to local endpoint at: " + std::to_string(port));
-		//socket.startAccepting(port, std::bind(&onAccept, std::placeholders::_1));
-		//while (!onAcceptEnded)
-		{/* Blocks until onAccept has ended. */}
-	}
-	else if (argc == 3)
-	{//Connect
-		
-		//Remote endpoint
-		const std::string address = argv[1];
-		const int port = std::atoi(argv[2]);
+	//	codex::log::info("No server endpoint provided in the command line arguments. Awaiting for the ghost to connect to local endpoint at: " + std::to_string(port));
+	//	//socket.startAccepting(port, std::bind(&onAccept, std::placeholders::_1));
+	//	//while (!onAcceptEnded)
+	//	{/* Blocks until onAccept has ended. */}
+	//}
+	//else if (argc == 3)
+	//{//Connect
+	//	
+	//	//Remote endpoint
+	//	const std::string address = argv[1];
+	//	const int port = std::atoi(argv[2]);
 
-		//Some endpoint validation...
-		int periodCount = 0;
-		for (size_t i = 0; i < address.size(); i++)
-		{
-			if (address[i] == '.')
-				periodCount++;
-		}
-		if (periodCount != 3 || address.size() > 15)
-		{
-			codex::log::error("Provided server address is invalid: " + address);
-			return 1;
-		}
-		if (port < std::numeric_limits<uint16_t>::min() || port > std::numeric_limits<uint16_t>::max())
-		{
-			codex::log::error("Provided server port is invalid: " + std::to_string(port));
-			return 1;
-		}
-		
-		//Try to connect
-		codex::log::info("Connecting to the server at " + address + ", port: " + std::to_string(port));
-		if (socket.connect(address.c_str(), port))
-		{//Connected
+	//	//Some endpoint validation...
+	//	int periodCount = 0;
+	//	for (size_t i = 0; i < address.size(); i++)
+	//	{
+	//		if (address[i] == '.')
+	//			periodCount++;
+	//	}
+	//	if (periodCount != 3 || address.size() > 15)
+	//	{
+	//		codex::log::error("Provided server address is invalid: " + address);
+	//		return 1;
+	//	}
+	//	if (port < std::numeric_limits<uint16_t>::min() || port > std::numeric_limits<uint16_t>::max())
+	//	{
+	//		codex::log::error("Provided server port is invalid: " + std::to_string(port));
+	//		return 1;
+	//	}
+	//	
+	//	////Try to connect
+	//	//codex::log::info("Connecting to the server at " + address + ", port: " + std::to_string(port));
+	//	//if (socket.connect(address.c_str(), port))
+	//	//{//Connected
 
-			codex::log::info("Successfully connected to the server!");
-			codex::log::info("Requesting ghost...");
-			if (socket.requestGhost("Ghost0"))
-			{
-				codex::log::info("Ghost retrieved! Starting the shell program...");
-				const int result = shell(socket);
-				socket.disconnect();
-				return result;
-			}
-			else
-			{
-				codex::log::error("Could not retrieve ghost!");
-				return 1;
-			}
-		}
-		else
-		{//Failed to connect
-			codex::log::error("Failed to connect to the provided server endpoint! Press enter to exit the shell...");
-			return 1;
-		}
-	}
-	else
-	{//Incorrect command line argument usage
-		codex::log::error("Incorrect usage of command line arguments! Correct usage: [1]ghost endpoint's address [2]ghost endpoint's port");
-		return 1;
-	}
+	//	//	codex::log::info("Successfully connected to the server!");
+	//	//	codex::log::info("Requesting ghost...");
+	//	//	if (socket.requestGhost("Ghost0"))
+	//	//	{
+	//	//		codex::log::info("Ghost retrieved! Starting the shell program...");
+	//	//		const int result = shell(socket);
+	//	//		socket.disconnect();
+	//	//		return result;
+	//	//	}
+	//	//	else
+	//	//	{
+	//	//		codex::log::error("Could not retrieve ghost!");
+	//	//		return 1;
+	//	//	}
+	//	//}
+	//	//else
+	//	//{//Failed to connect
+	//	//	codex::log::error("Failed to connect to the provided server endpoint! Press enter to exit the shell...");
+	//	//	return 1;
+	//	//}
+	//}
+	//else
+	//{//Incorrect command line argument usage
+	//	codex::log::error("Incorrect usage of command line arguments! Correct usage: [1]ghost endpoint's address [2]ghost endpoint's port");
+	//	return 1;
+	//}
 	
 
 
@@ -317,6 +317,6 @@ int main(const int argc, const char** argv)
 	*/
 
 	
-	codex::uninitialize();
+	//codex::uninitialize();
 	return 0;
 }
