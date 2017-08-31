@@ -12,14 +12,18 @@ namespace codex
 {
 	namespace protocol
 	{
-		const uint16_t defaultAriaPort = 49842;
+		const PortType defaultAriaPort = 49842;
+		const uint16_t systemEndiannessBytePair = 0x00FF;
 
-		BufferBase::BufferBase()
+
+
+		BufferBase::BufferBase(Endianness _endianness)
 			: capacity(0)
 			, offset(0)
-			, reversedByteOrder(false)
+			, endianness(_endianness)
 		{
-
+			if (endianness == Endianness::undefined)
+				log::error("BufferBase was constructed with undefined endianness!");
 		}
 
 		BufferBase::~BufferBase()
@@ -32,27 +36,34 @@ namespace codex
 			return capacity;
 		}
 
-		size_t BufferBase::getWrittenSize() const
+		size_t BufferBase::getOffset() const
 		{
 			return offset;
 		}
 
-		WriteBuffer::WriteBuffer(const Endianness writeEndianness)
-			: data(nullptr)
+		Endianness BufferBase::getEndianness() const
 		{
-			reversedByteOrder = writeEndianness == Endianness::inverted;
+			return endianness;
 		}
 
-		WriteBuffer::WriteBuffer(const Endianness writeEndianness, const size_t _capacity)
-			: data(nullptr)
+
+
+#ifdef SHELL_CODEX
+		//The shell codex should never be obligated to write in specified byte order
+		WriteBuffer::WriteBuffer()
+			: BufferBase(Endianness::local)
+			, data(nullptr)
 		{
-			reversedByteOrder = writeEndianness == Endianness::inverted;
-			if (_capacity > 0)
-			{
-				capacity = _capacity;
-				data = new unsigned char[_capacity];
-			}
+
 		}
+#else
+		WriteBuffer::WriteBuffer(const Endianness _endianness)
+			: BufferBase(_endianness)
+			, data(nullptr)
+		{
+
+		}
+#endif
 
 		WriteBuffer::~WriteBuffer()
 		{
@@ -67,7 +78,7 @@ namespace codex
 				return 0;
 			}
 
-			if (reversedByteOrder)
+			if (endianness == Endianness::inverted)
 			{//Write in reversed byte order
 				const size_t endOffset = bytes - 1;
 				for (size_t i = 0; i < bytes; i++)
@@ -77,6 +88,7 @@ namespace codex
 			{//Write using the native byte order
 				memcpy(&data[offset], buffer, bytes);
 			}
+
 			offset += bytes;
 			return bytes;
 		}
@@ -124,6 +136,10 @@ namespace codex
 				return sizeof(length);
 			return sizeof(length) + write(&value[0], length);
 		}
+		size_t WriteBuffer::write(const PacketType value)
+		{
+			return write(&value, sizeof(value));
+		}
 
 		bool WriteBuffer::extend(const size_t addedBytes)
 		{
@@ -151,8 +167,10 @@ namespace codex
 			return true;
 		}
 
-		ReadBuffer::ReadBuffer(const void* pointedMemory, const size_t length)
-			: data((const unsigned char*)pointedMemory)
+
+		ReadBuffer::ReadBuffer(const void* pointedMemory, const size_t length, const Endianness _endianness)
+			: BufferBase(_endianness)
+			, data((const unsigned char*)pointedMemory)
 		{
 			assert(pointedMemory);
 			assert(length > 0);
@@ -172,7 +190,7 @@ namespace codex
 				return 0;
 			}
 
-			if (reversedByteOrder)
+			if (endianness == Endianness::inverted)
 			{//Read in reversed byte order
 				const size_t endOffset = offset + bytes - 1;
 				for (size_t i = 0; i < bytes; i++)
@@ -231,7 +249,6 @@ namespace codex
 		{
 			return read(&value, sizeof(value));
 		}
-
 		size_t ReadBuffer::read(std::string& value)
 		{
 			uint32_t length;
@@ -240,6 +257,10 @@ namespace codex
 			if (length > 0)
 				read(&value[0], length);
 			return sizeof(length) + length;
+		}
+		size_t ReadBuffer::read(PacketType& value)
+		{
+			return read(&value, sizeof(value));
 		}
 
 		void ReadBuffer::translate(const int translationOffset)
@@ -252,17 +273,17 @@ namespace codex
 			return capacity - offset;
 		}
 		
-		static const uint16_t systemEndianness = 0x00FF;
 		Handshake::Handshake()
-			: endianness(systemEndianness)
+			: endiannessBytePair(systemEndiannessBytePair)
 			, handshakeVersion(1)
+			, codexType(codexType)
 			, valid(true)
 		{
 		}
 
 		Endianness Handshake::getEndianness() const
 		{
-			return systemEndianness == endianness ? Endianness::equal : Endianness::inverted;
+			return systemEndiannessBytePair == endiannessBytePair ? Endianness::local : Endianness::inverted;
 		}
 
 		bool Handshake::isValid() const
@@ -273,8 +294,9 @@ namespace codex
 		size_t Handshake::write(WriteBuffer& buffer) const
 		{
 			size_t offset = 0;
-			offset += buffer.write(&endianness, sizeof(endianness));
+			offset += buffer.write(&endiannessBytePair, sizeof(endiannessBytePair));
 			offset += buffer.write(&handshakeVersion, sizeof(handshakeVersion));
+			offset += buffer.write(&codexType, sizeof(codexType));
 			return offset;
 		}
 
@@ -284,14 +306,17 @@ namespace codex
 			valid = true;
 
 			//Endianness
-			if (buffer.getBytesRemaining() < sizeof(endianness))
+			if (buffer.getBytesRemaining() < sizeof(endiannessBytePair))
 			{
 				valid = false;
+				handshakeVersion = 0;
+				endiannessBytePair = 0;
+				codexType = CodexType::invalid;
 				return offset;
 			}
 			else
-				offset += buffer.read(&endianness, sizeof(endianness));
-			buffer.setReversedByteOrder(getEndianness() == Endianness::inverted);
+				offset += buffer.read(&endiannessBytePair, sizeof(endiannessBytePair));
+			buffer.endianness = getEndianness();//Update buffer read byte order
 			//Handshake version
 			if (buffer.getBytesRemaining() < sizeof(handshakeVersion))
 			{
@@ -300,131 +325,16 @@ namespace codex
 			}
 			else
 				offset += buffer.read(&handshakeVersion, sizeof(handshakeVersion));
+			//Codex implementation
+			if (buffer.getBytesRemaining() < sizeof(codexType))
+			{
+				valid = false;
+				return offset;
+			}
+			else
+				offset += buffer.read(&codexType, sizeof(codexType));
 
 			return offset;
 		}
-
-//		std::string ghostDirectory;
-//		bool ghostRequestHandler(ReadBuffer& buffer)
-//		{
-//			std::string ghostName;
-//			buffer.read(ghostName);
-//
-//			//Search for the specified ghost program on local drive. If ghost program exists, launch it and connect it with socket's remote endpoint
-//			if (false)
-//			{
-//#ifdef _WIN32
-//				// additional information
-//				STARTUPINFO si;
-//				PROCESS_INFORMATION pi;
-//				// set the size of the structures
-//				ZeroMemory(&si, sizeof(si));
-//				si.cb = sizeof(si);
-//				ZeroMemory(&pi, sizeof(pi));
-//				// start the program up
-//				CreateProcess(ghostDirectory + "/" + ghostName + ".exe", // format: "E:/Ohjelmointi/Projects/Aria/Solution/bin/Ghost0.exe"
-//					"param0",		// Command line
-//					NULL,           // Process handle not inheritable
-//					NULL,           // Thread handle not inheritable
-//					FALSE,          // Set handle inheritance to FALSE
-//					CREATE_NEW_CONSOLE,//Creation flags
-//					NULL,           // Use parent's environment block
-//					NULL,           // Use parent's starting directory 
-//					&si,            // Pointer to STARTUPINFO structure
-//					&pi             // Pointer to PROCESS_INFORMATION structure (removed extra parentheses)
-//				);
-//				// Close process and thread handles.
-//				CloseHandle(pi.hProcess);
-//				CloseHandle(pi.hThread);
-//#endif
-//			}
-//			return false;//=do not start receiving again
-//		}
-//
-//		std::mutex requestGhostMutex;		
-//		std::atomic<bool> requestGhostResponseReceived(false);
-//		const uint64_t magicYes = 0xBAABAABBBBADAB00;
-//		uint64_t requestGhostReceivedResponse;
-//		std::string requestGhostReceivedResponseAddress;
-//		uint16_t requestGhostReceivedResponsePort;
-//		bool requestGhostInternalReceiveHandler(ReadBuffer& buffer)
-//		{
-//			requestGhostResponseReceived = true;
-//			buffer.read(requestGhostReceivedResponse);
-//			if (requestGhostReceivedResponse == magicYes)
-//			{//Read the rest
-//				buffer.read(requestGhostReceivedResponseAddress);
-//				buffer.read(requestGhostReceivedResponsePort);
-//			}
-//			return false;
-//		}
-//		bool requestGhost(SocketTCP& socket, const std::string& ghostName)
-//		{
-//			//TODO: do not limit this function for just one thread...
-//			if (!requestGhostMutex.try_lock())
-//			{
-//				log::warning("requestGhost() failed: another thread is already runnig this process!");
-//				return false;
-//			}
-//			requestGhostMutex.unlock();
-//			std::lock_guard<std::mutex> lock(requestGhostMutex);
-//
-//			if (!socket.isConnected())
-//			{
-//				log::warning("requestGhost() failed: passed socket is not connected to an endpoint! Connect first, then request the ghost!");
-//				return false;
-//			}
-//			if (socket.isReceiving())
-//			{
-//				log::warning("requestGhost() failed: passed socket is already receiving!");
-//				return false;
-//			}
-//
-//			WriteBuffer buffer(Endianness::equal);
-//			buffer.write(ghostName);
-//			if (!socket.sendPacket())
-//			{
-//				log::info("requestGhost() failed: sending a packet failed!");
-//				return false;
-//			}
-//
-//			requestGhostReceivedResponse = false;
-//			socket.startReceiving(std::bind(requestGhostInternalReceiveHandler, std::placeholders::_1));
-//			codex::time::TimeType startTime = time::getRunTime();
-//			while (!requestGhostReceivedResponse)
-//			{
-//				codex::time::delay(codex::time::milliseconds(1));
-//				if (time::getRunTime() - startTime > codex::time::seconds(5))
-//				{
-//					codex::log::info("requestGhost() failed: the remote socket did not respond within the given time window.");
-//					socket.stopReceiving();
-//					return false;
-//				}
-//			}
-//
-//			if (requestGhostReceivedResponse == magicYes)
-//			{//Ghost has been deployed to the specified endpoint
-//				const std::string remoteAddress = socket.getRemoteAddress();
-//				const uint16_t remotePort = socket.getRemotePort();
-//				socket.disconnect();
-//
-//				//Connect to ghost
-//				if (!socket.connect(requestGhostReceivedResponseAddress, requestGhostReceivedResponsePort))
-//				{
-//					codex::log::info("requestGhost() failed: could not connect to the provided ghost.");
-//					//Try to reconnect to the previously connected endpoint
-//					if (!socket.connect(remoteAddress, remotePort))
-//						codex::log::info("requestGhost() failed to reconnect back to the previous endpoint!");
-//
-//					return false;
-//				}
-//
-//			}
-//			else
-//			{
-//				codex::log::info("requestGhost() failed: the remote socket responded, but it could not currently provide a ghost with the specified name.");
-//				return true;
-//			}
-//		}
 	}
 }

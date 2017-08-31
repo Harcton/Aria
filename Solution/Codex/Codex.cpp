@@ -6,6 +6,14 @@
 
 namespace codex
 {
+#ifdef GHOST_CODEX
+	const CodexType codexType = CodexType::ghost;
+#elif SHELL_CODEX
+	const CodexType codexType = CodexType::shell;
+#else
+#error Invalid codex implementation type
+	const CodexType localCodexUser = CodexType::invalid;
+#endif
 	std::string workingDirectory;
 
 	int initialize(const int argc, const char** argv)

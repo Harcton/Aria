@@ -14,7 +14,7 @@ namespace codex
 		boost::asio::io_service& getImplementationRef();
 
 	private:
-		boost::asio::io_service implementation;
+		boost::asio::io_service io_service;
 		boost::asio::io_service::work work;
 		std::thread thread;
 	};

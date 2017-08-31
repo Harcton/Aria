@@ -61,7 +61,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
       <AdditionalIncludeDirectories>/usr/boost;~/projects/Aria;$(SPEHSENGINE_ROOT)Dependencies/include;$(SolutionDir);$(SolutionDir)Codex/Dependencies/include;$(SolutionDir)ShellCodex/Dependencies/include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_LINUX;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_LINUX;SHELL_CODEX;</PreprocessorDefinitions>
       <AdditionalOptions>-I "/home/pi/projects/Aria" %(AdditionalOptions)</AdditionalOptions>
       <TreatWarningAsError>false</TreatWarningAsError>
       <CAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-pointer-sign;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CAdditionalWarning)</CAdditionalWarning>
@@ -78,7 +78,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
       <AdditionalIncludeDirectories>/usr/boost;~/projects/Aria;$(SPEHSENGINE_ROOT)Dependencies/include;$(SolutionDir);$(SolutionDir)Codex/Dependencies/include;$(SolutionDir)ShellCodex/Dependencies/include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_LINUX;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_LINUX;SHELL_CODEX;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>-I "/home/pi/projects/Aria" %(AdditionalOptions)</AdditionalOptions>
       <CAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-pointer-sign;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CAdditionalWarning)</CAdditionalWarning>
       <CppAdditionalWarning>switch;no-deprecated-declarations;empty-body;return-type;parentheses;no-format;uninitialized;unreachable-code;unused-function;unused-value;unused-variable;%(CppAdditionalWarning)</CppAdditionalWarning>

@@ -4,10 +4,13 @@
     <DebuggerFlavor>LinuxDebugger</DebuggerFlavor>
     <RemoteTarget>
     </RemoteTarget>
+    <RemoteDebuggerCommandArguments>49842</RemoteDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <RemoteTarget>
     </RemoteTarget>
+    <RemoteDebuggerCommandArguments>49842</RemoteDebuggerCommandArguments>
+    <DebuggerFlavor>LinuxDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>
     <ShowAllFiles>true</ShowAllFiles>

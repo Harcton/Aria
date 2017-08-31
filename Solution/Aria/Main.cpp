@@ -20,31 +20,31 @@
 //Server
 void onAccept(codex::SocketTCP& socket)
 {
-	codex::log::info("Acceptor successfully accepted an incoming connection from " + socket.getRemoteAddress());
+	//codex::log::info("Acceptor successfully accepted an incoming connection from " + socket.getRemoteAddress());
 
 	
-	socket.startReceiving(std::bind(&codex::AriaSocketTCP::ghostRequestHandler, &dynamic_cast<codex::AriaSocketTCP&>(socket), std::placeholders::_1));
+	//socket.startReceiving(std::bind(&codex::AriaSocketTCP::ghostRequestHandler, &dynamic_cast<codex::AriaSocketTCP&>(socket), std::placeholders::_1));
 }
 int main(const int argc, const char** argv)
 {
 	codex::initialize(argc, argv);
-	codex::log::info("Launching Aria.");
+	//codex::log::info("Launching Aria.");
 
-	//Aria socket
-	codex::IOService ioService;
-	codex::AriaSocketTCP socket(ioService);
-	socket.resizeReceiveBuffer(64000);
-	std::vector<codex::SocketTCP*> sockets;
+	////Aria socket
+	//codex::IOService ioService;
+	//codex::AriaSocketTCP socket(ioService);
+	//socket.resizeReceiveBuffer(64000);
+	//std::vector<codex::SocketTCP*> sockets;
 
-	//Aria main loop
-	bool running = true;
-	while (running)
-	{
-		if (!socket.isConnected() && !socket.isAccepting())
-			socket.startAccepting(codex::protocol::defaultAriaPort, std::bind(&onAccept, std::placeholders::_1));
-	}
+	////Aria main loop
+	//bool running = true;
+	//while (running)
+	//{
+	//	if (!socket.isConnected() && !socket.isAccepting())
+	//		socket.startAccepting(codex::protocol::defaultAriaPort, std::bind(&onAccept, std::placeholders::_1));
+	//}
 
-	codex::log::info("Aria has stopped.");
+	//codex::log::info("Aria has stopped.");
 	codex::uninitialize();
 	return 0;
 }

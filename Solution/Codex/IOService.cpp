@@ -5,21 +5,20 @@
 namespace codex
 {
 	IOService::IOService()
-		: implementation()
-		, work(implementation)
-		, thread(boost::bind(&boost::asio::io_service::run, &implementation))
+		: io_service()
+		, work(io_service)
+		, thread(boost::bind(&boost::asio::io_service::run, &io_service))
 	{
 	}
 	
 	IOService::~IOService()
 	{
-		implementation.stop();
+		io_service.stop();
 		thread.join();
 	}
 
 	boost::asio::io_service& IOService::getImplementationRef()
 	{
-		return implementation;
+		return io_service;
 	}
-
 }
