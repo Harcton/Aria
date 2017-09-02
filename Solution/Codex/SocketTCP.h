@@ -101,6 +101,7 @@ namespace codex
 		bool receiving;
 		bool accepting;
 		bool connected;
+		bool connecting;//Set to true for the duration of connect attempt
 		bool handshakeSent;//Refers to the current connection
 		bool handshakeReceived;//Refers to the current connection
 #ifdef GHOST_CODEX

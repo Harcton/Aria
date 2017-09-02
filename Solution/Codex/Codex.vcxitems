@@ -16,7 +16,8 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Acceptor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Codex.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)DCMotor.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)DCMotorController.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Display4x8.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FileStream.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)GPIO.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)IOService.cpp" />
@@ -25,20 +26,24 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Servo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SocketTCP.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)CodexTime.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ThreadedDevice.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Acceptor.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CodexAssert.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Codex.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)DCMotor.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)DCMotorController.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Display4x8.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FileStream.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)GPIO.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)IOService.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Log.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Protocol.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RAIIVariableSetter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Robots\Robot0.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Servo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SocketTCP.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CodexTime.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ThreadedDevice.h" />
   </ItemGroup>
 </Project>

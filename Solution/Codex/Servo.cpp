@@ -1,76 +1,69 @@
 #include "Servo.h"
-
+#include <assert.h>
+#include <algorithm>
 
 namespace codex
 {
 
 	Servo::Servo()
-		: pin(gpio::pin_none)
-		, position(0)
-		, minPosition(0)
-		, maxPosition(0)
-		, runThread(nullptr)
-		, keepRunning(false)
+		: targetAngle(0.0f)
+		, approximatedAngle(0.0f)
+		, lastUpdateTime(0)
+		, pin(gpio::Pin::pin_none)
+		, minPulseWidth(0)
+		, maxPulseWidth(0)
+		, rotationSpeed(0.0f)
+		, minAngle(0.0f)
+		, maxAngle(0.0f)
 	{
-		codex::log::info("Creating a servo...");
 	}
 
 	Servo::~Servo()
 	{
 		stop();
+		while (isRunning()){/*Blocks*/}
 	}
-
-	void Servo::run()
-	{
-		if (isRunning())
-			return;
-		std::lock_guard<std::recursive_mutex> lock(mutex);
-
-		//Set to keep running
-		keepRunning = true;
-
-		//Start a new thread that runs the servo
-		runThread = new std::thread(&Servo::runLoop, this);
-	}
-
-	void Servo::stop()
+	
+	void Servo::setTargetAngle(const float target)
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
-		if (runThread)
-		{
-			keepRunning = false;
-			runThread->join();
-			delete runThread;
-			runThread = nullptr;
-		}
-	}
-
-	void Servo::setPosition(const unsigned char _position)
-	{
-		mutex.lock();
-		position = _position;
-		const float posPercentage = (float)position / 255.0f;
-		const time::TimeType pulseDuration = minPosition + time::TimeType(float(maxPosition - minPosition) * posPercentage);
-		std::cout << "\nPulse duration set to: " << std::to_string(pulseDuration);
-		mutex.unlock();
+		targetAngle = target;
 	}
 
 	void Servo::setPin(const gpio::Pin _pin)
 	{
-		mutex.lock();
+		std::lock_guard<std::recursive_mutex> lock(mutex);
 		pin = _pin;
-		mutex.unlock();
 		bcm2835_gpio_fsel(_pin, BCM2835_GPIO_FSEL_OUTP);
 	}
 
-	void Servo::mapPosition(const time::TimeType minPulseWidth, const time::TimeType maxPulseWidth)
+	void Servo::setAngleLimits(const time::TimeType _minPulseWidth, const time::TimeType _maxPulseWidth, const float _minAngle, const float _maxAngle)
 	{
-		mutex.lock();
-		minPosition = minPulseWidth;
-		maxPosition = maxPulseWidth;
-		//assert(minPulseWidth < maxPulseWidth);
-		//file_line_assert(__FILE__, __LINE__, minPulseWidth < maxPulseWidth);
-		mutex.unlock();
+		std::lock_guard<std::recursive_mutex> lock(mutex);
+		minPulseWidth = _minPulseWidth;
+		maxPulseWidth = _maxPulseWidth;
+		minAngle = _minAngle;
+		maxAngle = _maxAngle;
+	}
+
+	void Servo::setMinAngle(const time::TimeType _minPulseWidth, const float _minAngle)
+	{
+		std::lock_guard<std::recursive_mutex> lock(mutex);
+		minPulseWidth = _minPulseWidth;
+		minAngle = _minAngle;
+	}
+
+	void Servo::setMaxAngle(const time::TimeType _maxPulseWidth, const float _maxAngle)
+	{
+		std::lock_guard<std::recursive_mutex> lock(mutex);
+		maxPulseWidth = _maxPulseWidth;
+		maxAngle = _maxAngle;
+	}
+
+	void Servo::setRotationSpeed(const float speed)
+	{
+		std::lock_guard<std::recursive_mutex> lock(mutex);
+		rotationSpeed = speed;
 	}
 
 	gpio::Pin Servo::getPin() const
@@ -79,39 +72,67 @@ namespace codex
 		return pin;
 	}
 
-	unsigned char Servo::getPosition() const
+	float Servo::getApproximatedAngle() const
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
-		return position;
+		return approximatedAngle;
 	}
 
-	bool Servo::isRunning() const
+	float Servo::getRotationSpeed() const
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
-		return keepRunning;
+		return rotationSpeed;
 	}
 
-	void Servo::runLoop()
+	void Servo::onStart()
 	{
-		mutex.lock();
-		bool _keepRunning = keepRunning;
-		mutex.unlock();
+		std::lock_guard<std::recursive_mutex> lock(mutex);
+		lastUpdateTime = time::getRunTime();
+	}
 
-		while (_keepRunning)
-		{
-			//Enable
-			mutex.lock();
-			gpio::enable(pin);
-			//Delay
-			const float posPercentage = (float)position / 255.0f;
-			const time::TimeType pulseDuration = minPosition + time::TimeType(float(maxPosition - minPosition) * posPercentage);
-			time::delay(time::nanoseconds(pulseDuration));
-			//Disable
-			gpio::disable(pin);
-			_keepRunning = keepRunning;
-			mutex.unlock();
-			//Delay before the next pulse
-			time::delay(time::milliseconds(20));
+	void Servo::update()
+	{
+		const time::TimeType updateInterval = time::milliseconds(20);
+
+		std::lock_guard<std::recursive_mutex> lock(mutex);
+		assert(minPulseWidth < maxPulseWidth);
+		assert(minAngle < maxAngle);
+		if (pin == gpio::pin_none)
+			return;
+
+		//Enable
+		gpio::enable(pin);
+		//Delay
+		const float target = std::min(maxAngle, std::max(targetAngle, minAngle));
+		const float posPercentage = target / (maxAngle - minAngle);
+		const time::TimeType pulseDuration = minPulseWidth + time::TimeType(float(maxPulseWidth - minPulseWidth) * posPercentage);
+		time::delay(pulseDuration);
+		//Disable
+		gpio::disable(pin);
+
+		//Angle approximation
+		if (rotationSpeed <= 0.0f)
+		{//No rotation speed provided, assume angle assumation to the target angle
+			approximatedAngle = targetAngle;
 		}
+		else
+		{//Approximate delta movement
+			const time::TimeType spentTime = updateInterval + pulseDuration;
+			if (approximatedAngle > targetAngle)
+			{
+				approximatedAngle -= rotationSpeed * time::toSeconds(spentTime);
+				if (approximatedAngle < targetAngle)
+					approximatedAngle = targetAngle;
+			}
+			else if (approximatedAngle < targetAngle)
+			{
+				approximatedAngle += rotationSpeed * time::toSeconds(spentTime);
+				if (approximatedAngle > targetAngle)
+					approximatedAngle = targetAngle;
+			}
+		}
+
+		//Delay the next update
+		time::delay(updateInterval);
 	}
 }

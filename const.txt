@@ -30,3 +30,6 @@ Raspberry g++: (Raspbian 4.9.2-10) 4.9.2
 The stack around variable 'foo' was corrupted -> Check if there are any variables declared inside #ifdef #endif guards. For some reason these can cause stack corruption.
 
 Segmentation fault on linux can be caused by functions defining a return type, but not returning from a specific path...
+
+
+shell0: pthread;boost_system;boost_thread;ShellCodex;bcm2835;

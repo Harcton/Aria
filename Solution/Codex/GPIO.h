@@ -42,9 +42,18 @@ namespace codex
 			low = LOW,
 			high = HIGH
 		};
+		enum PinMode : uint8_t
+		{
+			input,
+			output,
+		};
 		extern void write(const Pin pin, const PinState pinState);
 		extern void enable(const Pin pin);
 		extern void disable(const Pin pin);
 		extern PinState read(const Pin pin);
+
+		extern void setPinMode(const Pin pin, const PinMode mode);
+		extern void setPinAsInput(const Pin pin);
+		extern void setPinAsOutput(const Pin pin);
 	}
 }

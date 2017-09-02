@@ -1,5 +1,6 @@
 #include "Codex.h"
 #include "Log.h"
+#include <thread>
 #ifdef SHELL_CODEX
 #include <bcm2835.h>
 #endif
@@ -19,7 +20,7 @@ namespace codex
 	int initialize(const int argc, const char** argv)
 	{
 #ifdef SHELL_CODEX
-		log::info("Initializing ShellCodex...");
+		log::info("Initializing Shell Codex...");
 
 		if (!bcm2835_init())
 		{
@@ -28,7 +29,7 @@ namespace codex
 		}
 #endif
 #ifdef GHOST_CODEX
-		log::info("Initializing GhostCodex...");
+		log::info("Initializing Ghost Codex...");
 		if (argc > 0)
 			codex::workingDirectory = argv[0];
 #endif
@@ -42,6 +43,9 @@ namespace codex
 			log::warning("32 bit integer width not available!");
 		if (sizeof(int64_t) != 8 || sizeof(uint64_t) != 8)
 			log::warning("64 bit integer width not available!");
+
+		//Check hardware threads
+		log::info(std::to_string(std::thread::hardware_concurrency()) + " hardware threads detected.");
 
 		return 0;
 	}

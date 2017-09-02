@@ -7,7 +7,7 @@ namespace codex
 {
 	namespace time
 	{
-		typedef uint64_t TimeType;
+		typedef int64_t TimeType;
 		namespace conversionRate
 		{
 			static const TimeType second = 1000000000;
@@ -26,6 +26,18 @@ namespace codex
 		inline TimeType nanoseconds(const uint64_t nanoseconds)
 		{
 			return nanoseconds * conversionRate::nanosecond;
+		}
+		inline float toSeconds(const TimeType time)
+		{
+			return (float)time / (float)conversionRate::second;
+		}
+		inline float toMilliseconds(const TimeType time)
+		{
+			return (float)time / (float)conversionRate::millisecond;
+		}
+		inline float toNanoseconds(const TimeType time)
+		{
+			return (float)time / (float)conversionRate::nanosecond;
 		}
 
 		TimeType getRunTime();

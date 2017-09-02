@@ -57,7 +57,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SPEHSENGINE_ROOT);$(SPEHSENGINE_ROOT)/Dependencies/include/;$(SolutionDir)/;</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_WINDOWS;CODEX_ACTOR_ARIA;_MBCS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_WINDOWS;CODEX_ACTOR_ARIA;GHOST_CODEX;_MBCS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)/Dependencies/lib/;$(SolutionDir)/GhostCodex/bin/$(Platform)/$(Configuration)/;$(SPEHSENGINE_ROOT)/Dependencies/lib/;$(SPEHSENGINE_ROOT)/bin/$(Platform)/$(Configuration)/$(PlatformToolset)/</AdditionalLibraryDirectories>
@@ -73,7 +73,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SPEHSENGINE_ROOT);$(SPEHSENGINE_ROOT)/Dependencies/include/;$(SolutionDir)/;</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_WINDOWS;CODEX_ACTOR_ARIA;_MBCS;%(PreprocessorDefinitions);_NDEBUG;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_WINDOWS;CODEX_ACTOR_ARIA;GHOST_CODEX;_MBCS;%(PreprocessorDefinitions);_NDEBUG;</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
