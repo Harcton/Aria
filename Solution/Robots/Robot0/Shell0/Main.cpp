@@ -17,10 +17,31 @@
 #include <Codex/SocketTCP.h>
 #include <Codex/IOService.h>
 
-
+bool receiveHandler(codex::protocol::ReadBuffer& buffer)
+{
+	//Print out buffer contents...
+	std::string str;
+	while (buffer.getBytesRemaining() > 0)
+	{
+		char c;
+		buffer.read(c);
+		str += c;
+	}
+	codex::log::info("Received packet: " + str);
+	return true;
+}
 int shell(codex::SocketTCP& socket)
 {
 	codex::log::info("Shell program running...");
+
+	//Socket test
+	socket.startReceiving(std::bind(receiveHandler, std::placeholders::_1));
+	unsigned char data[257] = { 0xabcd };
+	codex::protocol::WriteBuffer buffer;
+	//buffer.write(std::string("Yo world!1"));
+	buffer.write(data, 257);
+	socket.sendPacket(buffer);
+
 	while (1)
 	{
 		//...
@@ -80,20 +101,20 @@ int main(const int argc, const char** argv)
 	codex::initialize(argc, argv);
 	codex::log::info("Shell0 initializing...");
 	
-	codex::DCMotorController motor;
-	motor.setPins(codex::gpio::pin_11, codex::gpio::pin_13, codex::gpio::pin_15);
-	motor.start();
-	float strength = 0.0f;
-	while (1)
-	{
-		codex::log::info("Set strength [0, 255] >");
-		std::cin >> strength;
-		motor.setStrength(strength / 255.0f);
-		if (strength < 0.0f)
-			break;
-	}
-	motor.stop();
-	return 0;
+	//codex::DCMotorController motor;
+	//motor.setPins(codex::gpio::pin_11, codex::gpio::pin_13, codex::gpio::pin_15);
+	//motor.start();
+	//float strength = 0.0f;
+	//while (1)
+	//{
+	//	codex::log::info("Set strength [0, 255] >");
+	//	std::cin >> strength;
+	//	motor.setStrength(strength / 255.0f);
+	//	if (strength < 0.0f)
+	//		break;
+	//}
+	//motor.stop();
+	//return 0;
 
 	//Socket
 	codex::IOService ioservice;

@@ -185,6 +185,7 @@ namespace codex
 			size_t read(ReadBuffer& buffer);
 
 			Endianness getEndianness() const;
+			CodexType getCodexType() const;
 			bool isValid() const;
 
 		private:

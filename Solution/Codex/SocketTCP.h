@@ -65,9 +65,11 @@ namespace codex
 		/* This is the byte ordering(endianness) that all passed write buffers should comply. */
 		protocol::Endianness getRemoteEndianness() const;
 #endif
-
+		/* Returns true if the socket is currently listening for an incoming connection on a port, or the connection is currently being established. */
 		bool isAccepting() const { std::lock_guard<std::recursive_mutex> locks(mutex); return accepting; }
+		/* Returns true if socket is currently able to receive incoming packets. */
 		bool isReceiving() const { std::lock_guard<std::recursive_mutex> locks(mutex); return receiving; }
+		/* Returns true if the socket is currently connected to a remote codex socket. */
 		bool isConnected() const { std::lock_guard<std::recursive_mutex> locks(mutex); return connected; }
 		
 	protected:
@@ -84,7 +86,10 @@ namespace codex
 		/* Blocks until handshakeReceived==true, or time is out. */
 		void waitUntilReceivedHandshake(const time::TimeType timeout);
 
+		/* Boost acceptor calls this method when an incoming connection is being accepted. If no error is detected, launches the synchronous codexAccept method in a different thread (codexAcceptThread). */
 		void onAccept(const boost::system::error_code error);
+		/* Asynchronous method for running the handshake procedure with the remote endpoint. */
+		void codexAccept();
 
 		//Receive handlers
 		void receiveHandler(const boost::system::error_code& error, std::size_t bytes);//Boost initially passes received data to this receive handler.
@@ -94,6 +99,7 @@ namespace codex
 		IOService& ioService;
 		boost::asio::ip::tcp::socket socket;
 		boost::asio::ip::tcp::acceptor* acceptor;
+		std::thread* codexAcceptThread;
 		std::function<bool(codex::protocol::ReadBuffer&)> onReceiveCallback;//User defined receive handler
 		std::function<void(SocketTCP&)> onAcceptCallback;
 		ExpectedBytesType expectedBytes;

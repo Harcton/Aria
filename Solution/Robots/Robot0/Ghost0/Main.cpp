@@ -13,8 +13,29 @@
 #include <Codex/Log.h>
 #include <string>
 
+bool receiveHandler(codex::protocol::ReadBuffer& buffer)
+{
+	//Print out buffer contents...
+	std::string str;
+	while (buffer.getBytesRemaining() > 0)
+	{
+		char c;
+		buffer.read(c);
+		str += c;
+	}
+	codex::log::info("Received packet: " + str);
+	return true;
+}
 int ghost(codex::SocketTCP& socket)
 {
+	codex::log::info("Running Ghost0...");
+
+	//Socket test
+	codex::protocol::WriteBuffer buffer;
+	buffer.write(std::string("YO GET SPOOKD BY THE GHOST"));
+	socket.startReceiving(std::bind(receiveHandler, std::placeholders::_1));
+	socket.sendPacket(buffer);
+
 	while (1)
 	{
 		if (!socket.isConnected())

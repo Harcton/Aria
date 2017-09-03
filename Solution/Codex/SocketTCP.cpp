@@ -13,12 +13,13 @@
 namespace codex
 {
 	extern std::string workingDirectory;
-
+	int debugLogLevel = 2;
 
 	SocketTCP::SocketTCP(IOService& _ioService)
 		: ioService(_ioService)
 		, socket(_ioService.getImplementationRef())
 		, acceptor(nullptr)
+		, codexAcceptThread(nullptr)
 		, onReceiveCallback()
 		, onAcceptCallback()
 		, expectedBytes(0)
@@ -47,6 +48,11 @@ namespace codex
 			delete acceptor;
 			acceptor = nullptr;
 		}
+		if (codexAcceptThread)
+		{
+			delete codexAcceptThread;
+			codexAcceptThread = nullptr;
+		}
 	}
 	
 	void SocketTCP::waitUntilFinishedReceiving()
@@ -65,6 +71,13 @@ namespace codex
 		{
 			wait = isAccepting();
 		}
+
+		std::lock_guard<std::recursive_mutex> lock(mutex);
+		if (codexAcceptThread)
+		{
+			codexAcceptThread->join();
+			delete codexAcceptThread;
+		}
 	}
 
 	void SocketTCP::waitUntilReceivedHandshake(const time::TimeType timeout)
@@ -81,7 +94,7 @@ namespace codex
 	{
 		RAIIMutexVariableSetter<bool, std::recursive_mutex> connectingSetter(connecting, true, mutex);
 
-		{//Mutex scope
+		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 
 			if (connected)
@@ -117,38 +130,26 @@ namespace codex
 			if (error)
 			{
 				log::info("SocketTCP::connect() failed to connect. Boost asio error: " + error.message());
-				//try
-				//{
-				//	socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
-				//	socket.close();
-				//}
-				//catch (std::exception& exception)
-				//{
-				//	log::info(std::string("SocketTCP::connect() failed to shut down the socket. Exception thrown: ") + exception.what());
-				//	return false;
-				//}
-
 				return false;
 			}
 
-			//Expect an incoming handshake soon
+			//Expect an incoming handshake after sending one
 			startReceiving(onReceiveCallback);
 
 			//Send the codex handshake (written in the local endianness)
 			protocol::WriteBuffer buffer;
 			protocol::Handshake handshake;
 			handshake.write(buffer);
-			if (sendPacket(buffer, protocol::PacketType::handshake))
+			if (handshakeSent = sendPacket(buffer, protocol::PacketType::handshake))
 			{
 				log::info("SocketTCP::connect() successfully sent handshake to the remote endpoint.");
-				handshakeSent = true;
 			}
 			else
 			{
 				log::info("SocketTCP::connect() failed to connect. Failed to send handshake.");
 				return false;//If sending the handshake fails, connection was not successful
 			}
-		}//End of mutex scope
+		}
 
 		//Wait until received handshake
 		bool wait;
@@ -164,7 +165,8 @@ namespace codex
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 			wait = !handshakeReceived;
 		} while (wait);
-		log::info("SocketTCP::connect() successfully received handshake from the remote endpoint. Socket is now in connected state.");
+		if (debugLogLevel >= 1)
+			log::info("SocketTCP::connect() successfully received handshake from the remote endpoint. Socket is now in connected state.");
 
 		//All done, socket is now at connected state!
 		std::lock_guard<std::recursive_mutex> lock(mutex);
@@ -201,6 +203,7 @@ namespace codex
 			socket.close();
 		}
 
+		//Reset the connection state
 		connected = false;
 		handshakeSent = false;
 		handshakeReceived = false;
@@ -228,23 +231,29 @@ namespace codex
 		std::lock_guard<std::recursive_mutex> lock(mutex);
 		boost::system::error_code error;
 
-		if (!connected && !connecting)
+		if (!connected && !connecting && !accepting)
 		{//Can only send user defined packets in the connected state
-			codex::log::warning("SocketTCP: cannot send a packet! Socket is not connected!");
+			log::info("SocketTCP: cannot send a packet. Socket is neither connected, connecting nor accepting.");
 			return false;
 		}
 
 #ifdef GHOST_CODEX
 		if (remoteEndianness != protocol::Endianness::undefined && buffer.getEndianness() != remoteEndianness)
 		{
-			codex::log::warning("SocketTCP: cannot send a packet! Write buffer was written in a wrong byte order!");
+			log::info("SocketTCP: cannot send a packet! Write buffer was written in a wrong byte order!");
 			return false;
 		}
 #endif
 
 		//Bytes header
-		const ExpectedBytesType bytes = buffer.getOffset();
-		if (socket.send(boost::asio::buffer(&bytes, sizeof(bytes)), 0, error) != sizeof(bytes))
+		const ExpectedBytesType bytes = sizeof(packetType) + buffer.getOffset();
+#ifdef GHOST_CODEX
+		protocol::WriteBuffer headerBytesBuffer(connected ? remoteEndianness : protocol::Endianness::local);
+#else
+		protocol::WriteBuffer headerBytesBuffer;
+#endif
+		headerBytesBuffer.write(bytes);
+		if (socket.send(boost::asio::buffer(headerBytesBuffer[0], headerBytesBuffer.getOffset()), 0, error) != sizeof(bytes))
 		{
 			codex::log::warning("SocketTCP: failed to send packet! Bytes header failed to send! " + (error ? "Boost asio error : " + error.message() : ""));
 			return false;
@@ -274,6 +283,8 @@ namespace codex
 			}
 		}
 
+		if (debugLogLevel >= 2)
+			log::info("SocketTCP: packet sent. Contents: 4(bytes) + 1(packet type) + " + std::to_string(buffer.getOffset()) + "(data)");
 		return true;
 	}
 
@@ -300,9 +311,9 @@ namespace codex
 			log::info("SocketTCP failed to start receiving. Receive buffer size is set to 0.");
 			return false;
 		}
-		if (!connected && !accepting)
+		if (!connected && !connecting && !accepting)
 		{
-			codex::log::warning("SocketTCP: failed to start receiving. Socket is neither connected nor receiving.");
+			codex::log::warning("SocketTCP: failed to start receiving. Socket is neither connected, connecting nor accepting.");
 			return false;
 		}
 		if (!socket.is_open())
@@ -327,83 +338,37 @@ namespace codex
 					this, boost::asio::placeholders::error,
 					boost::asio::placeholders::bytes_transferred));
 		}
+
+		if (debugLogLevel >= 2)
+		{
+			if (expectedBytes > 0)
+				log::info("SocketTCP successfully started receiving. Expecting bytes: " + std::to_string(expectedBytes) + ".");
+			else
+				log::info("SocketTCP successfully started receiving. Expecting bytes header.");
+		}
 		return true;
-	}
-	
-	bool SocketTCP::codexReceiveHandler(codex::protocol::ReadBuffer& buffer)
-	{
-		std::lock_guard<std::recursive_mutex> lock(mutex);
-
-		protocol::PacketType packetType;
-		buffer.read(packetType);
-		log::info("Receive handler received packet of type: " + std::to_string((int)packetType));
-		switch (packetType)
-		{
-		case protocol::PacketType::undefined:
-		{
-			//Create new read buffer that hides the codex layer
-#ifdef GHOST_CODEX
-			codex::protocol::ReadBuffer dataBuffer(buffer[buffer.getOffset()], buffer.getBytesRemaining(), remoteEndianness);
-#else
-			codex::protocol::ReadBuffer dataBuffer(buffer[buffer.getOffset()], buffer.getBytesRemaining());
-#endif
-			if (onReceiveCallback)
-				return onReceiveCallback(dataBuffer);
-			else
-				return false;
-		}
-		case protocol::PacketType::disconnect:
-		{
-			protocol::DisconnectType disconnectType;
-			buffer.read<protocol::DisconnectType>(disconnectType);
-			disconnect(protocol::DisconnectType::doNotSendDisconnectPacket);
-			return false;
-		}
-		case protocol::PacketType::handshake:
-		{
-			if (handshakeReceived)
-			{
-				log::error("A handshake for the current connection has already been received!");
-				return false;
-			}
-			handshakeReceived = true;
-			protocol::Handshake handshake;
-			handshake.read(buffer);
-
-			if (handshake.isValid())
-			{//VALID HANDSHAKE
-#ifdef GHOST_CODEX //Set byte endianness
-				remoteEndianness = handshake.getEndianness();
-#endif
-			}
-			else
-			{//INVALID HANDSHAKE -> DISCARD
-				log::warning("Received an invalid codex handshake!");
-			}
-		}
-		}
-		return false;//Do not start receiving again!
 	}
 
 	void SocketTCP::receiveHandler(const boost::system::error_code& error, std::size_t bytes)
 	{
+		if (debugLogLevel >= 2)
+			log::info("SocketTCP receive handler received " + std::to_string(bytes) + " bytes.");
+
 		std::lock_guard<std::recursive_mutex> lock(mutex);
-		log::info("Receive handler received " + std::to_string(bytes) + " bytes");
+		receiving = false;
 
 		if (error)
 		{
 			if (error == boost::asio::error::eof)
 			{//Connection gracefully closed
 				log::info("SocketTCP disconnected. Remote socket closed connection.");
-				receiving = false;
-				connected = false;
+				disconnect(protocol::DisconnectType::doNotSendDisconnectPacket);
 				return;
 			}
 			else if (error == boost::asio::error::connection_reset)
 			{//Disconnect
 				log::info("SocketTCP disconnected. Remote socket closed connection.");
-				receiving = false;
-				connected = false;
+				disconnect(protocol::DisconnectType::doNotSendDisconnectPacket);
 				return;
 			}
 			else if (error == boost::asio::error::connection_aborted ||
@@ -420,7 +385,6 @@ namespace codex
 					log::info("Closing client: boost asio error: bad_descriptor");
 				if (error == boost::asio::error::operation_aborted)
 					log::info("Closing client: boost asio error: operation_aborted");
-				receiving = false;
 				disconnect(protocol::DisconnectType::doNotSendDisconnectPacket);
 				return;
 			}
@@ -434,7 +398,7 @@ namespace codex
 		{
 			if (expectedBytes == 0)
 			{//Header received
-				memcpy(&expectedBytes, receiveBuffer.data(), sizeof(expectedBytes));
+				memcpy(&expectedBytes, &receiveBuffer[0], sizeof(expectedBytes));
 				if (!connected)
 				{
 					/*
@@ -450,6 +414,12 @@ namespace codex
 						for (size_t i = 0; i < 4; i++)
 							memcpy(&(((unsigned char*)&expectedBytes)[i]), &(((unsigned char*)&reverted)[3 - i]), 1);
 					}
+#ifdef GHOST_CODEX
+					if (mostSignificantBits > leastSignificantBits)
+						remoteEndianness = protocol::Endianness::inverted;
+					else
+						remoteEndianness = protocol::Endianness::local;
+#endif
 				}
 				startReceiving(onReceiveCallback);
 			}
@@ -458,16 +428,14 @@ namespace codex
 
 				//Read buffer
 #ifdef SHELL_CODEX
-				protocol::ReadBuffer buffer(receiveBuffer.data(), bytes);
+				protocol::ReadBuffer buffer(&receiveBuffer[0], bytes);
 #else
-				protocol::ReadBuffer buffer(receiveBuffer.data(), bytes, remoteEndianness);
+				protocol::ReadBuffer buffer(&receiveBuffer[0], bytes, remoteEndianness);
 #endif
 				const bool keepReceiving = codexReceiveHandler(buffer);
 				expectedBytes = 0;//Begin to expect header next
 				if (keepReceiving)
 					startReceiving(onReceiveCallback);
-				else
-					receiving = false;
 			}
 			else
 			{
@@ -476,19 +444,85 @@ namespace codex
 		}
 	}
 
+	bool SocketTCP::codexReceiveHandler(codex::protocol::ReadBuffer& buffer)
+	{
+		std::lock_guard<std::recursive_mutex> lock(mutex);
+
+		//Read packet type
+		protocol::PacketType packetType;
+		buffer.read(packetType);
+		if (debugLogLevel >= 2)
+			log::info("SocketTCP codex receive handler received packet of type: " + std::to_string((int)packetType) + ", " + std::to_string(buffer.getBytesRemaining()) + " bytes.");
+
+		//Process packet
+		switch (packetType)
+		{
+		case protocol::PacketType::undefined:
+		{
+			//Create new read buffer that hides the codex layer
+#ifdef GHOST_CODEX
+			codex::protocol::ReadBuffer dataBuffer(buffer[buffer.getOffset()], buffer.getBytesRemaining(), remoteEndianness);
+#else
+			codex::protocol::ReadBuffer dataBuffer(buffer[buffer.getOffset()], buffer.getBytesRemaining());
+#endif
+			if (debugLogLevel >= 2)
+				codex::log::info("SocketTCP received user defined packet. Bytes: " + std::to_string(dataBuffer.getBytesRemaining()));
+			if (onReceiveCallback)
+				return onReceiveCallback(dataBuffer);
+			else
+				return false;
+		}
+		case protocol::PacketType::disconnect:
+		{
+			protocol::DisconnectType disconnectType;
+			buffer.read<protocol::DisconnectType>(disconnectType);
+			disconnect(protocol::DisconnectType::doNotSendDisconnectPacket);
+			return false;
+		}
+		case protocol::PacketType::handshake:
+		{
+			if (handshakeReceived)
+			{
+				log::warning("A handshake for the current connection has already been received!");
+				return false;
+			}
+			protocol::Handshake handshake;
+			handshake.read(buffer);
+
+			if (handshake.isValid())
+			{//VALID HANDSHAKE
+				handshakeReceived = true;
+#ifdef GHOST_CODEX //Set byte endianness
+				remoteEndianness = handshake.getEndianness();
+#endif
+				if (debugLogLevel >= 1)
+					log::info("SocketTCP invalid handshake received!");
+			}
+			else
+			{//INVALID HANDSHAKE -> DISCARD
+				handshakeReceived = true;
+				log::warning("Received an invalid codex handshake!");
+			}
+		}
+		}
+		return false;//Do not start receiving again!
+	}
+
 	bool SocketTCP::startAccepting(const protocol::PortType port, const std::function<void(SocketTCP&)> callbackFunction)
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
 		if (accepting)
 		{
-			log::info("SocketTCP failed to start accepting! Socket is currently accepting!");
+			log::info("SocketTCP failed to start accepting! Socket is already accepting!");
 			return false;
 		}
 		if (connected)
 		{
-			codex::log::warning("SocketTCP: cannot start accepting! Socket is already connected!");
+			codex::log::warning("SocketTCP failed start accepting! Socket is currently connected!");
 			return false;
 		}
+		assert(!handshakeSent);
+		assert(!handshakeReceived);
 
 		if (acceptor == nullptr)
 			acceptor = new boost::asio::ip::tcp::acceptor(ioService.getImplementationRef());
@@ -536,36 +570,42 @@ namespace codex
 
 	void SocketTCP::onAccept(const boost::system::error_code error)
 	{
-		{std::lock_guard<std::recursive_mutex> lock(mutex);
-			assert(!isConnected());
-			assert(!isReceiving());
-			assert(isAccepting());
-			if (error)
-			{
-				log::warning("SocketTCP failed to accept an incoming connection! Boost asio error: " + error.message() + "Accepting has stopped.");
-				accepting = false;
-				return;
-			}
-
-			//Start expecting an incoming handshake (connector sends first)
-			handshakeReceived = false;
-			startReceiving(onReceiveCallback);
+		std::lock_guard<std::recursive_mutex> lock(mutex);
+		assert(!isConnected());
+		assert(!isReceiving());
+		assert(isAccepting());
+		assert(acceptor);
+		assert(!codexAcceptThread);
+		acceptor->close();
+		if (error)
+		{
+			log::warning("SocketTCP failed to accept an incoming connection! Boost asio error: " + error.message() + "Accepting has stopped.");
+			disconnect(protocol::DisconnectType::doNotSendDisconnectPacket);
+			accepting = false;
+			return;
 		}
+		codexAcceptThread = new std::thread(&SocketTCP::codexAccept, this);
+	}
+
+	void SocketTCP::codexAccept()
+	{
+		//Start expecting an incoming handshake (connector sends first)
+		startReceiving(onReceiveCallback);
 		
 		//Wait until received remote handshake
-		codex::log::info("Accepting SocketTCP expecting a handshake...");
+		if (debugLogLevel >= 1)
+			codex::log::info("Accepting SocketTCP expecting a handshake...");
 		assert(isReceiving());
 		bool wait;
 		const time::TimeType beginTime = time::getRunTime();
-		codex::log::info("begin time: " + std::to_string(beginTime));
 		do
 		{
 			const time::TimeType spentTime = time::getRunTime() - beginTime;
-			const time::TimeType timeoutTime = time::seconds(20);
+			const time::TimeType timeoutTime = time::seconds(10);
 			if (spentTime > timeoutTime)
-			{//TODO: handshake doesn't
-				codex::log::info("spent time: " + std::to_string(spentTime) + ", stamps: " + std::to_string(beginTime) + "/" + std::to_string(timeoutTime) + ", end time: " + std::to_string(time::getRunTime()));
-				{std::lock_guard<std::recursive_mutex> lock(mutex);
+			{//TODO: handshake is only received after canceling accepting?
+				{
+					std::lock_guard<std::recursive_mutex> lock(mutex);
 					accepting = false;
 				}
 				codex::log::info("SocketTCP failed to accept an incoming connection! No response handshake received!");
@@ -574,10 +614,14 @@ namespace codex
 				disconnect(protocol::DisconnectType::doNotSendDisconnectPacket);
 				return;
 			}
-			std::lock_guard<std::recursive_mutex> lock(mutex);
-			wait = !handshakeReceived;
+			else
+			{
+				std::lock_guard<std::recursive_mutex> lock(mutex);
+				wait = !handshakeReceived;
+			}
 		} while (wait);
-		codex::log::info("Accepting SocketTCP received a handshake.");
+		if (debugLogLevel >= 1)
+			codex::log::info("Accepting SocketTCP received a handshake.");
 		
 		//Send a response handshake
 		protocol::WriteBuffer buffer;
@@ -586,11 +630,13 @@ namespace codex
 		if (sendPacket(buffer, protocol::PacketType::handshake))
 		{
 			handshakeSent = true;
-			codex::log::info("Accepting SocketTCP sent a handshake.");
+			if (debugLogLevel >= 1)
+				codex::log::info("Accepting SocketTCP sent a handshake.");
 		}
 		else
 		{
-			{std::lock_guard<std::recursive_mutex> lock(mutex);
+			{
+				std::lock_guard<std::recursive_mutex> lock(mutex);
 				accepting = false;
 			}
 			codex::log::info("SocketTCP failed to accept an incoming connection! Could not send handshake!");
@@ -599,10 +645,10 @@ namespace codex
 			disconnect(protocol::DisconnectType::doNotSendDisconnectPacket);
 			return;
 		}
-		codex::log::info("Accepting SocketTCP sent a handshake!");
 
-		//Socket is now in the connected status! Make the onAccept callback.
-		{std::lock_guard<std::recursive_mutex> lock(mutex);
+		//Socket is now in the connected status! Make the onAcceptCallback callback.
+		{
+			std::lock_guard<std::recursive_mutex> lock(mutex);
 			accepting = false;
 			connected = true;
 		}
@@ -614,9 +660,9 @@ namespace codex
 	std::string SocketTCP::getRemoteAddress() const
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
-		if (!connected)
+		if (!isConnected())
 		{
-			codex::log::warning("SocketTCP: cannot retrieve remote endpoint address! Socket is not connected!");
+			log::info("SocketTCP: cannot retrieve remote endpoint address! Socket is not connected!");
 			return "0.0.0.0";
 		}
 		boost::asio::ip::tcp::endpoint endpoint = socket.remote_endpoint();
@@ -628,9 +674,9 @@ namespace codex
 	protocol::PortType SocketTCP::getRemotePort() const
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
-		if (!connected)
+		if (!isConnected())
 		{
-			codex::log::warning("SocketTCP: cannot retrieve remote endpoint port! Socket is not connected!");
+			log::info("SocketTCP: cannot retrieve remote endpoint port! Socket is not connected!");
 			return 0;
 		}
 		boost::asio::ip::tcp::endpoint endpoint = socket.remote_endpoint();
@@ -640,9 +686,9 @@ namespace codex
 	protocol::Endpoint SocketTCP::getRemoteEndpoint() const
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
-		if (!connected)
+		if (!isConnected())
 		{
-			codex::log::warning("SocketTCP: cannot retrieve remote endpoint port! Socket is not connected!");
+			log::info("SocketTCP: cannot retrieve remote endpoint port! Socket is not connected!");
 			return protocol::Endpoint("0.0.0.0", 0);
 		}
 		return protocol::Endpoint(socket.remote_endpoint().address().to_v4().to_string(), socket.remote_endpoint().port());
@@ -651,6 +697,11 @@ namespace codex
 	protocol::Endianness SocketTCP::getRemoteEndianness() const
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
+		if (!isConnected())
+		{
+			log::info("SocketTCP: cannot retrieve remote endpoint byte endianness! Socket is not connected!");
+			return protocol::Endianness::undefined;
+		}
 		return remoteEndianness;
 	}
 #endif

@@ -13,7 +13,8 @@ namespace codex
 	namespace protocol
 	{
 		const PortType defaultAriaPort = 49842;
-		const uint16_t systemEndiannessBytePair = 0x00FF;
+		const uint16_t localEndiannessBytePair = 0x00FF;
+		const uint16_t invertedEndiannessBytePair = 0xFF00;
 
 
 
@@ -273,17 +274,31 @@ namespace codex
 			return capacity - offset;
 		}
 		
+		const VersionType currentHandshakeVersion = 1;
 		Handshake::Handshake()
-			: endiannessBytePair(systemEndiannessBytePair)
-			, handshakeVersion(1)
-			, codexType(codexType)
+			: endiannessBytePair(localEndiannessBytePair)
+			, handshakeVersion(currentHandshakeVersion)
+			, codexType(codex::codexType)
 			, valid(true)
 		{
 		}
 
 		Endianness Handshake::getEndianness() const
 		{
-			return systemEndiannessBytePair == endiannessBytePair ? Endianness::local : Endianness::inverted;
+			if (endiannessBytePair == localEndiannessBytePair)
+				return Endianness::local;
+			else if (endiannessBytePair == invertedEndiannessBytePair)
+				return Endianness::inverted;
+			else
+				return Endianness::undefined;
+		}
+
+		CodexType Handshake::getCodexType() const
+		{
+			if (codexType == CodexType::ghost || codexType == CodexType::shell)
+				return codexType;
+			else
+				return CodexType::invalid;
 		}
 
 		bool Handshake::isValid() const
@@ -308,6 +323,7 @@ namespace codex
 			//Endianness
 			if (buffer.getBytesRemaining() < sizeof(endiannessBytePair))
 			{
+				log::info("Handshake::read() invalid handshake. No bytes left to read endianness byte pair.");
 				valid = false;
 				handshakeVersion = 0;
 				endiannessBytePair = 0;
@@ -317,22 +333,42 @@ namespace codex
 			else
 				offset += buffer.read(&endiannessBytePair, sizeof(endiannessBytePair));
 			buffer.endianness = getEndianness();//Update buffer read byte order
+			if (getEndianness() == Endianness::undefined)
+			{
+				log::info("Handshake::read() invalid handshake. Endianness byte pair is invalid.");
+				valid = false;
+				return offset;
+			}
 			//Handshake version
 			if (buffer.getBytesRemaining() < sizeof(handshakeVersion))
 			{
+				log::info("Handshake::read() invalid handshake. No bytes left to read handshake version.");
 				valid = false;
 				return offset;
 			}
 			else
 				offset += buffer.read(&handshakeVersion, sizeof(handshakeVersion));
+			if (handshakeVersion != currentHandshakeVersion)
+			{
+				log::info("Handshake::read() invalid handshake. Incompatible versions - my version: " + std::to_string(currentHandshakeVersion) + ", other version: " + std::to_string(handshakeVersion));
+				valid = false;
+				return offset;
+			}
 			//Codex implementation
 			if (buffer.getBytesRemaining() < sizeof(codexType))
 			{
+				log::info("Handshake::read() invalid handshake. No bytes left to read codex type.");
 				valid = false;
 				return offset;
 			}
 			else
 				offset += buffer.read(&codexType, sizeof(codexType));
+			if (getCodexType() == CodexType::invalid)
+			{
+				log::info("Handshake::read() invalid handshake. Invalid codex type: " + std::to_string((int)codexType));
+				valid = false;
+				return offset;
+			}
 
 			return offset;
 		}
