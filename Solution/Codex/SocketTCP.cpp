@@ -14,6 +14,7 @@ namespace codex
 {
 	extern std::string workingDirectory;
 	int debugLogLevel = 2;
+	time::TimeType handshakeReceiveTimeout = time::seconds(100000);
 
 	SocketTCP::SocketTCP(IOService& _ioService)
 		: ioService(_ioService)
@@ -156,7 +157,7 @@ namespace codex
 		const time::TimeType beginTime = time::getRunTime();
 		do
 		{
-			if (time::getRunTime() - beginTime > time::seconds(5))
+			if (time::getRunTime() - beginTime > handshakeReceiveTimeout)
 			{
 				codex::log::info("SocketTCP::connect() failed to connect! No response handshake received!");
 				return false;
@@ -245,37 +246,32 @@ namespace codex
 		}
 #endif
 
-		//Bytes header
-		const ExpectedBytesType bytes = sizeof(packetType) + buffer.getOffset();
-#ifdef GHOST_CODEX
-		protocol::WriteBuffer headerBytesBuffer(connected ? remoteEndianness : protocol::Endianness::local);
-#else
-		protocol::WriteBuffer headerBytesBuffer;
-#endif
-		headerBytesBuffer.write(bytes);
-		if (socket.send(boost::asio::buffer(headerBytesBuffer[0], headerBytesBuffer.getOffset()), 0, error) != sizeof(bytes))
-		{
-			codex::log::warning("SocketTCP: failed to send packet! Bytes header failed to send! " + (error ? "Boost asio error : " + error.message() : ""));
-			return false;
-		}
-		if (error)
-		{//Error occured while sending the header...
-			codex::log::warning("SocketTCP: failed to send packet! Boost asio error: " + error.message());
-			return false;
-		}
-
 		//Codex header
-		if (socket.send(boost::asio::buffer(&packetType, sizeof(packetType)), 0, error) != sizeof(packetType))
-		{
-			codex::log::warning("SocketTCP: failed to send packet! Codex header failed to send! " + (error ? "Boost asio error : " + error.message() : ""));
-			return false;
+		const ExpectedBytesType dataBytes = sizeof(packetType) + buffer.getOffset();
+#ifdef GHOST_CODEX
+		protocol::WriteBuffer headerBuffer(connected ? remoteEndianness : protocol::Endianness::local);
+#else
+		protocol::WriteBuffer headerBuffer;
+#endif
+		headerBuffer.write(dataBytes);
+		headerBuffer.write(packetType);
+		const size_t headerBytes = headerBuffer.getOffset();
+		size_t offset = 0;
+		while (offset < headerBytes)
+		{//Keep sending data until the whole header has been sent
+			offset += socket.write_some(boost::asio::buffer(headerBuffer[offset], headerBytes - offset), error);
+			if (error)
+			{//Error occured while sending data...
+				codex::log::warning("SocketTCP: failed to send packet's codex header! Boost asio error: " + error.message());
+				return false;
+			}
 		}
 
 		//Data
-		size_t offset = 0;
-		while (offset < bytes)
+		offset = 0;
+		while (offset < dataBytes)
 		{//Keep sending data until all data has been sent
-			offset += socket.write_some(boost::asio::buffer(buffer[offset], bytes - offset), error);
+			offset += socket.write_some(boost::asio::buffer(buffer[offset], dataBytes - offset), error);
 			if (error)
 			{//Error occured while sending data...
 				codex::log::warning("SocketTCP: failed to send packet! Boost asio error: " + error.message());
@@ -284,12 +280,14 @@ namespace codex
 		}
 
 		if (debugLogLevel >= 2)
-			log::info("SocketTCP: packet sent. Contents: 4(bytes) + 1(packet type) + " + std::to_string(buffer.getOffset()) + "(data)");
+			log::info("SocketTCP: packet sent. Contents: 4(packet byte size) + 1(packet type) + " + std::to_string(buffer.getOffset()) + "(data)");
 		return true;
 	}
 
 	bool SocketTCP::resizeReceiveBuffer(const size_t newSize)
 	{
+		if (newSize < sizeof(ExpectedBytesType))
+			return false;
 		std::lock_guard<std::recursive_mutex> lock(mutex);
 		if (receiving)
 			return false;
@@ -306,11 +304,6 @@ namespace codex
 		}
 
 		std::lock_guard<std::recursive_mutex> lock(mutex);
-		if (receiveBuffer.size() == 0)
-		{
-			log::info("SocketTCP failed to start receiving. Receive buffer size is set to 0.");
-			return false;
-		}
 		if (!connected && !connecting && !accepting)
 		{
 			codex::log::warning("SocketTCP: failed to start receiving. Socket is neither connected, connecting nor accepting.");
@@ -322,18 +315,19 @@ namespace codex
 			return false;
 		}
 
+		memset(receiveBuffer.data(), 0xFFFFFFFF, receiveBuffer.size());//DEBUG
 		receiving = true;
 		onReceiveCallback = callbackFunction;
-		if (expectedBytes)
-		{//Receive data
-			boost::asio::async_read(socket, boost::asio::buffer(&receiveBuffer[0], expectedBytes),
+		if (expectedBytes == 0)
+		{//Receive header
+			boost::asio::async_read(socket, boost::asio::buffer(&receiveBuffer[0], sizeof(expectedBytes)),
 				boost::bind(&SocketTCP::receiveHandler,
 					this, boost::asio::placeholders::error,
 					boost::asio::placeholders::bytes_transferred));
 		}
 		else
-		{//Receive header
-			boost::asio::async_read(socket, boost::asio::buffer(&receiveBuffer[0], sizeof(expectedBytes)),
+		{//Receive data
+			boost::asio::async_read(socket, boost::asio::buffer(&receiveBuffer[0], expectedBytes),
 				boost::bind(&SocketTCP::receiveHandler,
 					this, boost::asio::placeholders::error,
 					boost::asio::placeholders::bytes_transferred));
@@ -496,7 +490,7 @@ namespace codex
 				remoteEndianness = handshake.getEndianness();
 #endif
 				if (debugLogLevel >= 1)
-					log::info("SocketTCP invalid handshake received!");
+					log::info("SocketTCP valid handshake received.");
 			}
 			else
 			{//INVALID HANDSHAKE -> DISCARD
@@ -601,8 +595,7 @@ namespace codex
 		do
 		{
 			const time::TimeType spentTime = time::getRunTime() - beginTime;
-			const time::TimeType timeoutTime = time::seconds(10);
-			if (spentTime > timeoutTime)
+			if (spentTime > handshakeReceiveTimeout)
 			{//TODO: handshake is only received after canceling accepting?
 				{
 					std::lock_guard<std::recursive_mutex> lock(mutex);

@@ -40,9 +40,10 @@ namespace codex
 		/* Codex sockets add a packet type header into each packet. Packet type determines the contents of the packet. Currently a packet is solely limited to a single packet type. */
 		enum class PacketType : uint8_t
 		{
-			undefined,						//Sent data is user defined data, which is processed by a user defined receive handler.
+			invalid = 0,					//Not in use
 			handshake,						//Packet contains codex defined handshake data
 			disconnect,						//The remote end sends a packet to indicate disconnection
+			undefined = 255,				//Sent data is user defined data, which is processed by a user defined receive handler.
 		};
 
 		/*

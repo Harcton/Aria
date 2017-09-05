@@ -71,17 +71,6 @@ bool onAccept(codex::SocketTCP& socket)
 	return false;
 }
 
-bool clientReceiveHandler(codex::protocol::ReadBuffer& buffer)
-{
-	codex::log::info("Client receive handler received " + std::to_string(buffer.getCapacity()) + " bytes");
-	while (buffer.getBytesRemaining() > 0)
-	{
-		uint8_t byte;
-		buffer.read(&byte, sizeof(byte));
-	}
-	return true;
-}
-
 
 
 
