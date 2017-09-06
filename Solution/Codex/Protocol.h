@@ -73,10 +73,10 @@ namespace codex
 #endif
 			virtual ~BufferBase() = 0;
 			
-			/* Returns the total capacity of the write buffer. */
+			/* Returns the total capacity of the buffer. */
 			size_t getCapacity() const;
 
-			/* Returns the number of bytes written using the write method. */
+			/* Returns the number of bytes written/read using the write/read method. */
 			size_t getOffset() const;
 
 			/* Returns buffer read/write byte endianness. */
@@ -107,10 +107,9 @@ namespace codex
 			bool extend(const size_t addedBytes);
 
 			/* Writes to data*/
-			template <typename FundamentalType>
-			size_t write(const FundamentalType value)
+			template <typename Type>
+			size_t write(const Type value)
 			{
-				//static_assert(std::is_fundamental<FundamentalType>::value, "WriteBuffer::write<FundamentalType>() type not fundamental!");
 				return write(&value, sizeof(value));
 			}
 			size_t write(const void* buffer, const size_t length);
@@ -162,7 +161,7 @@ namespace codex
 			size_t read(std::string& value);
 			size_t read(PacketType& value);
 
-			/* Translates offset by set amount of bytes. */
+			/* Translates offset by a set amount of bytes. */
 			void translate(const int translationOffset);
 
 			/* Returns readable bytes remaining. */

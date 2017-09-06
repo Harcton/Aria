@@ -17,13 +17,8 @@ bool receiveHandler(codex::protocol::ReadBuffer& buffer)
 {
 	//Print out buffer contents...
 	std::string str;
-	while (buffer.getBytesRemaining() > 0)
-	{
-		char c;
-		buffer.read(c);
-		str += c;
-	}
-	codex::log::info("Received packet: " + str);
+	buffer.read(str);
+	codex::log::info("Received packet (str): " + str);
 	return true;
 }
 int ghost(codex::SocketTCP& socket)

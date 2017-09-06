@@ -168,7 +168,7 @@ namespace codex
 		} while (wait);
 		if (debugLogLevel >= 1)
 			log::info("SocketTCP::connect() successfully received handshake from the remote endpoint. Socket is now in connected state.");
-
+		
 		//All done, socket is now at connected state!
 		std::lock_guard<std::recursive_mutex> lock(mutex);
 		connected = true;
@@ -247,19 +247,20 @@ namespace codex
 #endif
 
 		//Codex header
-		const ExpectedBytesType dataBytes = sizeof(packetType) + buffer.getOffset();
+		const ExpectedBytesType dataBufferSize = buffer.getOffset();
+		const ExpectedBytesType headerBytesValue = buffer.getOffset() + sizeof(packetType);
 #ifdef GHOST_CODEX
 		protocol::WriteBuffer headerBuffer(connected ? remoteEndianness : protocol::Endianness::local);
 #else
 		protocol::WriteBuffer headerBuffer;
 #endif
-		headerBuffer.write(dataBytes);
+		headerBuffer.write(headerBytesValue);
 		headerBuffer.write(packetType);
-		const size_t headerBytes = headerBuffer.getOffset();
+		const size_t headerBufferSize = headerBuffer.getOffset();
 		size_t offset = 0;
-		while (offset < headerBytes)
+		while (offset < headerBufferSize)
 		{//Keep sending data until the whole header has been sent
-			offset += socket.write_some(boost::asio::buffer(headerBuffer[offset], headerBytes - offset), error);
+			offset += socket.write_some(boost::asio::buffer(headerBuffer[offset], headerBufferSize - offset), error);
 			if (error)
 			{//Error occured while sending data...
 				codex::log::warning("SocketTCP: failed to send packet's codex header! Boost asio error: " + error.message());
@@ -269,9 +270,9 @@ namespace codex
 
 		//Data
 		offset = 0;
-		while (offset < dataBytes)
+		while (offset < dataBufferSize)
 		{//Keep sending data until all data has been sent
-			offset += socket.write_some(boost::asio::buffer(buffer[offset], dataBytes - offset), error);
+			offset += socket.write_some(boost::asio::buffer(buffer[offset], dataBufferSize - offset), error);
 			if (error)
 			{//Error occured while sending data...
 				codex::log::warning("SocketTCP: failed to send packet! Boost asio error: " + error.message());
@@ -315,7 +316,6 @@ namespace codex
 			return false;
 		}
 
-		memset(receiveBuffer.data(), 0xFFFFFFFF, receiveBuffer.size());//DEBUG
 		receiving = true;
 		onReceiveCallback = callbackFunction;
 		if (expectedBytes == 0)
@@ -639,13 +639,13 @@ namespace codex
 			return;
 		}
 
-		//Socket is now in the connected status! Make the onAcceptCallback callback.
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 			accepting = false;
 			connected = true;
 		}
-		
+
+		//Socket is now in the connected status! Make the onAcceptCallback callback.
 		if (onAcceptCallback)
 			onAcceptCallback(*this);
 	}
