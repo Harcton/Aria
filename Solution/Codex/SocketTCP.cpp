@@ -596,7 +596,7 @@ namespace codex
 		{
 			const time::TimeType spentTime = time::getRunTime() - beginTime;
 			if (spentTime > handshakeReceiveTimeout)
-			{//TODO: handshake is only received after canceling accepting?
+			{
 				{
 					std::lock_guard<std::recursive_mutex> lock(mutex);
 					accepting = false;

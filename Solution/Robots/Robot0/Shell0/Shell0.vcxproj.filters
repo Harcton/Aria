@@ -12,5 +12,9 @@
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shell0.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Shell0.h" />
   </ItemGroup>
 </Project>
