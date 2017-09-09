@@ -39,7 +39,7 @@ namespace codex
 		{
 			return (float)time / (float)conversionRate::nanosecond;
 		}
-
+		
 		TimeType getRunTime();
 
 		/* Delay code execution by specified amount of time */

@@ -35,6 +35,7 @@ namespace codex
 			socketDestructor,				//Disconnect called from the socket's destructor
 			switchEndpoint,					//The endpoint is switching endpoints
 			programExit,					//Used when disconnecting the socket after running the shell/ghost main program
+			timeout,						//No packets received for a 
 		};
 
 		/* Codex sockets add a packet type header into each packet. Packet type determines the contents of the packet. Currently a packet is solely limited to a single packet type. */

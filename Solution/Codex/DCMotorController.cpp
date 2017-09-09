@@ -44,6 +44,12 @@ namespace codex
 			pulseWidth = strength * (float)pulseInterval;
 	}
 
+	float DCMotorController::getStrength() const
+	{
+		std::lock_guard<std::recursive_mutex> lock(mutex);
+		return float(pulseWidth) / float(pulseInterval);
+	}
+
 	void DCMotorController::onStart()
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
@@ -55,9 +61,9 @@ namespace codex
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
 		codex::gpio::enable(pulseWidthPin);
-		codex::time::delay(pulseWidth);
+		//codex::time::delay(pulseWidth);
 		codex::gpio::disable(pulseWidthPin);
-		codex::time::delay(pulseInterval - pulseWidth);
+		//codex::time::delay(pulseInterval - pulseWidth);
 	}
 
 	void DCMotorController::onStop()

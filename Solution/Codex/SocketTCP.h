@@ -32,7 +32,7 @@ namespace codex
 		virtual ~SocketTCP();
 		
 		/* Perform a synchronous connection attempt. */
-		bool connect(const protocol::AddressType address_ipv4, const uint16_t port);
+		bool connect(const protocol::AddressType& address_ipv4, const protocol::PortType& port);
 		bool connect(const protocol::Endpoint& endpoint);
 
 		/* Disconnect from the currently connected endpoint. */
@@ -66,12 +66,17 @@ namespace codex
 		protocol::Endianness getRemoteEndianness() const;
 #endif
 		/* Returns true if the socket is currently listening for an incoming connection on a port, or the connection is currently being established. */
-		bool isAccepting() const { std::lock_guard<std::recursive_mutex> locks(mutex); return accepting; }
+		bool isAccepting() const;
 		/* Returns true if socket is currently able to receive incoming packets. */
-		bool isReceiving() const { std::lock_guard<std::recursive_mutex> locks(mutex); return receiving; }
+		bool isReceiving() const;
 		/* Returns true if the socket is currently connected to a remote codex socket. */
-		bool isConnected() const { std::lock_guard<std::recursive_mutex> locks(mutex); return connected; }
+		bool isConnected() const;
 		
+		/* Prevents other threads from using this socket. Incoming receive/accept callbacks will have to wait until the thread lock is released. */
+		void enableThreadLock() { mutex.lock(); }
+		/* Releases previously enabled thread lock. */
+		void releaseThreadLock() { mutex.unlock(); }
+
 	protected:
 		
 		/* Disconnect the socket with the specified type */
@@ -104,6 +109,7 @@ namespace codex
 		std::function<void(SocketTCP&)> onAcceptCallback;
 		ExpectedBytesType expectedBytes;
 		std::vector<unsigned char> receiveBuffer;
+		codex::time::TimeType lastReceiveTime;
 		bool receiving;
 		bool accepting;
 		bool connected;

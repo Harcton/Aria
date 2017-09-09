@@ -95,8 +95,8 @@ namespace codex
 		const time::TimeType updateInterval = time::milliseconds(20);
 
 		std::lock_guard<std::recursive_mutex> lock(mutex);
-		assert(minPulseWidth < maxPulseWidth);
-		assert(minAngle < maxAngle);
+		assert(minPulseWidth <= maxPulseWidth);
+		assert(minAngle <= maxAngle);
 		if (pin == gpio::pin_none)
 			return;
 
@@ -106,7 +106,7 @@ namespace codex
 		const float target = std::min(maxAngle, std::max(targetAngle, minAngle));
 		const float posPercentage = target / (maxAngle - minAngle);
 		const time::TimeType pulseDuration = minPulseWidth + time::TimeType(float(maxPulseWidth - minPulseWidth) * posPercentage);
-		time::delay(pulseDuration);
+		//time::delay(pulseDuration);
 		//Disable
 		gpio::disable(pin);
 
@@ -133,6 +133,6 @@ namespace codex
 		}
 
 		//Delay the next update
-		time::delay(updateInterval);
+		//time::delay(updateInterval);
 	}
 }

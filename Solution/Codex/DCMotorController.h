@@ -20,6 +20,7 @@ namespace codex
 		//Control
 		/* Set strength within the range of [0.0f, 1.0f] */
 		void setStrength(const float strength);
+		float getStrength() const;
 
 	private:
 		void onStart() override;

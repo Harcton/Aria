@@ -1,6 +1,7 @@
 #include "Codex.h"
 #include "Log.h"
 #include <thread>
+#include <ctime>
 #ifdef SHELL_CODEX
 #include <bcm2835.h>
 #endif
@@ -34,7 +35,7 @@ namespace codex
 			codex::workingDirectory = argv[0];
 #endif
 		
-		//Check available integer widths
+		//Print unavailable integer widths
 		if (sizeof(int8_t) != 1 || sizeof(uint8_t) != 1)
 			log::warning("8 bit integer width not available!");
 		if (sizeof(int16_t) != 2 || sizeof(uint16_t) != 2)
@@ -44,8 +45,11 @@ namespace codex
 		if (sizeof(int64_t) != 8 || sizeof(uint64_t) != 8)
 			log::warning("64 bit integer width not available!");
 
-		//Check hardware threads
+		//Print hardware thread count
 		log::info(std::to_string(std::thread::hardware_concurrency()) + " hardware threads detected.");
+
+		//Print clock accuracy
+		log::info("System clock accuracy is " + std::to_string(CLOCKS_PER_SEC) + " ticks per second.");
 
 		return 0;
 	}
