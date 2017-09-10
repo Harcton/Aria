@@ -11,7 +11,7 @@ namespace codex
 		, inputPin1(gpio::Pin::pin_none)
 		, inputPin2(gpio::Pin::pin_none)
 		, pulseWidth(0)
-		, pulseInterval(codex::time::nanoseconds(2000000))
+		, pulseInterval(codex::time::milliseconds(2.0f))
 	{
 
 	}
@@ -59,11 +59,16 @@ namespace codex
 
 	void DCMotorController::update()
 	{
-		std::lock_guard<std::recursive_mutex> lock(mutex);
-		codex::gpio::enable(pulseWidthPin);
-		//codex::time::delay(pulseWidth);
-		codex::gpio::disable(pulseWidthPin);
-		//codex::time::delay(pulseInterval - pulseWidth);
+		mutex.lock();
+		const codex::gpio::Pin _pulseWidthPin = pulseWidthPin;
+		const codex::time::TimeType _pulseWidth = pulseWidth;
+		const codex::time::TimeType _pulseInterval = pulseInterval;
+		mutex.unlock();
+
+		codex::gpio::enable(_pulseWidthPin);
+		codex::time::delay(_pulseWidth);
+		codex::gpio::disable(_pulseWidthPin);
+		codex::time::delay(_pulseInterval - _pulseWidth);
 	}
 
 	void DCMotorController::onStop()

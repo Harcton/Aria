@@ -10,7 +10,7 @@
 
 Ghost0::Ghost0()
 	: batchManager(&camera, "Ghost0")
-	, sendUpdateInterval(codex::time::seconds(1.0f))
+	, sendUpdateInterval(codex::time::seconds(1.0f / 30.0f))
 	, lastUpdateTime(codex::time::getRunTime())
 	, timeSinceSendUpdate(0)
 	, steerServoAngleArrow()

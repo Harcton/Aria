@@ -3,7 +3,7 @@
 #include <Codex/CodexMath.h>
 
 Shell0::Shell0()
-	: sendUpdateInterval(codex::time::seconds(1.0f))
+	: sendUpdateInterval(codex::time::seconds(1.0f / 30.0f))
 	, timeSinceSendUpdate(0)
 {
 	dcMotorController.setPins(codex::gpio::pin_5, codex::gpio::pin_13, codex::gpio::pin_11);
@@ -40,10 +40,10 @@ void Shell0::update(const codex::time::TimeType deltaTime)
 
 	static codex::time::TimeType timeSinceLastLog = 0;
 	timeSinceLastLog += deltaTime;
-	if (timeSinceLastLog >= codex::time::seconds(10))
+	if (timeSinceLastLog >= codex::time::seconds(1))
 	{
 		timeSinceLastLog = 0;
-		codex::log::info("Runtime: " + std::to_string(codex::time::getRunTime() / codex::time::conversionRate::second) + " seconds");
+		//codex::log::info("Runtime: " + std::to_string(codex::time::getRunTime() / codex::time::conversionRate::second) + " seconds. Latest delta time: " + std::to_string(deltaTime));
 		//codex::log::info("DT: " + std::to_string(float(deltaTime) / float(codex::time::conversionRate::millisecond)) + " ms, " +
 		//	std::to_string(float(timeSinceSendUpdate) / float(codex::time::conversionRate::millisecond)) + "/" +
 		//	std::to_string(float(sendUpdateInterval) / float(codex::time::conversionRate::millisecond)));

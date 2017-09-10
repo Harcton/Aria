@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <chrono>
 #undef delay //"delay" is a macro defined in the bcm header...
 
 
@@ -10,9 +11,9 @@ namespace codex
 		typedef int64_t TimeType;
 		namespace conversionRate
 		{
-			static const TimeType second = 1000000000;
-			static const TimeType millisecond = 1000000;
-			static const TimeType nanosecond = 1;
+			static const TimeType second = std::chrono::high_resolution_clock::time_point::period::den;
+			static const TimeType millisecond = second / 1000;
+			static const TimeType nanosecond = millisecond / 1000000;
 		}
 
 		inline TimeType seconds(const float seconds)

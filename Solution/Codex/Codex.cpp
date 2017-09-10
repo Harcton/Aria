@@ -1,4 +1,5 @@
 #include "Codex.h"
+#include "CodexTime.h"
 #include "Log.h"
 #include <thread>
 #include <ctime>
@@ -49,7 +50,7 @@ namespace codex
 		log::info(std::to_string(std::thread::hardware_concurrency()) + " hardware threads detected.");
 
 		//Print clock accuracy
-		log::info("System clock accuracy is " + std::to_string(CLOCKS_PER_SEC) + " ticks per second.");
+		log::info("Codex time accuracy is " + std::to_string(codex::time::conversionRate::second) + " ticks per second.");
 
 		return 0;
 	}
