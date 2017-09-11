@@ -130,8 +130,8 @@ void Ghost0::sendUpdate()
 	ghostNetState.steerAngle = 0.0f;
 	if (inputManager->joysticks.size() > 0)
 	{//Use joystick
-		ghostNetState.dcMotorStrength = inputManager->joysticks[0]->getAxisState(1);
-		ghostNetState.steerAngle = inputManager->joysticks[0]->getAxisState(0);
+		ghostNetState.dcMotorStrength = -inputManager->joysticks[0]->getAxisState(4);
+		ghostNetState.steerAngle = -inputManager->joysticks[0]->getAxisState(0) * codex::math::pi * 0.25f;
 	}
 	else
 	{//Use keyboard
@@ -140,9 +140,9 @@ void Ghost0::sendUpdate()
 		if (inputManager->isKeyDown(KEYBOARD_D))
 			ghostNetState.steerAngle -= codex::math::pi * 0.25f;
 		if (inputManager->isKeyDown(KEYBOARD_W))
-			ghostNetState.steerAngle += 1.0f;
+			ghostNetState.dcMotorStrength += 1.0f;
 		if (inputManager->isKeyDown(KEYBOARD_S))
-			ghostNetState.steerAngle -= 1.0f;
+			ghostNetState.dcMotorStrength -= 1.0f;
 	}
 
 	//Write and send

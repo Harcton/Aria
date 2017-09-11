@@ -6,11 +6,11 @@ Shell0::Shell0()
 	: sendUpdateInterval(codex::time::seconds(1.0f / 30.0f))
 	, timeSinceSendUpdate(0)
 {
-	dcMotorController.setPins(codex::gpio::pin_5, codex::gpio::pin_13, codex::gpio::pin_11);
+	dcMotorController.setPins(codex::gpio::pin_11, codex::gpio::pin_13, codex::gpio::pin_15);
 	steerServo.setPin(codex::gpio::pin_3);
-	steerServo.setMinAngle(codex::time::milliseconds(0.7f), -0.25f * codex::math::pi);
-	steerServo.setMaxAngle(codex::time::milliseconds(1.5f), 0.25f * codex::math::pi);
-	steerServo.setRotationSpeed(1.0f);
+	steerServo.setMinAngle(codex::time::milliseconds(1.9f), -0.25f * codex::math::pi);
+	steerServo.setMaxAngle(codex::time::milliseconds(0.65f), 0.25f * codex::math::pi);
+	steerServo.setRotationSpeed(3.0f);
 }
 
 Shell0::~Shell0()

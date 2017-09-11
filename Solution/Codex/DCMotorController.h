@@ -18,7 +18,7 @@ namespace codex
 		void setPins(const gpio::Pin pulseWidthPin, const gpio::Pin inputPin1, gpio::Pin inputPin2);
 
 		//Control
-		/* Set strength within the range of [0.0f, 1.0f] */
+		/* Set strength within the range of [-1.0f, 1.0f] */
 		void setStrength(const float strength);
 		float getStrength() const;
 
@@ -32,6 +32,7 @@ namespace codex
 		gpio::Pin inputPin1;
 		gpio::Pin inputPin2;
 		time::TimeType pulseWidth;
+		float strength;
 		const codex::time::TimeType pulseInterval;
 	};
 }

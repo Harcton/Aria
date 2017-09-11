@@ -1,6 +1,7 @@
 #include "DCMotorController.h"
 #include "CodexTime.h"
 #include "Log.h"
+#include <cmath>
 #include <bcm2835.h>
 
 
@@ -11,6 +12,7 @@ namespace codex
 		, inputPin1(gpio::Pin::pin_none)
 		, inputPin2(gpio::Pin::pin_none)
 		, pulseWidth(0)
+		, strength(0.0f)
 		, pulseInterval(codex::time::milliseconds(2.0f))
 	{
 
@@ -33,28 +35,48 @@ namespace codex
 		bcm2835_gpio_fsel(_inputPin2, BCM2835_GPIO_FSEL_OUTP);
 	}
 
-	void DCMotorController::setStrength(const float strength)
+	void DCMotorController::setStrength(const float newStrength)
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
-		if (strength < 0.0f)
-			pulseWidth = 0;
+
+		//Cap strength in range
+		strength = newStrength;
+		if (strength < -1.0f)
+			strength = -1.0f;
 		else if (strength > 1.0f)
-			pulseWidth = pulseInterval;
+			strength = 1.0f;
+		
+		//Calculate pulse width
+		pulseWidth = abs(strength) * (float)pulseInterval;
+
+		//Polarity
+		if (strength > 0.0f)
+		{
+			codex::gpio::disable(inputPin1);
+			codex::gpio::enable(inputPin2);
+		}
+		else if (strength < 0.0f)
+		{
+			codex::gpio::enable(inputPin1);
+			codex::gpio::disable(inputPin2);
+		}
 		else
-			pulseWidth = strength * (float)pulseInterval;
+		{
+			codex::gpio::disable(inputPin1);
+			codex::gpio::disable(inputPin2);
+		}
 	}
 
 	float DCMotorController::getStrength() const
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
-		return float(pulseWidth) / float(pulseInterval);
+		return strength;
 	}
 
 	void DCMotorController::onStart()
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
-		codex::gpio::disable(inputPin1);
-		codex::gpio::enable(inputPin2);
+		setStrength(getStrength());
 	}
 
 	void DCMotorController::update()

@@ -92,11 +92,9 @@ namespace codex
 
 	void Servo::update()
 	{
-		const time::TimeType updateInterval = time::milliseconds(20);
+		const time::TimeType updateInterval = time::milliseconds(5);
 
 		mutex.lock();
-		assert(minPulseWidth <= maxPulseWidth);
-		assert(minAngle <= maxAngle);
 		if (pin == gpio::pin_none)
 		{
 			mutex.unlock();
@@ -107,7 +105,7 @@ namespace codex
 		gpio::enable(pin);
 		//Delay
 		const float target = std::min(maxAngle, std::max(targetAngle, minAngle));
-		const float posPercentage = target / (maxAngle - minAngle);
+		const float posPercentage = (target - minAngle) / (maxAngle - minAngle);
 		const time::TimeType pulseDuration = minPulseWidth + time::TimeType(float(maxPulseWidth - minPulseWidth) * posPercentage);
 		mutex.unlock();
 		time::delay(pulseDuration);
