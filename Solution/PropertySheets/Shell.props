@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Shell</_PropertySheetDisplayName>
+    <SourcePath>
+    </SourcePath>
+    <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
+    <RemoteCompileLocalCopyObjectFiles>false</RemoteCompileLocalCopyObjectFiles>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>/usr/boost/;/home/pi/projects/;$(SolutionDir);</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>PLATFORM_LINUX;SHELL_CODEX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>/usr/boost/stage/lib/static/;/home/pi/projects/Codex/bin/$(Platform)/$(Configuration);</AdditionalLibraryDirectories>
+      <LibraryDependencies>pthread;boost_system;boost_thread;ShellCodex;bcm2835;</LibraryDependencies>
+      <VerboseOutput>false</VerboseOutput>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>

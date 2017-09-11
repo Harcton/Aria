@@ -14,6 +14,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShellCodex", "ShellCodex\Sh
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Codex", "Codex\Codex.vcxitems", "{45D41ACC-2C3C-43D2-BC10-02AA73FFC7C7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sandshell", "Sandshell\Sandshell.vcxproj", "{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66} = {4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Codex\Codex.vcxitems*{4565722d-9ef2-4df6-8085-8dbb5f8e2d66}*SharedItemsImports = 4
@@ -33,11 +38,16 @@ Global
 		{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}.Debug|ARM.Build.0 = Debug|ARM
 		{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}.Release|ARM.ActiveCfg = Release|ARM
 		{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}.Release|ARM.Build.0 = Release|ARM
+		{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2}.Debug|ARM.ActiveCfg = Debug|ARM
+		{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2}.Debug|ARM.Build.0 = Debug|ARM
+		{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2}.Release|ARM.ActiveCfg = Release|ARM
+		{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2}.Release|ARM.Build.0 = Release|ARM
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5DF77CEB-6398-461E-AD1F-878A612E091E} = {2C068ED6-A43D-418F-9F2A-9634EF5B7768}
+		{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2} = {2C068ED6-A43D-418F-9F2A-9634EF5B7768}
 	EndGlobalSection
 EndGlobal
