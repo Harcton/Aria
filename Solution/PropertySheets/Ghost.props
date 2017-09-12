@@ -9,7 +9,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SPEHSENGINE_ROOT)/Dependencies/include/;$(SPEHSENGINE_ROOT)/;$(SolutionDir)/Codex/Dependencies/include/;$(SolutionDir)/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SPEHSENGINE_ROOT)/Dependencies/include/;$(SPEHSENGINE_ROOT)/;$(SolutionDir)/Codex/Dependencies/include/;$(SolutionDir)/Codex/;$(SolutionDir)/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GHOST_CODEX;PLATFORM_WINDOWS;WIN32_LEAN_AND_MEAN;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Lib>

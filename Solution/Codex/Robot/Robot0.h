@@ -1,10 +1,10 @@
 #pragma once
 #include <stdint.h>
-#include "../Protocol.h"
+#include "Protocol.h"
 
 namespace codex
 {
-	namespace robots
+	namespace robot
 	{
 		namespace robot0
 		{

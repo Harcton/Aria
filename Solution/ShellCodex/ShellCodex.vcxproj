@@ -35,14 +35,8 @@
   <ImportGroup Label="Shared">
     <Import Project="..\Codex\Codex.vcxitems" Label="Shared" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <Import Project="..\PropertySheets\Shell.props" />
-    <Import Project="..\PropertySheets\ShellDebug.props" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <Import Project="..\PropertySheets\Shell.props" />
-    <Import Project="..\PropertySheets\ShellRelease.props" />
-  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" />
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <TargetExt>.a</TargetExt>
@@ -51,6 +45,7 @@
     <OutDir>bin/$(Platform)/$(Configuration)/</OutDir>
     <IntDir>obj/$(Platform)/$(Configuration)/</IntDir>
     <RemoteProjectDir>$(RemoteRootDir)/Codex</RemoteProjectDir>
+    <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <TargetExt>.a</TargetExt>
@@ -59,14 +54,23 @@
     <OutDir>bin/$(Platform)/$(Configuration)/</OutDir>
     <IntDir>obj/$(Platform)/$(Configuration)/</IntDir>
     <RemoteProjectDir>$(RemoteRootDir)/Codex</RemoteProjectDir>
+    <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <Lib />
     <ClCompile />
+    <ClCompile>
+      <AdditionalIncludeDirectories>/usr/boost/;/home/pi/projects/Codex/;$(SolutionDir)/Codex/Dependencies/include/;$(SolutionDir)/Codex/;$(SolutionDir);$(SPEHSENGINE_ROOT)/Dependencies/include/</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>PLATFORM_LINUX;SHELL_CODEX;</PreprocessorDefinitions>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <Lib />
     <ClCompile />
+    <ClCompile>
+      <AdditionalIncludeDirectories>/usr/boost/;/home/pi/projects/Codex/;$(SolutionDir)/Codex/Dependencies/include/;$(SolutionDir)/Codex/;$(SolutionDir);$(SPEHSENGINE_ROOT)/Dependencies/include/</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>PLATFORM_LINUX;SHELL_CODEX;NDEBUG;</PreprocessorDefinitions>
+    </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

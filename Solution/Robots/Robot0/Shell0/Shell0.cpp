@@ -1,6 +1,7 @@
 #include "Shell0.h"
 #include <Codex/CodexTime.h>
 #include <Codex/CodexMath.h>
+#include <Codex/GPIO.h>
 
 Shell0::Shell0()
 	: sendUpdateInterval(codex::time::seconds(1.0f / 30.0f))
@@ -60,14 +61,14 @@ void Shell0::onStop()
 void Shell0::receiveHandler(codex::protocol::ReadBuffer& buffer)
 {
 	//codex::log::info("Shell0 receive handler invoked. Bytes: " + std::to_string(buffer.getCapacity()));
-	codex::robots::robot0::PacketType packetType;
+	codex::robot::robot0::PacketType packetType;
 	buffer.read(packetType);
 	switch (packetType)
 	{
 	default:
 		codex::log::warning("Received unknown packet type: " + std::to_string((int)packetType));
 		break;
-	case codex::robots::robot0::PacketType::update:
+	case codex::robot::robot0::PacketType::update:
 		ghostNetState.read(buffer);
 		dcMotorController.setStrength(ghostNetState.dcMotorStrength);
 		steerServo.setTargetAngle(ghostNetState.steerAngle);
@@ -99,7 +100,7 @@ void Shell0::sendUpdate()
 
 	//Write and send
 	codex::protocol::WriteBuffer buffer;
-	buffer.write(codex::robots::robot0::PacketType::update);
+	buffer.write(codex::robot::robot0::PacketType::update);
 	shellNetState.write(buffer);
 	sendPacket(buffer);
 

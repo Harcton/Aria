@@ -30,7 +30,6 @@ namespace codex
 				bcm2835_gpio_fsel(pin, BCM2835_GPIO_FSEL_INPT);
 			else
 				codex::log::error("setPinMode() error. Invalid pin mode.");
-
 		}
 		void setPinAsInput(const Pin pin)
 		{

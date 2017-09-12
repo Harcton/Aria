@@ -109,14 +109,14 @@ void Ghost0::onStop()
 void Ghost0::receiveHandler(codex::protocol::ReadBuffer& buffer)
 {
 	//codex::log::info("Ghost0 receive handler invoked. Bytes: " + std::to_string(buffer.getCapacity()));
-	codex::robots::robot0::PacketType packetType;
+	codex::robot::robot0::PacketType packetType;
 	buffer.read(packetType);
 	switch (packetType)
 	{
 	default:
 		codex::log::warning("Unknown packet type received.");
 		break;
-	case codex::robots::robot0::PacketType::update:
+	case codex::robot::robot0::PacketType::update:
 		updatesReceived++;
 		shellNetState.read(buffer);
 		break;
@@ -147,7 +147,7 @@ void Ghost0::sendUpdate()
 
 	//Write and send
 	codex::protocol::WriteBuffer buffer;
-	buffer.write(codex::robots::robot0::PacketType::update);
+	buffer.write(codex::robot::robot0::PacketType::update);
 	ghostNetState.write(buffer);
 	sendPacket(buffer);
 	updatesSent++;

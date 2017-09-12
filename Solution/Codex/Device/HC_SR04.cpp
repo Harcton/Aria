@@ -1,12 +1,16 @@
 #include "Device/HC_SR04.h"
 
 
-
-HC_SR04::HC_SR04()
+namespace codex
 {
-}
+	namespace device
+	{
+		HC_SR04::HC_SR04()
+		{
+		}
 
-
-HC_SR04::~HC_SR04()
-{
+		HC_SR04::~HC_SR04()
+		{
+		}
+	}
 }

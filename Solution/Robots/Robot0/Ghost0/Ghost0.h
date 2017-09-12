@@ -2,7 +2,7 @@
 #include <Codex/Actor.h>
 #include <SpehsEngine/Camera2D.h>
 #include <SpehsEngine/BatchManager.h>
-#include <Codex/Robots/Robot0.h>
+#include <Codex/Robot/Robot0.h>
 #include <SpehsEngine/Arrow.h>
 #include <SpehsEngine/Text.h>
 
@@ -29,8 +29,8 @@ private:
 	codex::time::TimeType lastUpdateTime;
 	codex::time::TimeType timeSinceSendUpdate;
 
-	codex::robots::robot0::ShellNetState shellNetState;
-	codex::robots::robot0::GhostNetState ghostNetState;
+	codex::robot::robot0::ShellNetState shellNetState;
+	codex::robot::robot0::GhostNetState ghostNetState;
 	int updatesReceived;
 	int updatesSent;
 

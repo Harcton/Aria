@@ -16,26 +16,30 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Acceptor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Codex.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)DCMotorController.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Display4x8.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Device\DCMotorController.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Device\Display4x8.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Device\HC_SR04.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Device\Servo.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Device\ThreadedDevice.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FileStream.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)GPIO.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)IOService.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Log.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Protocol.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Actor.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Servo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SocketTCP.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)CodexTime.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ThreadedDevice.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Acceptor.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CodexAssert.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Codex.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CodexMath.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)DCMotorController.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Display4x8.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Device\DCMotorController.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Device\Display4x8.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Device\HC_SR04.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Device\Servo.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Device\ThreadedDevice.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FileStream.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)GPIO.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)IOService.h" />
@@ -43,10 +47,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Protocol.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RAIIVariableSetter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Actor.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Robots\Robot0.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Servo.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Robot\Robot0.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SocketTCP.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CodexTime.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ThreadedDevice.h" />
   </ItemGroup>
 </Project>

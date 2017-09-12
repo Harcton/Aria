@@ -1,8 +1,8 @@
 #pragma once
 #include <Codex/Actor.h>
-#include <Codex/DCMotorController.h>
-#include <Codex/Servo.h>
-#include <Codex/Robots/Robot0.h>
+#include <Codex/Device/DCMotorController.h>
+#include <Codex/Device/Servo.h>
+#include <Codex/Robot/Robot0.h>
 
 class Shell0 : public codex::Actor
 {
@@ -20,11 +20,11 @@ private:
 
 	void sendUpdate();
 
-	codex::DCMotorController dcMotorController;
-	codex::Servo steerServo;
+	codex::device::DCMotorController dcMotorController;
+	codex::device::Servo steerServo;
 	codex::time::TimeType sendUpdateInterval;
 	codex::time::TimeType timeSinceSendUpdate;
 
-	codex::robots::robot0::GhostNetState ghostNetState;
-	codex::robots::robot0::ShellNetState shellNetState;
+	codex::robot::robot0::GhostNetState ghostNetState;
+	codex::robot::robot0::ShellNetState shellNetState;
 };
