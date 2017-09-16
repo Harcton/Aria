@@ -13,7 +13,8 @@ namespace codex
 		{
 			static const TimeType second = std::chrono::high_resolution_clock::time_point::period::den;
 			static const TimeType millisecond = second / 1000;
-			static const TimeType nanosecond = millisecond / 1000000;
+			static const TimeType microsecond = millisecond / 1000;
+			static const TimeType nanosecond = microsecond / 1000;
 		}
 
 		inline TimeType seconds(const float seconds)
@@ -23,6 +24,10 @@ namespace codex
 		inline TimeType milliseconds(const float milliseconds)
 		{
 			return milliseconds * conversionRate::millisecond;
+		}
+		inline TimeType microseconds(const float microseconds)
+		{
+			return microseconds * conversionRate::microsecond;
 		}
 		inline TimeType nanoseconds(const uint64_t nanoseconds)
 		{
@@ -35,6 +40,10 @@ namespace codex
 		inline float toMilliseconds(const TimeType time)
 		{
 			return (float)time / (float)conversionRate::millisecond;
+		}
+		inline float toMicroseconds(const TimeType time)
+		{
+			return (float)time / (float)conversionRate::microsecond;
 		}
 		inline float toNanoseconds(const TimeType time)
 		{

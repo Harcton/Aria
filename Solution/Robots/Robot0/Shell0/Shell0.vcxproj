@@ -42,14 +42,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <AdditionalSourcesToCopyMapping>
     </AdditionalSourcesToCopyMapping>
-    <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);</SourcesToCopyRemotelyOverride>
-    <OutDir>bin/$(Platform)/$(Configuration)</OutDir>
-    <IntDir>obj/$(Platform)/$(Configuration)</IntDir>
+    <OutDir>bin/$(Platform)/$(Configuration)/</OutDir>
+    <IntDir>obj/$(Platform)/$(Configuration)/</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);</SourcesToCopyRemotelyOverride>
-    <OutDir>bin/$(Platform)/$(Configuration)</OutDir>
-    <IntDir>obj/$(Platform)/$(Configuration)</IntDir>
+    <OutDir>bin/$(Platform)/$(Configuration)/</OutDir>
+    <IntDir>obj/$(Platform)/$(Configuration)/</IntDir>
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />

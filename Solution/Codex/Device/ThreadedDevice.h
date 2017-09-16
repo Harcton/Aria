@@ -14,7 +14,7 @@ namespace codex
 		{
 		public:
 			ThreadedDevice();
-			virtual ~ThreadedDevice();
+			virtual ~ThreadedDevice() = 0;
 
 			bool start();
 			bool stop();

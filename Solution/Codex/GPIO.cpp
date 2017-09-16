@@ -1,15 +1,11 @@
-#include "GPIO.h"
-#include "Log.h"
+#include "Codex/GPIO.h"
+#include "Codex/Log.h"
 
 
 namespace codex
 {
 	namespace gpio
 	{
-		void write(const Pin pin, const PinState pinState)
-		{
-			bcm2835_gpio_write(pin, pinState);
-		}
 		void enable(const Pin pin)
 		{
 			bcm2835_gpio_write(pin, HIGH);
@@ -18,9 +14,41 @@ namespace codex
 		{
 			bcm2835_gpio_write(pin, LOW);
 		}
+		void write(const Pin pin, const PinState pinState)
+		{
+			bcm2835_gpio_write(pin, pinState);
+		}
+		void analogWrite(const Pin pin, const float strength, const time::TimeType duration)
+		{
+
+		}
 		PinState read(const Pin pin)
 		{
 			return bcm2835_gpio_lev(pin) == HIGH ? PinState::high : PinState::low;
+		}
+		time::TimeType pulseIn(const Pin pin, const PinState pinState, const time::TimeType timeout)
+		{
+			bool readyToReceivePulse = false;
+			bool pulseReceived = false;
+			const time::TimeType beginTime = time::getRunTime();
+			while (true)
+			{
+				if (gpio::read(pin) == pinState)
+				{
+					if (readyToReceivePulse)
+						pulseReceived = true;
+				}
+				else
+				{
+					if (pulseReceived)
+						break;
+					else
+						readyToReceivePulse = true;
+				}
+				if (timeout && time::getRunTime() - beginTime >= timeout)
+					return 0;
+			}
+			return time::getRunTime() - beginTime;
 		}
 		void setPinMode(const Pin pin, const PinMode mode)
 		{

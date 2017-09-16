@@ -1,6 +1,10 @@
 #pragma once
 #include <bcm2835.h>
 #include <stdint.h>
+#include "Codex/CodexTime.h"
+#undef delay //"delay" is a macro defined in the bcm header...
+
+
 
 namespace codex
 {
@@ -47,10 +51,23 @@ namespace codex
 			input,
 			output,
 		};
-		extern void write(const Pin pin, const PinState pinState);
 		extern void enable(const Pin pin);
 		extern void disable(const Pin pin);
+		extern void write(const Pin pin, const PinState pinState);
+
+		/*
+			...
+		*/
+		extern void analogWrite(const Pin pin, const float strength, const time::TimeType duration);
+
 		extern PinState read(const Pin pin);
+
+		/*
+			Measures time it takes for pin to go from !pinState to pinState and back to !pinState.
+			Blocks indefinitely if no timeout parameter is specified (set to 0).
+			In case of a timeout, returns 0.
+		*/
+		extern time::TimeType pulseIn(const Pin pin, const PinState pinState, const time::TimeType timeout = 0);
 
 		extern void setPinMode(const Pin pin, const PinMode mode);
 		extern void setPinAsInput(const Pin pin);
