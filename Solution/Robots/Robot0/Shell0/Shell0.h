@@ -2,6 +2,7 @@
 #include <Codex/Actor.h>
 #include <Codex/Device/DCMotorController.h>
 #include <Codex/Device/Servo.h>
+#include <Codex/Device/HC_SR04.h>
 #include <Codex/Robot/Robot0.h>
 
 class Shell0 : public codex::Actor
@@ -22,6 +23,7 @@ private:
 
 	codex::device::DCMotorController dcMotorController;
 	codex::device::Servo steerServo;
+	codex::device::HC_SR04 distanceSensor;
 	codex::time::TimeType sendUpdateInterval;
 	codex::time::TimeType timeSinceSendUpdate;
 

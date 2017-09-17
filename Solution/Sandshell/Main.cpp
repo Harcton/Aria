@@ -9,6 +9,12 @@ int main(const int argc, const char** argv)
 
 	codex::log::info("Sandshell");
 	codex::device::HC_SR04 sensor;
+	sensor.setPins(codex::gpio::pin_36, codex::gpio::pin_38);
+	sensor.start();
+	while (sensor.isRunning())
+	{
+		//Block
+	}
 
 	codex::uninitialize();
 }

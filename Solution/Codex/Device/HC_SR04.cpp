@@ -10,6 +10,8 @@ namespace codex
 		HC_SR04::HC_SR04()
 			: triggerPin(gpio::pin_none)
 			, echoPin(gpio::pin_none)
+			, distance(0.0f)
+			, pollInterval(codex::time::milliseconds(100))
 		{
 		}
 
@@ -29,18 +31,7 @@ namespace codex
 
 		void HC_SR04::onStart()
 		{
-			/*
-			HC-SR04 Ping distance sensor]
-			VCC to arduino 5v GND to arduino GND
-			Echo to Arduino pin 13 Trig to Arduino pin 12
-			Red POS to Arduino pin 11
-			Green POS to Arduino pin 10
-			560 ohm resistor to both LED NEG and GRD power rail
-			More info at: http://goo.gl/kJ8Gl
-			Original code improvements to the Ping sketch sourced from Trollmaker.com
-			Some code and wiring inspired by http://en.wikiversity.org/wiki/User:Dstaub/robotcar
-			*/
-			
+
 		}
 
 		void HC_SR04::update()
@@ -52,23 +43,36 @@ namespace codex
 			mutex.unlock();
 			
 			//Fire trigger
+			const time::TimeType delay1 = time::milliseconds(2);
+			const time::TimeType delay2 = time::milliseconds(10);
+			const time::TimeType beginTime = time::getRunTime();
 			gpio::disable(trigger);
-			time::delay(time::milliseconds(2));
+			time::delay(delay1);
 			gpio::enable(trigger);
-			time::delay(time::milliseconds(10));
+			time::delay(delay2);
 			gpio::disable(trigger);
 
-			const time::TimeType duration = gpio::pulseIn(echo, gpio::high, time::milliseconds(500));
-			const float distance = (time::toMicroseconds(duration) * 0.5f) / 29.1;
+			//Measure pulse
+			const time::TimeType duration = gpio::pulseIn(echo, gpio::high, time::milliseconds(1000));
 
-			codex::log::info("HC_SR04 d: " + std::to_string(distance));
-
-			time::delay(time::milliseconds(500));
+			//Update distance value
+			mutex.lock();
+			distance = (time::toMicroseconds(duration) * 0.5f) / 29.1;
+			//Delay by poll interval
+			const time::TimeType interval = pollInterval + beginTime - time::getRunTime();
+			mutex.unlock();
+			time::delay(interval);
 		}
 
 		void HC_SR04::onStop()
 		{
 
+		}
+
+		float HC_SR04::getDistance() const
+		{
+			std::lock_guard<std::recursive_mutex> lock(mutex);
+			return distance;
 		}
 	}
 }

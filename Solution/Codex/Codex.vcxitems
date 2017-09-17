@@ -29,6 +29,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Actor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SocketTCP.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)CodexTime.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Ublox_M8N.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Acceptor.h" />
@@ -50,5 +51,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Robot\Robot0.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SocketTCP.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CodexTime.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Ublox_M8N.h" />
   </ItemGroup>
 </Project>

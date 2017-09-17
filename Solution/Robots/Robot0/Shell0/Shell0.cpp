@@ -12,6 +12,7 @@ Shell0::Shell0()
 	steerServo.setMinAngle(codex::time::milliseconds(1.9f), -0.25f * codex::math::pi);
 	steerServo.setMaxAngle(codex::time::milliseconds(0.65f), 0.25f * codex::math::pi);
 	steerServo.setRotationSpeed(3.0f);
+	distanceSensor.setPins(codex::gpio::pin_36, codex::gpio::pin_38);
 }
 
 Shell0::~Shell0()
@@ -86,6 +87,13 @@ void Shell0::receiveHandler(codex::protocol::ReadBuffer& buffer)
 			else
 				dcMotorController.stop();
 		}
+		if (ghostNetState.runDistanceSensor != distanceSensor.isRunning())
+		{
+			if (ghostNetState.runDistanceSensor)
+				distanceSensor.start();
+			else
+				distanceSensor.stop();
+		}
 		break;
 	}
 }
@@ -95,8 +103,10 @@ void Shell0::sendUpdate()
 	//Update shell net state
 	shellNetState.dcMotorStrength = dcMotorController.getStrength();
 	shellNetState.steerAngle = steerServo.getApproximatedAngle();
+	shellNetState.distance = distanceSensor.getDistance();
 	shellNetState.runDCMotor = dcMotorController.isRunning();
 	shellNetState.runSteerServo = steerServo.isRunning();
+	shellNetState.runDistanceSensor = distanceSensor.isRunning();
 
 	//Write and send
 	codex::protocol::WriteBuffer buffer;

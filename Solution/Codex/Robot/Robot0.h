@@ -20,20 +20,26 @@ namespace codex
 				{
 					buffer.write(steerAngle);
 					buffer.write(dcMotorStrength);
+					buffer.write(distance);
 					buffer.write(runSteerServo);
 					buffer.write(runDCMotor);
+					buffer.write(runDistanceSensor);
 				}
 				void read(protocol::ReadBuffer& buffer)
 				{
 					buffer.read(steerAngle);
 					buffer.read(dcMotorStrength);
+					buffer.read(distance);
 					buffer.read(runSteerServo);
 					buffer.read(runDCMotor);
+					buffer.read(runDistanceSensor);
 				}
 				float steerAngle;
 				float dcMotorStrength;
+				float distance;
 				bool runSteerServo;
 				bool runDCMotor;
+				bool runDistanceSensor;
 			};
 
 			/* Sent by ghost */
@@ -43,20 +49,26 @@ namespace codex
 				{
 					buffer.write(steerAngle);
 					buffer.write(dcMotorStrength);
+					buffer.write(distance);
 					buffer.write(runSteerServo);
 					buffer.write(runDCMotor);
+					buffer.write(runDistanceSensor);
 				}
 				void read(protocol::ReadBuffer& buffer)
 				{
 					buffer.read(steerAngle);
 					buffer.read(dcMotorStrength);
+					buffer.read(distance);
 					buffer.read(runSteerServo);
 					buffer.read(runDCMotor);
+					buffer.read(runDistanceSensor);
 				}
 				float steerAngle;
 				float dcMotorStrength;
+				float distance;
 				bool runSteerServo;
 				bool runDCMotor;
+				bool runDistanceSensor;
 			};
 
 			
