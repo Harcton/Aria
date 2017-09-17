@@ -33,3 +33,5 @@ Segmentation fault on linux can be caused by functions defining a return type, b
 
 
 shell0: pthread;boost_system;boost_thread;ShellCodex;bcm2835;
+
+If starting debugging fails due to a file not found at "E:/something/local_solution_folder/bin/program.out" -> Property Pages > Linker > Copy output

@@ -6,7 +6,7 @@
     <_PropertySheetDisplayName>Shell</_PropertySheetDisplayName>
     <SourcePath>
     </SourcePath>
-    <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
+    <RemoteLinkLocalCopyOutput>true</RemoteLinkLocalCopyOutput>
     <RemoteCompileLocalCopyObjectFiles>false</RemoteCompileLocalCopyObjectFiles>
   </PropertyGroup>
   <ItemDefinitionGroup>
