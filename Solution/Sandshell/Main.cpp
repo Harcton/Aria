@@ -1,6 +1,7 @@
 #include <Codex/Codex.h>
 #include <Codex/Log.h>
 #include <Codex/Device/HC_SR04.h>
+#include <Codex/Device/Ublox_M8N.h>
 #include <iostream>
 
 int main(const int argc, const char** argv)
@@ -8,10 +9,10 @@ int main(const int argc, const char** argv)
 	codex::initialize(argc, argv);
 
 	codex::log::info("Sandshell");
-	codex::device::HC_SR04 sensor;
-	sensor.setPins(codex::gpio::pin_36, codex::gpio::pin_38);
-	sensor.start();
-	while (sensor.isRunning())
+	codex::device::Ublox_M8N gps;
+	gps.setPins(codex::gpio::pin_35, codex::gpio::pin_37);
+	gps.start();
+	while (gps.isRunning())
 	{
 		//Block
 	}
