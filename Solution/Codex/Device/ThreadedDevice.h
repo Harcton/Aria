@@ -17,6 +17,7 @@ namespace codex
 			virtual ~ThreadedDevice() = 0;
 
 			bool start();
+			/* Asynchronously stops the device */
 			bool stop();
 			bool isRunning() const;
 
@@ -29,6 +30,7 @@ namespace codex
 			mutable std::recursive_mutex mutex;
 			std::thread* thread;
 			bool keepRunning;
+			bool threadRunning;
 		};
 	}
 }

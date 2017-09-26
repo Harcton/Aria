@@ -12,12 +12,9 @@ namespace codex
 			, receivePin(gpio::pin_none)
 			, transmitPinState(gpio::low)
 			, receivePinState(gpio::low)
-			, headerReceived(false)
 			, readInterval(time::seconds(1.0f / 9600.0f))
-			, receiveBits(0)
-			, receiveBitIndex(0)
-			, transmissionSyncPreviousRxState(gpio::PinState::low)
 			, stopBitCount(1)
+			, parityBitCount(0)
 			, receiveState(ReceiveState::detectStreamBoundaries)
 		{
 		}
@@ -39,14 +36,7 @@ namespace codex
 			transmitPinState = gpio::read(transmitPin);
 			receivePinState = gpio::read(receivePin);
 
-			headerReceived = false;
-			readTime = time::getRunTime();
-			receiveBits = 0;
-			receiveBitIndex = 0;
-			transmissionSyncPreviousRxState = gpio::read(transmitPin);
 			receiveState = ReceiveState::detectStreamBoundaries;
-			clockTimeStamp = 0;
-			clockReadSample = gpio::read(transmitPin);
 		}
 
 		void Ublox_M8N::update()
@@ -56,6 +46,9 @@ namespace codex
 			if (receiveState == ReceiveState::detectStreamBoundaries)
 			{//Block until able to resume to normal loop
 				log::info("Starting to detect stream boundaries...");
+
+				//TODO: detect read interval
+
 				std::vector<gpio::PinState> history;
 				gpio::PinState previousReadState = gpio::read(transmitPin);
 				while (previousReadState == gpio::read(transmitPin))
@@ -192,7 +185,8 @@ namespace codex
 
 						if (validPatterns.size() == 1)
 						{//Found exactly one valid pattern! Calculate
-
+							//TODO: wait until ready to receive the start bit
+							break;
 						}
 					}
 				}

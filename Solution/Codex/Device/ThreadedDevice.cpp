@@ -1,4 +1,5 @@
 #include "ThreadedDevice.h"
+#include "RAIIVariableSetter.h"
 #include <assert.h>
 #include "Log.h"
 
@@ -10,16 +11,18 @@ namespace codex
 		ThreadedDevice::ThreadedDevice()
 			: thread(nullptr)
 			, keepRunning(false)
+			, threadRunning(false)
 		{
 		}
 
 		ThreadedDevice::~ThreadedDevice()
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
+			assert(!keepRunning);//Stop must have been requested by now!
 			if (thread)
 			{
-				log::error("ThreadedDevice was not stopped before destructing! ThreadDevices must always be manually stopped before destructing!");
-				assert(false);
+				thread->join();
+				delete thread;
 			}
 		}
 
@@ -32,9 +35,7 @@ namespace codex
 				return false;
 			}
 
-			//Make onStart() call, device can prepare for running.
 			log::info("Starting threaded device...");
-			onStart();
 
 			//Launch run thread
 			keepRunning = true;
@@ -45,44 +46,39 @@ namespace codex
 
 		bool ThreadedDevice::stop()
 		{
-			{std::lock_guard<std::recursive_mutex> lock(mutex);
-			if (!thread)
+			std::lock_guard<std::recursive_mutex> lock(mutex);
+			if (!thread || !keepRunning)
 				return false;
 
 			//Request the run thread to exit
 			keepRunning = false;
-			}
-
-			//Wait until the run thread finishes execution, then deallocate thread. NOTE: no mutex acquisition, let the run thread have it...
-			thread->join();
-			std::lock_guard<std::recursive_mutex> lock(mutex);
-			delete thread;
-			thread = nullptr;
-
-			//Make onStop() call, device can do post-run operations.
-			onStop();
-
 			return true;
 		}
 
 		void ThreadedDevice::run()
 		{
+			RAIIMutexVariableSetter<bool, std::recursive_mutex> threadRunningSetter(threadRunning, true, mutex);
+
+			//Make onStart() call, device can prepare for running.
+			onStart();
+
 			//Update until stop is requested
-			log::info("Running threaded device...");
-			bool _keepRunning = true;
-			while (_keepRunning)
+			while (true)
 			{
 				update();
-
 				std::lock_guard<std::recursive_mutex> lock(mutex);
-				_keepRunning = keepRunning;
+				if (!keepRunning)
+					break;
 			}
+
+			//Make onStop() call, device can do post-run operations.
+			onStop();
 		}
 
 		bool ThreadedDevice::isRunning() const
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
-			return thread != nullptr;
+			return threadRunning;
 		}
 	}
 }

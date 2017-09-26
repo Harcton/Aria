@@ -39,19 +39,11 @@ namespace codex
 				receivingData,			//Receiving data bits between set intervals
 				receivingParityBit,		//Receiving the parity bit
 			};
-			bool headerReceived;
 			time::TimeType readInterval;
-			time::TimeType readTime;
-			time::TimeType clockTimeStamp;
-			uint8_t receiveBits;
-			int receiveBitIndex;
-			gpio::PinState transmissionSyncPreviousRxState;
-			gpio::PinState clockReadSample;
-			std::vector<uint8_t> receiveBuffer;
-			std::vector<uint8_t> startSamples;
 			int stopBitCount;
 			int parityBitCount;
 			ReceiveState receiveState;
+			std::vector<uint8_t> receiveBuffer;
 		};
 	}
 }

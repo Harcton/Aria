@@ -44,7 +44,8 @@ namespace codex
 		enum PinState : uint8_t
 		{
 			low = LOW,
-			high = HIGH
+			high = HIGH,
+			invalid
 		};
 		enum PinMode : uint8_t
 		{
