@@ -33,32 +33,39 @@ int main(const int argc, const char** argv)
 		codex::device::RS232_PinReader reader;
 		reader.setPin(codex::gpio::pin_35/*, codex::gpio::pin_37*/);
 		reader.setReadInterval(codex::time::seconds(1.0f / 9600.0f));
-		reader.setTransmissionUnitLength(8);
+		
+		reader.setStreamBoundaryRequiredPatternRepetitionCount(10);
+
+		/*none of the packets (in u-center) have the 8th bit enabled -> transmission unit is 7 bits wide?*/
+		reader.setTransmissionUnitLength(7);
+
 		reader.disableParityBitCheck();
 		//reader.enableParityBitCheck();
+
 		reader.start();
 
-		std::vector<uint8_t> receiveBuffer;
-		while (reader.isRunning())
-		{
-			reader.retrieveReceiveBuffer(receiveBuffer);
-			if (receiveBuffer.size() > 80)
-			{//Print
-				std::string hexStr;
-				std::string charStr;
-				hexStr.reserve(3 * receiveBuffer.size());
-				charStr.reserve(receiveBuffer.size());
-				for (size_t i = 0; i < receiveBuffer.size(); i++)
-				{
-					hexStr += " " + toHexString(receiveBuffer[i]);
-					charStr += receiveBuffer[i];
-				}
+		//std::vector<uint8_t> receiveBuffer;
+		//while (reader.isRunning())
+		//{
+		//	reader.retrieveReceiveBuffer(receiveBuffer);
+		//	//if (receiveBuffer.size() > 80)
+		//	//{//Print
+		//	//	std::string hexStr;
+		//	//	std::string charStr;
+		//	//	hexStr.reserve(3 * receiveBuffer.size());
+		//	//	charStr.reserve(receiveBuffer.size());
+		//	//	for (size_t i = 0; i < receiveBuffer.size(); i++)
+		//	//	{
+		//	//		hexStr += " " + toHexString(receiveBuffer[i]);
+		//	//		charStr += receiveBuffer[i];
+		//	//	}
 
-				receiveBuffer.clear();
-				//codex::log::info(hexStr + charStr);
-				reader.stop();
-			}
-		}
+		//	//	receiveBuffer.clear();
+		//	//	//codex::log::info(hexStr + charStr);
+		//	//	reader.stop();
+		//	//}
+		//}
+				
 		std::getchar();
 	}
 
