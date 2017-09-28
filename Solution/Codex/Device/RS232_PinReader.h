@@ -16,6 +16,8 @@ namespace codex
 			void setPin(const gpio::Pin pin);
 			void setReadInterval(const time::TimeType interval);
 			void setTransmissionUnitLength(const uint8_t length);
+			/* Can have either 1 or 2 stop bits */
+			void setStopBitCount(const int count);
 			void setStreamBoundaryRequiredPatternRepetitionCount(int requiredRepetitions);
 			void enableParityBitCheck();
 			void disableParityBitCheck();

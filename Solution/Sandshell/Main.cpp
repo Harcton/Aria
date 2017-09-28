@@ -35,9 +35,10 @@ int main(const int argc, const char** argv)
 		reader.setReadInterval(codex::time::seconds(1.0f / 9600.0f));
 		
 		reader.setStreamBoundaryRequiredPatternRepetitionCount(10);
+		reader.setStopBitCount(1);
 
 		/*none of the packets (in u-center) have the 8th bit enabled -> transmission unit is 7 bits wide?*/
-		reader.setTransmissionUnitLength(7);
+		reader.setTransmissionUnitLength(8);
 
 		reader.disableParityBitCheck();
 		//reader.enableParityBitCheck();
