@@ -21,25 +21,32 @@ namespace codex
 					buffer.write(steerAngle);
 					buffer.write(dcMotorStrength);
 					buffer.write(distance);
+					buffer.write(motionSensorState);
 					buffer.write(runSteerServo);
 					buffer.write(runDCMotor);
 					buffer.write(runDistanceSensor);
+					buffer.write(runMotionSensor);
 				}
 				void read(protocol::ReadBuffer& buffer)
 				{
 					buffer.read(steerAngle);
 					buffer.read(dcMotorStrength);
 					buffer.read(distance);
+					buffer.read(motionSensorState);
 					buffer.read(runSteerServo);
 					buffer.read(runDCMotor);
 					buffer.read(runDistanceSensor);
+					buffer.read(runMotionSensor);
 				}
 				float steerAngle;
 				float dcMotorStrength;
 				float distance;
+				float motionSensorState;
+
 				bool runSteerServo;
 				bool runDCMotor;
 				bool runDistanceSensor;
+				bool runMotionSensor;
 			};
 
 			/* Sent by ghost */
@@ -50,25 +57,32 @@ namespace codex
 					buffer.write(steerAngle);
 					buffer.write(dcMotorStrength);
 					buffer.write(distance);
+					buffer.write(motionSensorState);
 					buffer.write(runSteerServo);
 					buffer.write(runDCMotor);
 					buffer.write(runDistanceSensor);
+					buffer.write(runMotionSensor);
 				}
 				void read(protocol::ReadBuffer& buffer)
 				{
 					buffer.read(steerAngle);
 					buffer.read(dcMotorStrength);
 					buffer.read(distance);
+					buffer.read(motionSensorState);
 					buffer.read(runSteerServo);
 					buffer.read(runDCMotor);
 					buffer.read(runDistanceSensor);
+					buffer.read(runMotionSensor);
 				}
 				float steerAngle;
 				float dcMotorStrength;
 				float distance;
-				bool runSteerServo;
-				bool runDCMotor;
-				bool runDistanceSensor;
+				float motionSensorState;
+
+				bool runSteerServo = false;
+				bool runDCMotor = false;
+				bool runDistanceSensor = false;
+				bool runMotionSensor = false;
 			};
 
 			

@@ -49,7 +49,11 @@ namespace codex
 		{
 			return (float)time / (float)conversionRate::nanosecond;
 		}
-		
+
+		/* Returns the current time stamp, relative to 'some' context. See getRunTime() for an alternative. */
+		TimeType now();
+
+		/* Returns current time since the program began. Less efficient than using now(). */
 		TimeType getRunTime();
 
 		/* Delay code execution by specified amount of time */

@@ -45,7 +45,7 @@ namespace codex
 			//Fire trigger
 			const time::TimeType delay1 = time::milliseconds(2);
 			const time::TimeType delay2 = time::milliseconds(10);
-			const time::TimeType beginTime = time::getRunTime();
+			const time::TimeType beginTime = time::now();
 			gpio::disable(trigger);
 			time::delay(delay1);
 			gpio::enable(trigger);
@@ -59,7 +59,7 @@ namespace codex
 			mutex.lock();
 			distance = (time::toMicroseconds(duration) * 0.5f) / 29.1;
 			//Delay by poll interval
-			const time::TimeType interval = pollInterval + beginTime - time::getRunTime();
+			const time::TimeType interval = pollInterval + beginTime - time::now();
 			mutex.unlock();
 			time::delay(interval);
 		}

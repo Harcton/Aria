@@ -19,6 +19,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Device\DCMotorController.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Device\Display4x8.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Device\HC_SR04.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Device\PIR_MotionSensor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Device\RS232_PinReader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Device\Servo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Device\ThreadedDevice.cpp" />
@@ -41,6 +42,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Device\DCMotorController.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Device\Display4x8.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Device\HC_SR04.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Device\PIR_MotionSensor.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Device\RS232_PinReader.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Device\Servo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Device\ThreadedDevice.h" />

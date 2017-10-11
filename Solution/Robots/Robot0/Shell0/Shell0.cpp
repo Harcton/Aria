@@ -13,6 +13,7 @@ Shell0::Shell0()
 	steerServo.setMaxAngle(codex::time::milliseconds(0.65f), 0.25f * codex::math::pi);
 	steerServo.setRotationSpeed(3.0f);
 	distanceSensor.setPins(codex::gpio::pin_36, codex::gpio::pin_38);
+	motionSensor.setPin(codex::gpio::pin_7);
 }
 
 Shell0::~Shell0()
@@ -29,15 +30,19 @@ void Shell0::update(const codex::time::TimeType deltaTime)
 {
 	const float deltaSeconds = float(deltaTime) / float(codex::time::conversionRate::second);
 	
+	motionSensorTotalStateSamples++;
+	if (motionSensor.getMovement())
+		motionSensorHighStateSamples++;
+
 	//Send update
 	timeSinceSendUpdate += deltaTime;
 	if (timeSinceSendUpdate > sendUpdateInterval)
 	{
-		const codex::time::TimeType sendUpdateBeginTime = codex::time::getRunTime();
+		const codex::time::TimeType sendUpdateBeginTime = codex::time::now();
 		sendUpdate();
 		static const codex::time::TimeType warningThresholdTime = codex::time::seconds(0.5f);
-		if (codex::time::getRunTime() - sendUpdateBeginTime >= warningThresholdTime)
-			codex::log::warning("Shell sendUpdate took " + std::to_string(float(codex::time::getRunTime() - sendUpdateBeginTime) / codex::time::conversionRate::millisecond) + " ms");
+		if (codex::time::now() - sendUpdateBeginTime >= warningThresholdTime)
+			codex::log::warning("Shell sendUpdate took " + std::to_string(float(codex::time::now() - sendUpdateBeginTime) / codex::time::conversionRate::millisecond) + " ms");
 	}
 
 	static codex::time::TimeType timeSinceLastLog = 0;
@@ -45,7 +50,7 @@ void Shell0::update(const codex::time::TimeType deltaTime)
 	if (timeSinceLastLog >= codex::time::seconds(1))
 	{
 		timeSinceLastLog = 0;
-		//codex::log::info("Runtime: " + std::to_string(codex::time::getRunTime() / codex::time::conversionRate::second) + " seconds. Latest delta time: " + std::to_string(deltaTime));
+		//codex::log::info("Runtime: " + std::to_string(codex::time::now() / codex::time::conversionRate::second) + " seconds. Latest delta time: " + std::to_string(deltaTime));
 		//codex::log::info("DT: " + std::to_string(float(deltaTime) / float(codex::time::conversionRate::millisecond)) + " ms, " +
 		//	std::to_string(float(timeSinceSendUpdate) / float(codex::time::conversionRate::millisecond)) + "/" +
 		//	std::to_string(float(sendUpdateInterval) / float(codex::time::conversionRate::millisecond)));
@@ -94,6 +99,13 @@ void Shell0::receiveHandler(codex::protocol::ReadBuffer& buffer)
 			else
 				distanceSensor.stop();
 		}
+		if (ghostNetState.runMotionSensor != motionSensor.isRunning())
+		{
+			if (ghostNetState.runMotionSensor)
+				motionSensor.start();
+			else
+				motionSensor.stop();
+		}
 		break;
 	}
 }
@@ -104,9 +116,10 @@ void Shell0::sendUpdate()
 	shellNetState.dcMotorStrength = dcMotorController.getStrength();
 	shellNetState.steerAngle = steerServo.getApproximatedAngle();
 	shellNetState.distance = distanceSensor.getDistance();
+	shellNetState.motionSensorState = (float)motionSensorHighStateSamples / (float)motionSensorTotalStateSamples;
 	shellNetState.runDCMotor = dcMotorController.isRunning();
 	shellNetState.runSteerServo = steerServo.isRunning();
-	shellNetState.runDistanceSensor = distanceSensor.isRunning();
+	shellNetState.runMotionSensor = motionSensor.isRunning();
 
 	//Write and send
 	codex::protocol::WriteBuffer buffer;
@@ -114,7 +127,8 @@ void Shell0::sendUpdate()
 	shellNetState.write(buffer);
 	sendPacket(buffer);
 
-	//Reset timer
+	//Post send actions
 	timeSinceSendUpdate = 0;
-	//codex::log::info("U");
+	motionSensorHighStateSamples = 0;
+	motionSensorTotalStateSamples = 0;
 }

@@ -2,6 +2,8 @@
 #include <Codex/Log.h>
 #include <Codex/Device/HC_SR04.h>
 #include <Codex/Device/RS232_PinReader.h>
+#include <Codex/Device/PIR_MotionSensor.h>
+#include <glm/glm.hpp>
 #include <iostream>
 
 
@@ -27,12 +29,22 @@ int main(const int argc, const char** argv)
 	codex::initialize(argc, argv);
 
 	codex::log::info("Sandshell");
+		
+	////Motion sensor test
+	//codex::device::PIR_MotionSensor motionSensor;
+	//motionSensor.setPin(codex::gpio::pin_7);
+	//motionSensor.start();
+	//while (motionSensor.isRunning())
+	//{ /* Keep running */ }
+	//codex::log::info("main end"); return 0;
+	
 
 	while (true)
 	{
 		codex::device::RS232_PinReader reader;
 		reader.setPin(codex::gpio::pin_35/*, codex::gpio::pin_37*/);
 		reader.setReadInterval(codex::time::seconds(1.0f / 9600.0f));
+		//reader.setReadInterval(codex::time::seconds(1.0f / 4800.0f));
 		
 		reader.setStreamBoundaryRequiredPatternRepetitionCount(10);
 		reader.setStopBitCount(1);

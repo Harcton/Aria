@@ -30,7 +30,7 @@ namespace codex
 		{
 			bool readyToReceivePulse = false;
 			bool pulseReceived = false;
-			const time::TimeType beginTime = time::getRunTime();
+			const time::TimeType beginTime = time::now();
 			while (true)
 			{
 				if (gpio::read(pin) == pinState)
@@ -45,10 +45,10 @@ namespace codex
 					else
 						readyToReceivePulse = true;
 				}
-				if (timeout && time::getRunTime() - beginTime >= timeout)
+				if (timeout && time::now() - beginTime >= timeout)
 					return 0;
 			}
-			return time::getRunTime() - beginTime;
+			return time::now() - beginTime;
 		}
 		void setPinMode(const Pin pin, const PinMode mode)
 		{

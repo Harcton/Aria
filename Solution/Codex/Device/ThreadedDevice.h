@@ -16,9 +16,13 @@ namespace codex
 			ThreadedDevice();
 			virtual ~ThreadedDevice() = 0;
 
+			/*
+				Upon returning, the device is guaranteed to have started running in a different thread.
+				Furthermore, the device may possibly have even stopped before start() returns.
+			*/
 			bool start();
 			/* Asynchronously stops the device */
-			bool stop();
+			void stop();
 			bool isRunning() const;
 
 		protected:
@@ -31,6 +35,7 @@ namespace codex
 			std::thread* thread;
 			bool keepRunning;
 			bool threadRunning;
+			bool canExitStart;//Used to prevent start() from returning before run() has successfully started in a different thread.
 		};
 	}
 }

@@ -88,7 +88,7 @@ namespace codex
 		void Servo::onStart()
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
-			lastUpdateTime = time::getRunTime();
+			lastUpdateTime = time::now();
 		}
 
 		void Servo::update()

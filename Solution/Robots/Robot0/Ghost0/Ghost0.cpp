@@ -63,7 +63,8 @@ void Ghost0::update(const codex::time::TimeType deltaTime)
 		"\nUpdates received: " + std::to_string(updatesReceived) +
 		"\nSteer angle: " + std::to_string(shellNetState.steerAngle) +
 		"\nDC motor controller strength: " + std::to_string(shellNetState.dcMotorStrength) +
-		"\nDistance: " + std::to_string(shellNetState.distance)
+		"\nDistance: " + std::to_string(shellNetState.distance) +
+		"\nMotion sensor: " + (shellNetState.runMotionSensor ? std::to_string(shellNetState.motionSensorState) : "disabled")
 	);
 	if (inputManager->isKeyPressed(KEYBOARD_1))
 		ghostNetState.runDCMotor = !ghostNetState.runDCMotor;
@@ -71,6 +72,8 @@ void Ghost0::update(const codex::time::TimeType deltaTime)
 		ghostNetState.runSteerServo = !ghostNetState.runSteerServo;
 	if (inputManager->isKeyPressed(KEYBOARD_3))
 		ghostNetState.runDistanceSensor = !ghostNetState.runDistanceSensor;
+	if (inputManager->isKeyPressed(KEYBOARD_4))
+		ghostNetState.runMotionSensor = !ghostNetState.runMotionSensor;
 	
 	//DC motor arrow
 	if (shellNetState.runDCMotor)

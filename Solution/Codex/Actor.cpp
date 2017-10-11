@@ -84,13 +84,13 @@ namespace codex
 
 			const time::TimeType second = time::seconds(1);
 			int elapsedSeconds = 0;
-			time::TimeType beginTime = time::getRunTime();
+			time::TimeType beginTime = time::now();
 			while (!isConnected() && isAccepting())
 			{
 				/*Block until accepting has come to a resolution*/
-				if (time::getRunTime() - beginTime >= second)
+				if (time::now() - beginTime >= second)
 				{
-					beginTime = time::getRunTime();
+					beginTime = time::now();
 					log::info("Elapsed seconds: " + std::to_string(++elapsedSeconds));
 				}
 			}
@@ -179,12 +179,12 @@ namespace codex
 		const time::TimeType warningThresholdTime = time::seconds(0.5f);
 		do
 		{
-			beginUpdateTime = time::getRunTime();
+			beginUpdateTime = time::now();
 			update(deltaTime);
-			if (time::getRunTime() - beginUpdateTime >= warningThresholdTime)
-				log::warning("Actor update took " + std::to_string(float(time::getRunTime() - beginUpdateTime) / codex::time::conversionRate::millisecond) + " ms!");
+			if (time::now() - beginUpdateTime >= warningThresholdTime)
+				log::warning("Actor update took " + std::to_string(float(time::now() - beginUpdateTime) / codex::time::conversionRate::millisecond) + " ms!");
 
-			beginPacketsTime = time::getRunTime();
+			beginPacketsTime = time::now();
 			{//Handle received packets. Enable thread lock for socket for the duration of this process.
 				socket.enableThreadLock();
 				for (size_t i = 0; i < receivedPackets.size(); i++)
@@ -195,13 +195,13 @@ namespace codex
 				receivedPackets.clear();
 				socket.releaseThreadLock();
 			}
-			if (time::getRunTime() - beginPacketsTime >= warningThresholdTime)
-				log::warning("Packet receive handling took " + std::to_string(float(time::getRunTime() - beginPacketsTime) / codex::time::conversionRate::millisecond) + " ms!");
+			if (time::now() - beginPacketsTime >= warningThresholdTime)
+				log::warning("Packet receive handling took " + std::to_string(float(time::now() - beginPacketsTime) / codex::time::conversionRate::millisecond) + " ms!");
 
 			if (!socket.isConnected())
 				stop();
 
-			deltaTime = time::getRunTime() - beginUpdateTime;
+			deltaTime = time::now() - beginUpdateTime;
 		} while (!stopRequested);
 		onStop();
 				

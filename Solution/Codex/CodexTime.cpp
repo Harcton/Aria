@@ -12,6 +12,11 @@ namespace codex
 			return now - beginRunTime;
 		}
 
+		TimeType now()
+		{
+			return std::chrono::high_resolution_clock::now().time_since_epoch().count();
+		}
+
 		void delay(TimeType time)
 		{
 			const std::chrono::high_resolution_clock::rep begin = std::chrono::high_resolution_clock::now().time_since_epoch().count();

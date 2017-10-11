@@ -86,10 +86,10 @@ namespace codex
 	void SocketTCP::waitUntilReceivedHandshake(const time::TimeType timeout)
 	{
 		bool wait;
-		const time::TimeType beginTime = time::getRunTime();
+		const time::TimeType beginTime = time::now();
 		do
 		{
-			if (time::getRunTime() - beginTime > timeout)
+			if (time::now() - beginTime > timeout)
 				return;
 
 			std::lock_guard<std::recursive_mutex> lock(mutex);
@@ -179,7 +179,7 @@ namespace codex
 		//All done, socket is now at connected state!
 		std::lock_guard<std::recursive_mutex> lock(mutex);
 		connected = true;
-		lastReceiveTime = time::getRunTime();
+		lastReceiveTime = time::now();
 
 		return true;
 	}
@@ -325,7 +325,7 @@ namespace codex
 		}
 
 		receiving = true;
-		lastReceiveTime = time::getRunTime();
+		lastReceiveTime = time::now();
 		onReceiveCallback = callbackFunction;
 		if (expectedBytes == 0)
 		{//Receive header
@@ -359,7 +359,7 @@ namespace codex
 
 		std::lock_guard<std::recursive_mutex> lock(mutex);
 		receiving = false;
-		lastReceiveTime = time::getRunTime();
+		lastReceiveTime = time::now();
 
 		if (error)
 		{
@@ -642,7 +642,7 @@ namespace codex
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 			accepting = false;
 			connected = true;
-			lastReceiveTime = time::getRunTime();
+			lastReceiveTime = time::now();
 		}
 
 		//Socket is now in the connected status! Make the onAcceptCallback callback.
@@ -702,7 +702,7 @@ namespace codex
 	bool SocketTCP::isConnected() const
 	{
 		std::lock_guard<std::recursive_mutex> locks(mutex);
-		if (time::getRunTime() - lastReceiveTime >= connectionTimeout)
+		if (time::now() - lastReceiveTime >= connectionTimeout)
 			return false;
 		return connected;
 	}
@@ -778,11 +778,11 @@ namespace codex
 
 		requestGhostReceivedResponse = false;
 		startReceiving(std::bind(&ShellSocketTCP::internalReceiveHandler, this, std::placeholders::_1));
-		codex::time::TimeType startTime = time::getRunTime();
+		codex::time::TimeType startTime = time::now();
 		while (!requestGhostReceivedResponse)
 		{
 			codex::time::delay(codex::time::milliseconds(1));
-			if (time::getRunTime() - startTime > codex::time::seconds(5))
+			if (time::now() - startTime > codex::time::seconds(5))
 			{
 				codex::log::info("requestGhost() failed: the remote socket did not respond within the given time window.");
 				stopReceiving();

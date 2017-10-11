@@ -55,7 +55,7 @@ namespace codex
 				{
 					//Blocks until state change is detected
 				}
-				time::TimeType nextReadTime = time::getRunTime() + readInterval + readInterval / 2;
+				time::TimeType nextReadTime = time::now() + readInterval + readInterval / 2;
 				log::info("Initial transmitter pin state detected.");
 
 				int analyzeCount = 0;
@@ -71,12 +71,12 @@ namespace codex
 						{//State changed, synchronize clock at this point
 							previousReadState = readState;
 							history.push_back(readState);
-							nextReadTime = time::getRunTime() + readInterval + readInterval / 2;
+							nextReadTime = time::now() + readInterval + readInterval / 2;
 							changingEdgeSamples++;
 							break;
 						}
 
-						if (time::getRunTime() >= nextReadTime)
+						if (time::now() >= nextReadTime)
 						{//Reached the next read time mark without the pin state changing
 							history.push_back(previousReadState);
 							nextReadTime += readInterval;
@@ -173,7 +173,7 @@ namespace codex
 								+ " Timed samples: " + std::to_string(timedSamples));
 						}
 						
-						if (time::getRunTime() >= nextReadTime)
+						if (time::now() >= nextReadTime)
 						{//Analyze took too long! Missed the next read!
 							history.clear();
 							previousReadState = gpio::read(transmitPin);
