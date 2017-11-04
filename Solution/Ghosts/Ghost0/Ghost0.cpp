@@ -18,10 +18,9 @@ Ghost0::Ghost0()
 	, updatesReceived(0)
 	, updatesSent(0)
 {
-	batchManager.beginSection();
-	steerServoAngleArrow = new spehs::Arrow();
-	shellDCMotorStrengthArrow = new spehs::Arrow();
-	debugText = spehs::Text::create();
+	steerServoAngleArrow = new spehs::Arrow(batchManager);
+	shellDCMotorStrengthArrow = new spehs::Arrow(batchManager);
+	debugText = batchManager.createText();
 }
 
 Ghost0::~Ghost0()
@@ -29,12 +28,12 @@ Ghost0::~Ghost0()
 	delete steerServoAngleArrow;
 	delete shellDCMotorStrengthArrow;
 	debugText->destroy();
-	batchManager.endSection();
 }
 
 void Ghost0::onStart()
 {
 	spehs::initialize("Ghost0");
+	deltaTimeSystem.deltaTimeSystemInitialize();
 	steerServoAngleArrow->setCameraMatrixState(false);
 	shellDCMotorStrengthArrow->setCameraMatrixState(false);
 	steerServoAngleArrow->setArrowPointerSize(spehs::vec2(15.0f, 10.0f));
@@ -51,10 +50,10 @@ void Ghost0::update(const codex::time::TimeType deltaTime)
 	lastUpdateTime = updateTime;
 	
 	//Update
-	spehs::time::update();
+	deltaTimeSystem.deltaTimeSystemUpdate();
 	inputManager->update();
 	spehs::audio::AudioEngine::update();
-	spehs::console::update();
+	spehs::console::update(deltaTime);
 	if (inputManager->isQuitRequested() || inputManager->isKeyPressed(KEYBOARD_ESCAPE))
 		stop();
 	debugText->setString(

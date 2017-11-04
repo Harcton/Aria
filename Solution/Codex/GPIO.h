@@ -55,12 +55,7 @@ namespace codex
 		extern void enable(const Pin pin);
 		extern void disable(const Pin pin);
 		extern void write(const Pin pin, const PinState pinState);
-
-		/*
-			...
-		*/
-		extern void analogWrite(const Pin pin, const float strength, const time::TimeType duration);
-
+		
 		extern PinState read(const Pin pin);
 
 		/*

@@ -5,6 +5,7 @@
 #include <Codex/Robot/Robot0.h>
 #include <SpehsEngine/Arrow.h>
 #include <SpehsEngine/Text.h>
+#include <SpehsEngine/Time.h>
 
 
 class Ghost0 : public codex::Actor
@@ -24,6 +25,7 @@ public:
 private:
 	spehs::Camera2D camera;
 	spehs::BatchManager batchManager;
+	spehs::time::DeltaTimeSystem deltaTimeSystem;
 
 	codex::time::TimeType sendUpdateInterval;
 	codex::time::TimeType lastUpdateTime;

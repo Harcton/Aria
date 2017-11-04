@@ -18,10 +18,6 @@ namespace codex
 		{
 			bcm2835_gpio_write(pin, pinState);
 		}
-		void analogWrite(const Pin pin, const float strength, const time::TimeType duration)
-		{
-
-		}
 		PinState read(const Pin pin)
 		{
 			return bcm2835_gpio_lev(pin) == HIGH ? PinState::high : PinState::low;
