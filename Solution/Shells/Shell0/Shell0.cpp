@@ -68,7 +68,7 @@ void Shell0::receiveHandler(codex::protocol::ReadBuffer& buffer)
 {
 	//codex::log::info("Shell0 receive handler invoked. Bytes: " + std::to_string(buffer.getCapacity()));
 	codex::robot::robot0::PacketType packetType;
-	buffer.read(packetType);
+	buffer.read((uint8_t&)packetType);
 	switch (packetType)
 	{
 	default:
@@ -123,7 +123,7 @@ void Shell0::sendUpdate()
 
 	//Write and send
 	codex::protocol::WriteBuffer buffer;
-	buffer.write(codex::robot::robot0::PacketType::update);
+	buffer.write((uint8_t)codex::robot::robot0::PacketType::update);
 	shellNetState.write(buffer);
 	sendPacket(buffer);
 

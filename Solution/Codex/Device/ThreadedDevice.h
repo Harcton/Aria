@@ -5,8 +5,15 @@
 
 namespace codex
 {
+	namespace protocol
+	{
+		class WriteBuffer;
+		class ReadBuffer;
+	}
+
 	namespace device
 	{
+		class SocketTCP;
 		/*
 			Derived class must consider that the update call is made from a non-main thread.
 		*/
@@ -24,11 +31,12 @@ namespace codex
 			/* Asynchronously stops the device */
 			void stop();
 			bool isRunning() const;
-
+			
 		protected:
 			virtual void onStart() {}
 			virtual void update() = 0;
 			virtual void onStop() {}
+
 		private:
 			void run();
 			mutable std::recursive_mutex mutex;

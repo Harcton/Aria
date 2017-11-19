@@ -17,17 +17,22 @@ namespace codex
 		typedef uint32_t VersionType;
 		typedef uint16_t PortType;
 		typedef std::string AddressType;
+
+		extern const PortType defaultAriaPort;
 		
 		/* Byte endianness ordering */
 		enum class Endianness : uint8_t
 		{
-			undefined,
-			local = 1,
-			inverted = 2,
+			unknown = 0,
+			little = 1,
+			big = 2,
 		};
+		extern const Endianness hostByteOrder;
+		extern const Endianness networkByteOrder;
+		extern std::string getEndiannessAsString(const Endianness endianness);
 
 		/* Specify a reason for disconnection. */
-		enum class DisconnectType
+		enum class DisconnectType : uint8_t
 		{
 			unspecified,					//No specified reason for disconnecting
 			doNotSendDisconnectPacket,		//Used from disconnect receive handler
@@ -44,7 +49,11 @@ namespace codex
 			invalid = 0,					//Not in use
 			handshake,						//Packet contains codex defined handshake data
 			disconnect,						//The remote end sends a packet to indicate disconnection
-			undefined = 255,				//Sent data is user defined data, which is processed by a user defined receive handler.
+			syncEntryCreate,
+			syncEntryUpdate,
+			syncEntryRemove,
+
+			undefined = 255,				//Sent data is user defined data, which is processed by a user defined receive handler.			
 		};
 
 		/*
@@ -59,19 +68,14 @@ namespace codex
 
 		/*
 			An abstract base class for read/write buffers.
-			Only the ghost codex implementation is interested in buffer endianness.
-			The shell codex implementation writes and reads in the systems native endianness.
+			Buffer read/write handles endianness conversion.
 		*/
 		class BufferBase
 		{
 		public:
 			friend class Handshake;
 		public:
-#ifdef SHELL_CODEX
-			BufferBase(const Endianness endianness = Endianness::inverted/*can simulate reversed byte ordering*/);
-#else
-			BufferBase(const Endianness endianness = Endianness::local);
-#endif
+			BufferBase();
 			virtual ~BufferBase() = 0;
 			
 			/* Returns the total capacity of the buffer. */
@@ -80,40 +84,24 @@ namespace codex
 			/* Returns the number of bytes written/read using the write/read method. */
 			size_t getOffset() const;
 
-			/* Returns buffer read/write byte endianness. */
-			Endianness getEndianness() const;
-
 		protected:
 			size_t capacity;
 			size_t offset;
-			Endianness endianness;
 		};
 
 		/*
 			Write buffers can only be extended, but never contracted.
-			Makes it possible to write in inversed byte order.
 			Owns the underlying data.
 		*/
 		class WriteBuffer : public BufferBase
 		{
 		public:
-#ifdef SHELL_CODEX
-			WriteBuffer();//The shell codex should never be obligated to write in specified byte order
-#else
-			WriteBuffer(const Endianness writeEndianness = Endianness::local);
-#endif
+			WriteBuffer();
 			~WriteBuffer() override;
 			
 			/* Extends the buffer by increasing its size, without affecting the current offset. */
 			bool extend(const size_t addedBytes);
 
-			/* Writes to data*/
-			template <typename Type>
-			size_t write(const Type value)
-			{
-				return write(&value, sizeof(value));
-			}
-			size_t write(const void* buffer, const size_t length);
 			size_t write(const uint8_t value);
 			size_t write(const int8_t value);
 			size_t write(const uint16_t value);
@@ -122,6 +110,8 @@ namespace codex
 			size_t write(const int32_t value);
 			size_t write(const uint64_t value);
 			size_t write(const int64_t value);
+			size_t write(const float value);
+			size_t write(const double value);
 			size_t write(const bool value);
 			size_t write(const std::string& value);
 			size_t write(const PacketType value);
@@ -129,27 +119,21 @@ namespace codex
 			const unsigned char* operator[](const size_t index) const { return &data[index]; }
 
 		private:
+			/* Writes to data*/
+			size_t write(const void* buffer, const size_t length);
+
 			unsigned char* data;
 		};
 
 		/*
 			Does NOT own the underlying data!
-			Makes it possible to read the underlying data in correct byte order.
 		*/
 		class ReadBuffer : public BufferBase
 		{
 		public:
-			ReadBuffer(const void* pointedMemory, const size_t length, const Endianness readEndianness = Endianness::local);
+			ReadBuffer(const void* pointedMemory, const size_t length);
 			~ReadBuffer() override;
 
-			/* Reads bytes into destination, taking into account byte endianness. */
-			template <typename FundamentalType>
-			size_t read(FundamentalType& value)
-			{
-				//static_assert(std::is_fundamental<FundamentalType>::value, "WriteBuffer::write<FundamentalType>() type not fundamental!");
-				return read(&value, sizeof(value));
-			}
-			size_t read(void* destination, const size_t bytes);
 			size_t read(uint8_t& value);
 			size_t read(int8_t& value);
 			size_t read(uint16_t& value);
@@ -158,6 +142,8 @@ namespace codex
 			size_t read(int32_t& value);
 			size_t read(uint64_t& value);
 			size_t read(int64_t& value);
+			size_t read(float& value);
+			size_t read(double& value);
 			size_t read(bool& value);
 			size_t read(std::string& value);
 			size_t read(PacketType& value);
@@ -171,6 +157,9 @@ namespace codex
 			const unsigned char* operator[](const size_t index) const { return &data[index]; }
 			
 		private:
+			/* Reads bytes into destination. */
+			size_t read(void* destination, const size_t bytes);
+
 			const unsigned char* data;
 		};
 		
@@ -185,19 +174,14 @@ namespace codex
 			size_t write(WriteBuffer& buffer) const;
 			size_t read(ReadBuffer& buffer);
 
-			Endianness getEndianness() const;
 			CodexType getCodexType() const;
 			bool isValid() const;
 
 		private:
 			//Hidden attributes, set automatically
-			uint16_t endiannessBytePair;//2 Endianness bytes to determine the system's endianness
 			VersionType handshakeVersion;//Version of handshake protocol.
 			CodexType codexType;
 			bool valid;
 		};
-
-
-		extern const PortType defaultAriaPort;
 	}
 }

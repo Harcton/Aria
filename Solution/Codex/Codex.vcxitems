@@ -30,9 +30,12 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Log.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Protocol.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Actor.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RTTI.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SocketTCP.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)CodexTime.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)StringOperations.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SyncManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SyncType.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Acceptor.h" />
@@ -55,8 +58,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)RAIIVariableSetter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Actor.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Robot\Robot0.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RTTI.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SocketTCP.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CodexTime.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)StringOperations.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SyncManager.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SyncType.h" />
   </ItemGroup>
 </Project>

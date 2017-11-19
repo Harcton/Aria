@@ -1,4 +1,8 @@
 #pragma once
-#include "Log.h"
-//#define file_line_assert(file, line, expression) ((expression) ? (void) : codex::log::error("Assert failed!"/*TODO: add line, file*/))
-//#define assert(expression) file_line_assert(__FILE__, __LINE__, expression)
+#ifdef _WIN32
+#include <crtdbg.h>
+#define CODEX_ASSERT(expression) _ASSERT(expression)
+#else
+#include "Codex/Log.h"
+#define CODEX_ASSERT(expression) { if (!(expression)) codex::log::error("Error"); }
+#endif

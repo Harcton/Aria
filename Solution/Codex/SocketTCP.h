@@ -25,8 +25,6 @@ namespace codex
 	private:
 		typedef uint32_t ExpectedBytesType;
 	public:
-
-		/* If a shared IOService pointer is provided, the socket uses that IOService. Otherwise, creates its own IOSerice. */
 		
 		SocketTCP(IOService& ioService);
 		virtual ~SocketTCP();
@@ -61,10 +59,6 @@ namespace codex
 		protocol::PortType getRemotePort() const;
 		protocol::Endpoint getRemoteEndpoint() const;
 		
-#ifdef GHOST_CODEX
-		/* This is the byte ordering(endianness) that all passed write buffers should comply. */
-		protocol::Endianness getRemoteEndianness() const;
-#endif
 		/* Returns true if the socket is currently listening for an incoming connection on a port, or the connection is currently being established. */
 		bool isAccepting() const;
 		/* Returns true if socket is currently able to receive incoming packets. */
@@ -116,9 +110,6 @@ namespace codex
 		bool connecting;//Set to true for the duration of connect attempt
 		bool handshakeSent;//Refers to the current connection
 		bool handshakeReceived;//Refers to the current connection
-#ifdef GHOST_CODEX
-		codex::protocol::Endianness remoteEndianness;
-#endif
 	};
 
 	class ShellSocketTCP : public SocketTCP

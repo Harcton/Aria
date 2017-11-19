@@ -20,9 +20,6 @@ namespace codex
 		bool isReceiving() const;
 		bool isAccepting() const;
 
-		protocol::Endianness getReadEndianness() const;
-		protocol::Endianness getWriteEndianness() const;
-
 	protected:
 		/* Called once when starting */
 		virtual void onStart() {}

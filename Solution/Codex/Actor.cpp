@@ -189,7 +189,7 @@ namespace codex
 				socket.enableThreadLock();
 				for (size_t i = 0; i < receivedPackets.size(); i++)
 				{
-					protocol::ReadBuffer readBuffer(receivedPackets[i].data(), receivedPackets[i].size(), getReadEndianness());
+					protocol::ReadBuffer readBuffer(receivedPackets[i].data(), receivedPackets[i].size());
 					receiveHandler(readBuffer);
 				}
 				receivedPackets.clear();
@@ -280,23 +280,5 @@ namespace codex
 	bool Actor::isAccepting() const
 	{
 		return socket.isAccepting();
-	}
-
-	protocol::Endianness Actor::getReadEndianness() const
-	{
-#ifdef GHOST_CODEX
-		return socket.getRemoteEndianness();
-#elif SHELL_CODEX
-		return protocol::Endianness::local;
-#endif
-	}
-
-	protocol::Endianness Actor::getWriteEndianness() const
-	{
-#ifdef GHOST_CODEX
-		return socket.getRemoteEndianness();
-#elif SHELL_CODEX
-		return protocol::Endianness::local;
-#endif
 	}
 }

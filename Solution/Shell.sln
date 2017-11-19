@@ -12,6 +12,16 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Shell0", "Shells\Shell0\Shell0.vcxproj", "{5DF77CEB-6398-461E-AD1F-878A612E091E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Arm0", "Shells\Arm0\Arm0.vcxproj", "{E6B1CECC-A971-445B-B18E-24B10AD0911A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66} = {4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1A84D71F-59C6-4E2D-8E1A-123B2CCCFA6C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sandshell", "Shells\Sandshell\Sandshell.vcxproj", "{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66} = {4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -51,6 +61,14 @@ Global
 		{E6B1CECC-A971-445B-B18E-24B10AD0911A}.Release|ARM.Build.0 = Release|ARM
 		{E6B1CECC-A971-445B-B18E-24B10AD0911A}.Release|x64.ActiveCfg = Release|ARM
 		{E6B1CECC-A971-445B-B18E-24B10AD0911A}.Release|x86.ActiveCfg = Release|ARM
+		{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2}.Debug|ARM.ActiveCfg = Debug|ARM
+		{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2}.Debug|ARM.Build.0 = Debug|ARM
+		{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2}.Debug|x64.ActiveCfg = Debug|ARM
+		{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2}.Debug|x86.ActiveCfg = Debug|ARM
+		{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2}.Release|ARM.ActiveCfg = Release|ARM
+		{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2}.Release|ARM.Build.0 = Release|ARM
+		{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2}.Release|x64.ActiveCfg = Release|ARM
+		{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2}.Release|x86.ActiveCfg = Release|ARM
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -58,5 +76,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{5DF77CEB-6398-461E-AD1F-878A612E091E} = {2C068ED6-A43D-418F-9F2A-9634EF5B7768}
 		{E6B1CECC-A971-445B-B18E-24B10AD0911A} = {2C068ED6-A43D-418F-9F2A-9634EF5B7768}
+		{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2} = {2C068ED6-A43D-418F-9F2A-9634EF5B7768}
 	EndGlobalSection
 EndGlobal

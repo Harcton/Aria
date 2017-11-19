@@ -40,12 +40,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <OutDir>bin/$(Platform)/$(Configuration)</OutDir>
-    <IntDir>obj/$(Platform)/$(Configuration)</IntDir>
+    <OutDir>bin/$(Platform)/$(Configuration)/</OutDir>
+    <IntDir>obj/$(Platform)/$(Configuration)/</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <OutDir>bin/$(Platform)/$(Configuration)</OutDir>
-    <IntDir>obj/$(Platform)/$(Configuration)</IntDir>
+    <OutDir>bin/$(Platform)/$(Configuration)/</OutDir>
+    <IntDir>obj/$(Platform)/$(Configuration)/</IntDir>
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />

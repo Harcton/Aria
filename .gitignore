@@ -26,10 +26,14 @@ Solution/GhostCodex/bin/
 Solution/GhostCodex/obj/
 Solution/Sandshell/bin/
 Solution/Sandshell/obj/
-Solution/Robots/Robot0/Ghost0/bin/
-Solution/Robots/Robot0/Ghost0/obj/
-Solution/Robots/Robot0/Shell0/bin/
-Solution/Robots/Robot0/Shell0/obj/
+Solution/Ghosts/Ghost0/bin/
+Solution/Ghosts/Ghost0/obj/
+Solution/Ghosts/Ghostbox/bin/
+Solution/Ghosts/Ghostbox/obj/
+Solution/Ghosts/MuscleSensor/bin/
+Solution/Ghosts/MuscleSensor/obj/
+Solution/Shells/Shell0/bin/
+Solution/Shells/Shell0/obj/
 
 #Specific files
 

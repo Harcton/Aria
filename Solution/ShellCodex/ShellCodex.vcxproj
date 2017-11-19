@@ -44,7 +44,7 @@
     <OutDir>bin/$(Platform)/$(Configuration)/</OutDir>
     <IntDir>obj/$(Platform)/$(Configuration)/</IntDir>
     <RemoteProjectDir>$(RemoteRootDir)/Codex</RemoteProjectDir>
-    <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
+    <RemoteLinkLocalCopyOutput>true</RemoteLinkLocalCopyOutput>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <TargetExt>.a</TargetExt>
@@ -52,7 +52,7 @@
     <OutDir>bin/$(Platform)/$(Configuration)/</OutDir>
     <IntDir>obj/$(Platform)/$(Configuration)/</IntDir>
     <RemoteProjectDir>$(RemoteRootDir)/Codex</RemoteProjectDir>
-    <RemoteLinkLocalCopyOutput>false</RemoteLinkLocalCopyOutput>
+    <RemoteLinkLocalCopyOutput>true</RemoteLinkLocalCopyOutput>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <Lib />
@@ -66,7 +66,7 @@
     <Lib />
     <ClCompile />
     <ClCompile>
-      <AdditionalIncludeDirectories>/usr/boost/;/home/pi/projects/;/home/pi/projects/Codex/;$(SolutionDir)/Codex/Dependencies/include/;$(SolutionDir)/Codex/;$(SolutionDir);$(SPEHSENGINE_ROOT)/Dependencies/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>/usr/glm/;/usr/boost/;/home/pi/projects/;/home/pi/projects/Codex/;$(SolutionDir)/Codex/Dependencies/include/;$(SolutionDir)/Codex/;$(SolutionDir);$(SPEHSENGINE_ROOT)/Dependencies/include/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_LINUX;SHELL_CODEX;NDEBUG;</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>

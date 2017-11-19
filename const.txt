@@ -23,7 +23,7 @@ WinSock.h has already been included?
 time/assert related errors?
 	Don't use source code files with generic names like Time.h/Assert.h
 
-Avoid std::shared_ptr... gives otherworldly errors, not related to std::shared_ptr at all (I got like 16k lines of output from using one, and there)
+Avoid std::shared_ptr... gives otherworldly errors, not related to std::shared_ptr at all (I got like 16k lines of output from using one)
 
 Raspberry g++: (Raspbian 4.9.2-10) 4.9.2
 
@@ -31,7 +31,13 @@ The stack around variable 'foo' was corrupted -> Check if there are any variable
 
 Segmentation fault on linux can be caused by functions defining a return type, but not returning from a specific path...
 
-
-shell0: pthread;boost_system;boost_thread;ShellCodex;bcm2835;
-
 If starting debugging fails due to a file not found at "E:/something/local_solution_folder/bin/program.out" -> Property Pages > Linker > Copy output
+
+Error	C1047	The object or library file 'E:\Ohjelmointi\Projects\SpehsEngine\/bin/Win32/Release/v140/\SpehsEngine.lib' was created with an older compiler than other objects; rebuild old objects and libraries
+
+>/home/pi/projects/Codex/bin/ARM/Debug/libShellCodex.a(Protocol.o) : error :
+3>/usr/boost/boost/system/error_code.hpp:222: undefined reference to `boost::system : error : generic_category()'
+	-> check externs, declarations
+	
+2>E:\Ohjelmointi\Projects\Aria\Solution\Shells\Sandshell\Main.cpp(1,25): error : Codex/Codex.h: No such file or directory
+	-> 

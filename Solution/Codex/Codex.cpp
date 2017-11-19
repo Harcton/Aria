@@ -1,5 +1,7 @@
 #include "Codex.h"
 #include "CodexTime.h"
+#include "Protocol.h"
+#include "RTTI.h"
 #include "Log.h"
 #include <thread>
 #include <ctime>
@@ -49,9 +51,12 @@ namespace codex
 		//Print hardware thread count
 		log::info(std::to_string(std::thread::hardware_concurrency()) + " hardware threads detected.");
 
+		//Print host byte order
+		log::info("Host endianness is '" + getEndiannessAsString(protocol::hostByteOrder) + "', network endianness is '" + getEndiannessAsString(protocol::networkByteOrder) + "'");
+
 		//Print clock accuracy
 		log::info("Codex time accuracy is " + std::to_string(codex::time::conversionRate::second) + " ticks per second.");
-
+		
 		return 0;
 	}
 	void uninitialize()

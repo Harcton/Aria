@@ -12,19 +12,33 @@ namespace codex
 {
 	namespace protocol
 	{
+		enum
+		{
+			O32_LITTLE_ENDIAN = 0x03020100ul,
+			O32_BIG_ENDIAN = 0x00010203ul,
+			O32_PDP_ENDIAN = 0x01000302ul
+		};
+		static const union { unsigned char bytes[4]; uint32_t value; } o32_host_order = { { 0, 1, 2, 3 } };
+
 		const PortType defaultAriaPort = 49842;
-		const uint16_t localEndiannessBytePair = 0x00FF;
-		const uint16_t invertedEndiannessBytePair = 0xFF00;
+		const Endianness networkByteOrder = Endianness::big;
+		const Endianness hostByteOrder = o32_host_order.value == O32_BIG_ENDIAN ? Endianness::big : (o32_host_order.value == O32_LITTLE_ENDIAN ? Endianness::little : Endianness::unknown);
+		
+		std::string getEndiannessAsString(const Endianness endianness)
+		{
+			switch (endianness)
+			{
+			case Endianness::big: return "big";
+			case Endianness::little: return "little";
+			default: return "unknown";
+			}
+		}
 
-
-
-		BufferBase::BufferBase(Endianness _endianness)
+		BufferBase::BufferBase()
 			: capacity(0)
 			, offset(0)
-			, endianness(_endianness)
 		{
-			if (endianness == Endianness::undefined)
-				log::error("BufferBase was constructed with undefined endianness!");
+
 		}
 
 		BufferBase::~BufferBase()
@@ -41,30 +55,12 @@ namespace codex
 		{
 			return offset;
 		}
-
-		Endianness BufferBase::getEndianness() const
-		{
-			return endianness;
-		}
-
-
-
-#ifdef SHELL_CODEX
-		//The shell codex should never be obligated to write in specified byte order
+		
 		WriteBuffer::WriteBuffer()
-			: BufferBase(Endianness::local)
-			, data(nullptr)
+			: data(nullptr)
 		{
 
 		}
-#else
-		WriteBuffer::WriteBuffer(const Endianness _endianness)
-			: BufferBase(_endianness)
-			, data(nullptr)
-		{
-
-		}
-#endif
 
 		WriteBuffer::~WriteBuffer()
 		{
@@ -79,56 +75,79 @@ namespace codex
 				return 0;
 			}
 
-			if (endianness == Endianness::inverted)
-			{//Write in reversed byte order
-				const size_t endOffset = bytes - 1;
-				for (size_t i = 0; i < bytes; i++)
-					memcpy(&data[offset + i], &(((const unsigned char*)buffer)[endOffset - i]), 1);
+			if (hostByteOrder == networkByteOrder)
+			{//Write in native order
+				memcpy(&data[offset], buffer, bytes);
+				offset += bytes;
 			}
 			else
-			{//Write using the native byte order
-				memcpy(&data[offset], buffer, bytes);
+			{//Write in reversed order
+				const size_t endOffset = bytes - 1;
+				for (size_t i = 0; i < bytes; i++)
+				{
+					memcpy(&data[offset], &(((const unsigned char*)buffer)[endOffset - i]), 1);
+					offset++;
+				}
 			}
 
-			offset += bytes;
 			return bytes;
 		}
+
 		size_t WriteBuffer::write(const uint8_t value)
 		{
 			return write(&value, sizeof(value));
 		}
+
 		size_t WriteBuffer::write(const int8_t value)
 		{
 			return write(&value, sizeof(value));
 		}
+
 		size_t WriteBuffer::write(const uint16_t value)
 		{
 			return write(&value, sizeof(value));
 		}
+
 		size_t WriteBuffer::write(const int16_t value)
 		{
 			return write(&value, sizeof(value));
 		}
+
 		size_t WriteBuffer::write(const uint32_t value)
 		{
 			return write(&value, sizeof(value));
 		}
+
 		size_t WriteBuffer::write(const int32_t value)
 		{
 			return write(&value, sizeof(value));
 		}
+
 		size_t WriteBuffer::write(const uint64_t value)
 		{
 			return write(&value, sizeof(value));
 		}
+
 		size_t WriteBuffer::write(const int64_t value)
 		{
 			return write(&value, sizeof(value));
 		}
+
+		size_t WriteBuffer::write(const float value)
+		{
+			return write(&value, sizeof(value));
+		}
+
+		size_t WriteBuffer::write(const double value)
+		{
+			return write(&value, sizeof(value));
+		}
+
 		size_t WriteBuffer::write(const bool value)
 		{
 			return write(&value, sizeof(value));
 		}
+
 		size_t WriteBuffer::write(const std::string& value)
 		{
 			const uint32_t length = value.size();
@@ -137,6 +156,7 @@ namespace codex
 				return sizeof(length);
 			return sizeof(length) + write(&value[0], length);
 		}
+
 		size_t WriteBuffer::write(const PacketType value)
 		{
 			return write(&value, sizeof(value));
@@ -167,11 +187,9 @@ namespace codex
 
 			return true;
 		}
-
-
-		ReadBuffer::ReadBuffer(const void* pointedMemory, const size_t length, const Endianness _endianness)
-			: BufferBase(_endianness)
-			, data((const unsigned char*)pointedMemory)
+		
+		ReadBuffer::ReadBuffer(const void* pointedMemory, const size_t length)
+			: data((const unsigned char*)pointedMemory)
 		{
 			assert(pointedMemory);
 			assert(length > 0);
@@ -191,15 +209,15 @@ namespace codex
 				return 0;
 			}
 
-			if (endianness == Endianness::inverted)
+			if (hostByteOrder == networkByteOrder)
+			{//Read in native byte order
+				memcpy(destination, &data[offset], bytes);
+			}
+			else
 			{//Read in reversed byte order
 				const size_t endOffset = offset + bytes - 1;
 				for (size_t i = 0; i < bytes; i++)
 					memcpy(&(((unsigned char*)destination)[i]), &data[endOffset - i], 1);
-			}
-			else
-			{//Read in native byte order
-				memcpy(destination, &data[offset], bytes);
 			}
 
 			offset += bytes;
@@ -246,10 +264,21 @@ namespace codex
 			return read(&value, sizeof(value));
 		}
 
+		size_t ReadBuffer::read(float& value)
+		{
+			return read(&value, sizeof(value));
+		}
+
+		size_t ReadBuffer::read(double& value)
+		{
+			return read(&value, sizeof(value));
+		}
+
 		size_t ReadBuffer::read(bool& value)
 		{
 			return read(&value, sizeof(value));
 		}
+
 		size_t ReadBuffer::read(std::string& value)
 		{
 			uint32_t length;
@@ -259,6 +288,7 @@ namespace codex
 				read(&value[0], length);
 			return sizeof(length) + length;
 		}
+
 		size_t ReadBuffer::read(PacketType& value)
 		{
 			return read(&value, sizeof(value));
@@ -276,21 +306,10 @@ namespace codex
 		
 		const VersionType currentHandshakeVersion = 1;
 		Handshake::Handshake()
-			: endiannessBytePair(localEndiannessBytePair)
-			, handshakeVersion(currentHandshakeVersion)
+			: handshakeVersion(currentHandshakeVersion)
 			, codexType(codex::codexType)
 			, valid(true)
 		{
-		}
-
-		Endianness Handshake::getEndianness() const
-		{
-			if (endiannessBytePair == localEndiannessBytePair)
-				return Endianness::local;
-			else if (endiannessBytePair == invertedEndiannessBytePair)
-				return Endianness::inverted;
-			else
-				return Endianness::undefined;
 		}
 
 		CodexType Handshake::getCodexType() const
@@ -306,12 +325,13 @@ namespace codex
 			return valid;
 		}
 
+		const uint16_t endiannessCheckBytes = 0xACDC;
 		size_t Handshake::write(WriteBuffer& buffer) const
 		{
 			size_t offset = 0;
-			offset += buffer.write(&endiannessBytePair, sizeof(endiannessBytePair));
-			offset += buffer.write(&handshakeVersion, sizeof(handshakeVersion));
-			offset += buffer.write(&codexType, sizeof(codexType));
+			offset += buffer.write((uint32_t)handshakeVersion);
+			offset += buffer.write(endiannessCheckBytes);
+			offset += buffer.write((uint8_t)codexType);
 			return offset;
 		}
 
@@ -320,25 +340,6 @@ namespace codex
 			size_t offset = 0;
 			valid = true;
 
-			//Endianness
-			if (buffer.getBytesRemaining() < sizeof(endiannessBytePair))
-			{
-				log::info("Handshake::read() invalid handshake. No bytes left to read endianness byte pair.");
-				valid = false;
-				handshakeVersion = 0;
-				endiannessBytePair = 0;
-				codexType = CodexType::invalid;
-				return offset;
-			}
-			else
-				offset += buffer.read(&endiannessBytePair, sizeof(endiannessBytePair));
-			buffer.endianness = getEndianness();//Update buffer read byte order
-			if (getEndianness() == Endianness::undefined)
-			{
-				log::info("Handshake::read() invalid handshake. Endianness byte pair is invalid.");
-				valid = false;
-				return offset;
-			}
 			//Handshake version
 			if (buffer.getBytesRemaining() < sizeof(handshakeVersion))
 			{
@@ -347,10 +348,26 @@ namespace codex
 				return offset;
 			}
 			else
-				offset += buffer.read(&handshakeVersion, sizeof(handshakeVersion));
+				offset += buffer.read((uint32_t&)handshakeVersion);
 			if (handshakeVersion != currentHandshakeVersion)
 			{
 				log::info("Handshake::read() invalid handshake. Incompatible versions - my version: " + std::to_string(currentHandshakeVersion) + ", other version: " + std::to_string(handshakeVersion));
+				valid = false;
+				return offset;
+			}
+			//Endianness check bytes
+			uint16_t readEndiannessCheckBytes;
+			if (buffer.getBytesRemaining() < sizeof(endiannessCheckBytes))
+			{
+				log::info("Handshake::read() invalid handshake. No bytes left to read endianness check bytes.");
+				valid = false;
+				return offset;
+			}
+			else
+				offset += buffer.read(readEndiannessCheckBytes);
+			if (readEndiannessCheckBytes != endiannessCheckBytes)
+			{
+				log::info("Handshake::read() invalid handshake. Invalid endianness check bytes.");
 				valid = false;
 				return offset;
 			}
@@ -362,10 +379,10 @@ namespace codex
 				return offset;
 			}
 			else
-				offset += buffer.read(&codexType, sizeof(codexType));
+				offset += buffer.read((uint8_t&)codexType);
 			if (getCodexType() == CodexType::invalid)
 			{
-				log::info("Handshake::read() invalid handshake. Invalid codex type: " + std::to_string((int)codexType));
+				log::info("Handshake::read() invalid handshake. Invalid codex type: " + std::to_string((uint8_t)codexType));
 				valid = false;
 				return offset;
 			}

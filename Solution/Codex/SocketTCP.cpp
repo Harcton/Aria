@@ -13,7 +13,7 @@
 namespace codex
 {
 	extern std::string workingDirectory;
-	int debugLogLevel = 1;
+	int debugLogLevel = 10;
 	static const time::TimeType handshakeReceiveTimeout = time::seconds(10000);
 	static const time::TimeType connectionTimeout = time::seconds(10000);
 
@@ -34,9 +34,7 @@ namespace codex
 		, handshakeSent(false)
 		, handshakeReceived(false)
 	{
-#ifdef GHOST_CODEX
-		remoteEndianness = codex::protocol::Endianness::undefined;
-#endif
+
 	}
 
 	SocketTCP::~SocketTCP()
@@ -148,7 +146,7 @@ namespace codex
 			//Expect an incoming handshake after sending one
 			startReceiving(onReceiveCallback);
 
-			//Send the codex handshake (written in the local endianness)
+			//Send the codex handshake
 			protocol::WriteBuffer buffer;
 			protocol::Handshake handshake;
 			handshake.write(buffer);
@@ -197,12 +195,8 @@ namespace codex
 
 		if (disconnectType != protocol::DisconnectType::doNotSendDisconnectPacket)
 		{//Try sending the disconnect packet before disconnecting
-#ifdef GHOST_CODEX
-			protocol::WriteBuffer buffer(remoteEndianness);
-#else
 			protocol::WriteBuffer buffer;
-#endif
-			buffer.write<protocol::DisconnectType>(disconnectType);
+			buffer.write((uint8_t)disconnectType);
 			sendPacket(buffer, protocol::PacketType::disconnect);
 		}
 
@@ -216,9 +210,6 @@ namespace codex
 		connected = false;
 		handshakeSent = false;
 		handshakeReceived = false;
-#ifdef GHOST_CODEX
-		remoteEndianness = protocol::Endianness::undefined;
-#endif
 	}
 
 	void SocketTCP::stopReceiving()
@@ -245,25 +236,15 @@ namespace codex
 			log::info("SocketTCP: cannot send a packet. Socket is neither connected, connecting nor accepting.");
 			return false;
 		}
-
-#ifdef GHOST_CODEX
-		if (remoteEndianness != protocol::Endianness::undefined && buffer.getEndianness() != remoteEndianness)
-		{
-			log::info("SocketTCP: cannot send a packet! Write buffer was written in a wrong byte order!");
-			return false;
-		}
-#endif
-
+		
 		//Codex header
+		protocol::WriteBuffer headerBuffer;
 		const ExpectedBytesType dataBufferSize = buffer.getOffset();
 		const ExpectedBytesType headerBytesValue = buffer.getOffset() + sizeof(packetType);
-#ifdef GHOST_CODEX
-		protocol::WriteBuffer headerBuffer(connected ? remoteEndianness : protocol::Endianness::local);
-#else
-		protocol::WriteBuffer headerBuffer;
-#endif
+
 		headerBuffer.write(headerBytesValue);
 		headerBuffer.write(packetType);
+
 		const size_t headerBufferSize = headerBuffer.getOffset();
 		size_t offset = 0;
 		while (offset < headerBufferSize)
@@ -403,39 +384,13 @@ namespace codex
 			if (expectedBytes == 0)
 			{//Header received
 				memcpy(&expectedBytes, &receiveBuffer[0], sizeof(expectedBytes));
-				if (!connected)
-				{
-					/*
-						Socket is not in connected state, must deduct remote endianness from expected bytes
-						We can make a wild assumption that the least significant bits form a binary number larger than the most significant bits.
-						This is because the first packet of each connection should always be just a small handshake packet.
-					*/
-					const uint32_t leastSignificantBits = 0x0000FFFF & expectedBytes;
-					const uint32_t mostSignificantBits = (0xFFFF0000 & expectedBytes) >> 16;
-					if (mostSignificantBits > leastSignificantBits)
-					{//Inverse expected bytes byte ordering
-						const uint32_t reverted = expectedBytes;
-						for (size_t i = 0; i < 4; i++)
-							memcpy(&(((unsigned char*)&expectedBytes)[i]), &(((unsigned char*)&reverted)[3 - i]), 1);
-					}
-#ifdef GHOST_CODEX
-					if (mostSignificantBits > leastSignificantBits)
-						remoteEndianness = protocol::Endianness::inverted;
-					else
-						remoteEndianness = protocol::Endianness::local;
-#endif
-				}
 				startReceiving(onReceiveCallback);
 			}
 			else if (expectedBytes == bytes)
 			{//Data received
 
 				//Read buffer
-#ifdef SHELL_CODEX
 				protocol::ReadBuffer buffer(&receiveBuffer[0], bytes);
-#else
-				protocol::ReadBuffer buffer(&receiveBuffer[0], bytes, remoteEndianness);
-#endif
 				const bool keepReceiving = codexReceiveHandler(buffer);
 				expectedBytes = 0;//Begin to expect header next
 				if (keepReceiving)
@@ -464,11 +419,8 @@ namespace codex
 		case protocol::PacketType::undefined:
 		{
 			//Create new read buffer that hides the codex layer
-#ifdef GHOST_CODEX
-			codex::protocol::ReadBuffer dataBuffer(buffer[buffer.getOffset()], buffer.getBytesRemaining(), remoteEndianness);
-#else
 			codex::protocol::ReadBuffer dataBuffer(buffer[buffer.getOffset()], buffer.getBytesRemaining());
-#endif
+
 			if (debugLogLevel >= 2)
 				codex::log::info("SocketTCP received user defined packet. Bytes: " + std::to_string(dataBuffer.getBytesRemaining()));
 			if (onReceiveCallback)
@@ -479,7 +431,7 @@ namespace codex
 		case protocol::PacketType::disconnect:
 		{
 			protocol::DisconnectType disconnectType;
-			buffer.read<protocol::DisconnectType>(disconnectType);
+			buffer.read((uint8_t&)disconnectType);
 			disconnect(protocol::DisconnectType::doNotSendDisconnectPacket);
 			return false;
 		}
@@ -496,9 +448,6 @@ namespace codex
 			if (handshake.isValid())
 			{//VALID HANDSHAKE
 				handshakeReceived = true;
-#ifdef GHOST_CODEX //Set byte endianness
-				remoteEndianness = handshake.getEndianness();
-#endif
 				if (debugLogLevel >= 1)
 					log::info("SocketTCP valid handshake received.");
 			}
@@ -507,9 +456,14 @@ namespace codex
 				handshakeReceived = true;
 				log::warning("Received an invalid codex handshake!");
 			}
+			return false;
+		}
+		case protocol::PacketType::syncEntryCreate:
+		{
+			//TODO!!!
+			return false;
 		}
 		}
-		return false;//Do not start receiving again!
 	}
 
 	bool SocketTCP::startAccepting(const protocol::PortType port, const std::function<void(SocketTCP&)> callbackFunction)
@@ -706,20 +660,7 @@ namespace codex
 			return false;
 		return connected;
 	}
-
-#ifdef GHOST_CODEX
-	protocol::Endianness SocketTCP::getRemoteEndianness() const
-	{
-		std::lock_guard<std::recursive_mutex> lock(mutex);
-		if (!isConnected())
-		{
-			log::info("SocketTCP: cannot retrieve remote endpoint byte endianness! Socket is not connected!");
-			return protocol::Endianness::undefined;
-		}
-		return remoteEndianness;
-	}
-#endif
-
+	
 	static const uint64_t magicYes = 0xBAABAABBBBADAB00;
 
 	ShellSocketTCP::ShellSocketTCP(IOService& io)
