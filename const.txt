@@ -35,9 +35,9 @@ If starting debugging fails due to a file not found at "E:/something/local_solut
 
 Error	C1047	The object or library file 'E:\Ohjelmointi\Projects\SpehsEngine\/bin/Win32/Release/v140/\SpehsEngine.lib' was created with an older compiler than other objects; rebuild old objects and libraries
 
->/home/pi/projects/Codex/bin/ARM/Debug/libShellCodex.a(Protocol.o) : error :
-3>/usr/boost/boost/system/error_code.hpp:222: undefined reference to `boost::system : error : generic_category()'
-	-> check externs, declarations
+//!!! undefined reference to `boost::system : error : generic_category()'
+	1# boost_system isn't linked.
+	2# Adding this to main.cpp #include <boost/system/error_code.hpp> -> Works (but why?)
 	
 2>E:\Ohjelmointi\Projects\Aria\Solution\Shells\Sandshell\Main.cpp(1,25): error : Codex/Codex.h: No such file or directory
 	-> 

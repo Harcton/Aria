@@ -11,7 +11,7 @@ namespace codex
 	public:
 		Actor();
 		virtual ~Actor();
-		
+
 		int start(const int argc, const char** argv);
 
 		void stop();
@@ -37,7 +37,7 @@ namespace codex
 		void startAccepting(const protocol::PortType& port);
 		void stopAccepting();
 		bool connect(const protocol::AddressType& address, const protocol::PortType& port);
-		
+
 	private:
 		bool internalReceiveHandler(codex::protocol::ReadBuffer& buffer);
 		bool onAccept(codex::SocketTCP& socket);

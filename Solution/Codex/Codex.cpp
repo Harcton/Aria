@@ -9,6 +9,7 @@
 #include <bcm2835.h>
 #endif
 
+
 namespace codex
 {
 #ifdef GHOST_CODEX
@@ -17,7 +18,7 @@ namespace codex
 	const CodexType codexType = CodexType::shell;
 #else
 #error Invalid codex implementation type
-	const CodexType localCodexUser = CodexType::invalid;
+	const CodexType codexType = CodexType::invalid;
 #endif
 	std::string workingDirectory;
 
@@ -52,7 +53,9 @@ namespace codex
 		log::info(std::to_string(std::thread::hardware_concurrency()) + " hardware threads detected.");
 
 		//Print host byte order
-		log::info("Host endianness is '" + getEndiannessAsString(protocol::hostByteOrder) + "', network endianness is '" + getEndiannessAsString(protocol::networkByteOrder) + "'");
+		//const codex::protocol::Endianness order = codex::protocol::Endianness::big;
+		//codex::log::info("Order: " + std::to_string((int)order));		
+		log::info("Host endianness is '" + protocol::getEndiannessAsString(protocol::hostByteOrder) + "', network endianness is '" + protocol::getEndiannessAsString(protocol::networkByteOrder) + "'");
 
 		//Print clock accuracy
 		log::info("Codex time accuracy is " + std::to_string(codex::time::conversionRate::second) + " ticks per second.");

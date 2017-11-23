@@ -1,6 +1,8 @@
 #pragma once
 #include <stdint.h>
 #include <cstring>
+#include <vector>
+#include <string>
 #include <assert.h>
 #include "Log.h"
 #include "Codex.h"
@@ -17,7 +19,6 @@ namespace codex
 		typedef uint32_t VersionType;
 		typedef uint16_t PortType;
 		typedef std::string AddressType;
-
 		extern const PortType defaultAriaPort;
 		
 		/* Byte endianness ordering */
@@ -27,9 +28,10 @@ namespace codex
 			little = 1,
 			big = 2,
 		};
+		extern std::string getEndiannessAsString(const Endianness endianness);
 		extern const Endianness hostByteOrder;
 		extern const Endianness networkByteOrder;
-		extern std::string getEndiannessAsString(const Endianness endianness);
+
 
 		/* Specify a reason for disconnection. */
 		enum class DisconnectType : uint8_t
@@ -79,13 +81,12 @@ namespace codex
 			virtual ~BufferBase() = 0;
 			
 			/* Returns the total capacity of the buffer. */
-			size_t getCapacity() const;
+			virtual size_t getCapacity() const = 0;
 
 			/* Returns the number of bytes written/read using the write/read method. */
 			size_t getOffset() const;
 
 		protected:
-			size_t capacity;
 			size_t offset;
 		};
 
@@ -99,8 +100,7 @@ namespace codex
 			WriteBuffer();
 			~WriteBuffer() override;
 			
-			/* Extends the buffer by increasing its size, without affecting the current offset. */
-			bool extend(const size_t addedBytes);
+			void reserve(const size_t capacity);
 
 			size_t write(const uint8_t value);
 			size_t write(const int8_t value);
@@ -117,12 +117,17 @@ namespace codex
 			size_t write(const PacketType value);
 
 			const unsigned char* operator[](const size_t index) const { return &data[index]; }
+			size_t getCapacity() const override { return data.capacity(); }
 
 		private:
+
+			/* Extends the buffer by increasing its size, without affecting the current offset. */
+			bool extend(const size_t addedBytes);
+
 			/* Writes to data*/
 			size_t write(const void* buffer, const size_t length);
 
-			unsigned char* data;
+			std::vector<unsigned char> data;
 		};
 
 		/*
@@ -154,12 +159,15 @@ namespace codex
 			/* Returns readable bytes remaining. */
 			size_t getBytesRemaining() const;
 
+			size_t getCapacity() const override { return capacity; }
+
 			const unsigned char* operator[](const size_t index) const { return &data[index]; }
 			
 		private:
 			/* Reads bytes into destination. */
 			size_t read(void* destination, const size_t bytes);
 
+			size_t capacity;
 			const unsigned char* data;
 		};
 		

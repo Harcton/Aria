@@ -8,6 +8,7 @@
 #include "CodexTime.h"
 #include "FileStream.h"
 #include "RAIIVariableSetter.h"
+#include "StringOperations.h"
 
 
 namespace codex
@@ -342,6 +343,13 @@ namespace codex
 		receiving = false;
 		lastReceiveTime = time::now();
 
+		if (debugLogLevel >= 3)
+		{
+			codex::log::info("Received bytes: ");
+			for (size_t i = 0; i < bytes; i++)
+				codex::log::info("    [" + std::to_string(i) + "] " + toHexString(receiveBuffer[i]));
+		}
+
 		if (error)
 		{
 			if (error == boost::asio::error::eof)
@@ -381,17 +389,17 @@ namespace codex
 
 		if (bytes)
 		{
+			protocol::ReadBuffer readBuffer(&receiveBuffer[0], bytes);
 			if (expectedBytes == 0)
 			{//Header received
-				memcpy(&expectedBytes, &receiveBuffer[0], sizeof(expectedBytes));
+				readBuffer.read(expectedBytes);
 				startReceiving(onReceiveCallback);
 			}
 			else if (expectedBytes == bytes)
 			{//Data received
 
 				//Read buffer
-				protocol::ReadBuffer buffer(&receiveBuffer[0], bytes);
-				const bool keepReceiving = codexReceiveHandler(buffer);
+				const bool keepReceiving = codexReceiveHandler(readBuffer);
 				expectedBytes = 0;//Begin to expect header next
 				if (keepReceiving)
 					startReceiving(onReceiveCallback);

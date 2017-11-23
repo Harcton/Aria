@@ -29,32 +29,32 @@ int main(const int argc, const char** argv)
 }
 
 
-/*
-//TEST BASE
-
-std::atomic<int> strength(0);
-std::atomic<bool> keepRunningInput(false);
-void runInput()
-{
-keepRunningInput = true;
-while (keepRunningInput)
-{
-codex::log::info("Input strength:\n>");
-int val;
-std::cin >> val;
-strength = val;
-}
-}
-
-//Main
-std::thread inputThread(runInput);
-codex::gpio::Pin pin = codex::gpio::pin_11;
-codex::gpio::setPinAsOutput(pin);
-while (strength >= 0)
-{
-codex::time::TimeType interval = codex::time::milliseconds(1);
-codex::time::delay(interval);
-}
-inputThread.join();
-
-*/
+///*
+////TEST BASE
+//
+//std::atomic<int> strength(0);
+//std::atomic<bool> keepRunningInput(false);
+//void runInput()
+//{
+//keepRunningInput = true;
+//while (keepRunningInput)
+//{
+//codex::log::info("Input strength:\n>");
+//int val;
+//std::cin >> val;
+//strength = val;
+//}
+//}
+//
+////Main
+//std::thread inputThread(runInput);
+//codex::gpio::Pin pin = codex::gpio::pin_11;
+//codex::gpio::setPinAsOutput(pin);
+//while (strength >= 0)
+//{
+//codex::time::TimeType interval = codex::time::milliseconds(1);
+//codex::time::delay(interval);
+//}
+//inputThread.join();
+//
+//*/

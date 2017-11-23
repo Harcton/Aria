@@ -20,8 +20,8 @@ namespace codex
 #ifdef GHOST_CODEX
 		if (argc == 3)
 		{//Connect
-			
-			//Remote endpoint
+
+		 //Remote endpoint
 			const std::string address = argv[1];
 			const int port = std::atoi(argv[2]);
 
@@ -71,7 +71,7 @@ namespace codex
 		if (argc == 2)
 		{//Remain waiting
 
-			//Local endpoint
+		 //Local endpoint
 			const int port = std::atoi(argv[1]);
 			if (port < 0 || port > std::numeric_limits<uint16_t>::max())
 			{
@@ -91,7 +91,7 @@ namespace codex
 				if (time::now() - beginTime >= second)
 				{
 					beginTime = time::now();
-					log::info("Elapsed seconds: " + std::to_string(++elapsedSeconds));
+					//log::info("Elapsed seconds: " + std::to_string(++elapsedSeconds));
 				}
 			}
 
@@ -105,7 +105,7 @@ namespace codex
 		else if (argc == 3)
 		{//Connect
 
-			//Remote endpoint
+		 //Remote endpoint
 			const protocol::AddressType address = argv[1];
 			const int port = std::atoi(argv[2]);
 
@@ -170,7 +170,7 @@ namespace codex
 		if (!socket.isConnected())
 			return;
 		startReceiving();
-		
+
 		//Shell loop
 		onStart();
 		time::TimeType deltaTime = 0;
@@ -204,10 +204,10 @@ namespace codex
 			deltaTime = time::now() - beginUpdateTime;
 		} while (!stopRequested);
 		onStop();
-				
+
 		//Stop receiving
 		if (socket.isReceiving())
-			socket.stopReceiving();		
+			socket.stopReceiving();
 	}
 
 	void Actor::stop()

@@ -4,6 +4,7 @@
 #include "Protocol.h"
 #include "SocketTCP.h"
 #include "CodexTime.h"
+#include "CodexAssert.h"
 #ifdef _WIN32
 #include <Windows.h>//NOTE: must be included after boost asio stuff...
 #endif
@@ -12,6 +13,16 @@ namespace codex
 {
 	namespace protocol
 	{
+		std::string getEndiannessAsString(const Endianness endianness)
+		{
+			switch (endianness)
+			{
+			case Endianness::big: return "big";
+			case Endianness::little: return "little";
+			default: return "unknown";
+			}
+		}
+
 		enum
 		{
 			O32_LITTLE_ENDIAN = 0x03020100ul,
@@ -24,19 +35,8 @@ namespace codex
 		const Endianness networkByteOrder = Endianness::big;
 		const Endianness hostByteOrder = o32_host_order.value == O32_BIG_ENDIAN ? Endianness::big : (o32_host_order.value == O32_LITTLE_ENDIAN ? Endianness::little : Endianness::unknown);
 		
-		std::string getEndiannessAsString(const Endianness endianness)
-		{
-			switch (endianness)
-			{
-			case Endianness::big: return "big";
-			case Endianness::little: return "little";
-			default: return "unknown";
-			}
-		}
-
 		BufferBase::BufferBase()
-			: capacity(0)
-			, offset(0)
+			: offset(0)
 		{
 
 		}
@@ -46,34 +46,24 @@ namespace codex
 
 		}
 
-		size_t BufferBase::getCapacity() const
-		{
-			return capacity;
-		}
-
 		size_t BufferBase::getOffset() const
 		{
 			return offset;
 		}
 		
 		WriteBuffer::WriteBuffer()
-			: data(nullptr)
 		{
 
 		}
 
 		WriteBuffer::~WriteBuffer()
 		{
-			delete[] data;
+
 		}
 
 		size_t WriteBuffer::write(const void* buffer, const size_t bytes)
 		{
-			if (offset + bytes > capacity && !extend(offset + bytes - capacity))
-			{
-				log::error("Cannot write to buffer! Cannot extend the buffer!");
-				return 0;
-			}
+			data.resize(data.size() + bytes);
 
 			if (hostByteOrder == networkByteOrder)
 			{//Write in native order
@@ -82,11 +72,10 @@ namespace codex
 			}
 			else
 			{//Write in reversed order
-				const size_t endOffset = bytes - 1;
+				size_t endOffset = bytes;
 				for (size_t i = 0; i < bytes; i++)
 				{
-					memcpy(&data[offset], &(((const unsigned char*)buffer)[endOffset - i]), 1);
-					offset++;
+					data[offset++] = ((const unsigned char*)buffer)[--endOffset];
 				}
 			}
 
@@ -162,38 +151,28 @@ namespace codex
 			return write(&value, sizeof(value));
 		}
 
+		void WriteBuffer::reserve(const size_t capacity)
+		{
+			CODEX_ASSERT(capacity >= data.capacity());
+			data.reserve(capacity);
+		}
+
 		bool WriteBuffer::extend(const size_t addedBytes)
 		{
 			if (addedBytes == 0)
 				return true;
 
-			unsigned char* allocation = new unsigned char[capacity + addedBytes];
-			if (!allocation)
-				return false;//Failed to allocate...
-
-			//Relocate data
-			if (data)
-				memcpy(allocation, data, capacity);
-
-			//Increment the capacity
-			capacity += addedBytes;
-
-			//Deallocate previous allocation
-			if (data)
-				delete[] data;
-
-			//Set data to point to the new allocation
-			data = allocation;
+			data.reserve(getCapacity() + addedBytes);
 
 			return true;
 		}
 		
 		ReadBuffer::ReadBuffer(const void* pointedMemory, const size_t length)
 			: data((const unsigned char*)pointedMemory)
+			, capacity(length)
 		{
 			assert(pointedMemory);
 			assert(length > 0);
-			capacity = length;
 		}
 
 		ReadBuffer::~ReadBuffer()
@@ -215,9 +194,11 @@ namespace codex
 			}
 			else
 			{//Read in reversed byte order
-				const size_t endOffset = offset + bytes - 1;
+				size_t readOffset = offset + bytes;
 				for (size_t i = 0; i < bytes; i++)
-					memcpy(&(((unsigned char*)destination)[i]), &data[endOffset - i], 1);
+				{
+					((unsigned char*)destination)[i] = data[--readOffset];
+				}
 			}
 
 			offset += bytes;
