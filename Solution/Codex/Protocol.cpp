@@ -33,8 +33,43 @@ namespace codex
 
 		const PortType defaultAriaPort = 49842;
 		const Endianness networkByteOrder = Endianness::big;
-		const Endianness hostByteOrder = o32_host_order.value == O32_BIG_ENDIAN ? Endianness::big : (o32_host_order.value == O32_LITTLE_ENDIAN ? Endianness::little : Endianness::unknown);
-		
+		const Endianness hostByteOrder = o32_host_order.value == O32_BIG_ENDIAN ? Endianness::big : (o32_host_order.value == O32_LITTLE_ENDIAN ? Endianness::little : Endianness::unknown);		
+		const Endpoint Endpoint::invalid("0.0.0.0", 0);
+
+		Endpoint commandLineArgumentsToEndpoint(const int argc, const char** argv)
+		{
+			if (argc < 3)
+			{
+				log::info("Provided command line arguments cannot be used to form an endpoint: too few arguments.");
+				return Endpoint::invalid;
+			}
+
+			const protocol::Endpoint endpoint(argv[1], std::atoi(argv[2]));
+
+			//Some endpoint validation...
+			int periodCount = 0;
+			bool invalidCharacters = false;
+			for (size_t i = 0; i < endpoint.address.size(); i++)
+			{
+				if (endpoint.address[i] == '.')
+					periodCount++;
+				else if (endpoint.address[i] < 48 || endpoint.address[i] > 57)
+					invalidCharacters = true;
+			}
+			if (periodCount != 3 || invalidCharacters || endpoint.address.size() > 15)
+			{
+				codex::log::error("Provided server address is invalid: " + endpoint.address);
+				return Endpoint::invalid;
+			}
+			if (endpoint.port < 0 || endpoint.port > std::numeric_limits<uint16_t>::max())
+			{
+				codex::log::error("Provided server port is invalid: " + std::string(argv[2]));
+				return Endpoint::invalid;
+			}
+
+			return endpoint;
+		}
+
 		BufferBase::BufferBase()
 			: offset(0)
 		{

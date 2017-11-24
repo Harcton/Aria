@@ -1,5 +1,7 @@
 #pragma once
 #include <stdint.h>
+#include "CodexTime.h"
+#include "CodexAssert.h"
 
 namespace codex
 {
@@ -8,71 +10,64 @@ namespace codex
 		class WriteBuffer;
 		class ReadBuffer;
 	}
+	class SyncManager;
 
 	/*
-		Synchronizes states from ghost to shell or vice versa.
-		Synchronizable types must implement the following methods:
-		syncCreate(WriteBuffer/ReadBuffer)
-		contains the initial state data before the type begins the updates.
-		syncUpdate(WriteBuffer/ReadBuffer)
-		contains update data that is sent between set intervals or when sync is specifically requested.
-		syncRemove(WriteBuffer/ReadBuffer)
-		contains the end state data after the updates have been stopped.
-
-		Sync types are created and controlled outside the sync manager.
-		They are then connected to the sync manager, after which they start to exist on a remote sync manager as well.
-		This remote sync manager contains the type instance within.
+		Ghost sync types are created and controlled outside the sync manager.
+		They are then connected to the sync manager, after which they start to exist on a remote sync manager as the ShellSyncType counterpart.
+		The remote counterpart is contained inside the remote sync manager.
 	*/
-	class SyncManager;
-	class SyncType
+	class GhostSyncType
 	{
 	public:
-		class TypeId
-		{
-		public:
-			typedef uint16_t ValueType;
-		public:
-			TypeId();
-			TypeId(const uint16_t val);
-			TypeId& operator=(const TypeId& other);
-			operator ValueType() const;
-			operator bool() const;
-			void write(protocol::WriteBuffer& buffer);
-			void read(protocol::ReadBuffer& buffer);
-
-		private:
-			static const ValueType invalidValue;
-			ValueType value;
-		};
-
+		typedef uint32_t GhostSyncTypeVersionType;
 	public:
-		SyncType();
-		SyncType(const SyncType& other);
-		SyncType(const SyncType&& other);
-		SyncType& operator=(const SyncType& other);
-		SyncType& operator=(const SyncType&& other);
-		virtual ~SyncType();
+		virtual ~GhostSyncType() {}
+		/* By returning true, the ghost sync type indicates that it is ready to send an update packet. */
+		virtual bool ghostSyncTypeUpdate(const time::TimeType& deltaTime) { return false; }
+		/* Called when entry is added to a sync manager's synced entries. */
+		virtual void onSyncManagerAddEntry(SyncManager* syncManager) {}
+		/* Called when the entry is removed from the sync manager's synced entries. */
+		virtual void onSyncManagerRemoveEntry(SyncManager* syncManager) {}
+		virtual void syncCreateGhost(protocol::WriteBuffer& buffer) {}
+		virtual void syncCreateShell(protocol::ReadBuffer& buffer) {}
+		virtual void syncUpdateGhost(protocol::WriteBuffer& buffer) {}
+		virtual void syncUpdateShell(protocol::ReadBuffer& buffer) {}
+		virtual void syncRemoveGhost(protocol::WriteBuffer& buffer) {}
+		virtual void syncRemoveShell(protocol::ReadBuffer& buffer) {}
+	};
 
-		virtual TypeId getTypeId() const = 0;
-		virtual TypeId setTypeId(const TypeId) = 0;
-
-		virtual void syncCreate(protocol::WriteBuffer& buffer) {}
-		virtual void syncCreate(protocol::ReadBuffer& buffer) {}
-		virtual void syncUpdate(protocol::WriteBuffer& buffer) {}
-		virtual void syncUpdate(protocol::ReadBuffer& buffer) {}
-		virtual void syncRemove(protocol::WriteBuffer& buffer) {}
-		virtual void syncRemove(protocol::ReadBuffer& buffer) {}
-
-	private:
-		friend class SyncManager;
-		SyncManager* syncManager;
+	/*
+		Shell sync types exist inside the SyncManager's RemoteSyncManager's container.
+	*/
+	class ShellSyncType
+	{
+	public:
+		typedef uint32_t ShellSyncTypeVersionType;
+	public:
+		virtual ~ShellSyncType() {}
+		/* By returning true, the shell sync type indicates that it is ready to send an update packet. */
+		virtual bool shellSyncTypeUpdate(const time::TimeType& deltaTime) { return false; }
+		virtual void syncCreateGhost(protocol::ReadBuffer& buffer) {}
+		virtual void syncCreateShell(protocol::WriteBuffer& buffer) {}
+		virtual void syncUpdateGhost(protocol::ReadBuffer& buffer) {}
+		virtual void syncUpdateShell(protocol::WriteBuffer& buffer) {}
+		virtual void syncRemoveGhost(protocol::ReadBuffer& buffer) {}
+		virtual void syncRemoveShell(protocol::WriteBuffer& buffer) {}
 	};
 }
 
-#define SYNCTYPE_DECL(MyClass) \
-private: \
-static codex::SyncType::TypeId syncTypeId; \
-static const std::string syncTypeName;
-#define SYNCTYPE_IMPL(MyClass) \
-codex::SyncType::TypeId MyClass::syncTypeId = std::numeric_limits<codex::SyncType::TypeId>::max(); \
-const std::string MyClass::syncTypeName = #MyClass;
+#define SYNCTYPE_DECL(p_TypeType, p_MyClass, p_Version) \
+public: \
+static const std::string& get##p_TypeType##SyncTypeName() \
+{ \
+	static const std::string name = #p_MyClass; \
+	return name; \
+} \
+static const p_TypeType##SyncTypeVersionType get##p_TypeType##SyncTypeVersion() \
+{ \
+	static const p_TypeType##SyncTypeVersionType version = p_Version; \
+	return version; \
+}
+#define GHOST_SYNCTYPE_DECL(p_MyClass, p_Version) SYNCTYPE_DECL(Ghost, p_MyClass, p_Version)
+#define SHELL_SYNCTYPE_DECL(p_MyClass, p_Version) SYNCTYPE_DECL(Shell, p_MyClass, p_Version)

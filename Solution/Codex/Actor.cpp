@@ -21,34 +21,16 @@ namespace codex
 		if (argc == 3)
 		{//Connect
 
-		 //Remote endpoint
-			const std::string address = argv[1];
-			const int port = std::atoi(argv[2]);
-
-			//Some endpoint validation...
-			int periodCount = 0;
-			bool invalidCharacters = false;
-			for (size_t i = 0; i < address.size(); i++)
+			//Remote endpoint
+			const protocol::Endpoint endpoint = protocol::commandLineArgumentsToEndpoint(argc, argv);
+			if (endpoint == protocol::Endpoint::invalid)
 			{
-				if (address[i] == '.')
-					periodCount++;
-				else if (address[i] < 48 || address[i] > 57)
-					invalidCharacters = true;
-			}
-			if (periodCount != 3 || invalidCharacters || address.size() > 15)
-			{
-				codex::log::error("Provided server address is invalid: " + address);
-				return 1;
-			}
-			if (port < 0 || port > std::numeric_limits<uint16_t>::max())
-			{
-				codex::log::error("Provided server port is invalid: " + std::string(argv[2]));
 				return 1;
 			}
 
 			//Try to connect
-			codex::log::info("Connecting to the shell at " + address + ", port: " + std::to_string(port));
-			if (connect(address.c_str(), port))
+			codex::log::info("Connecting to the shell at " + endpoint.address + ", port: " + std::to_string(endpoint.port));
+			if (connect(endpoint))
 			{//Connected
 				codex::log::info("Successfully connected to the shell!");
 				run();
@@ -105,31 +87,14 @@ namespace codex
 		else if (argc == 3)
 		{//Connect
 
-		 //Remote endpoint
-			const protocol::AddressType address = argv[1];
-			const int port = std::atoi(argv[2]);
-
-			//Some endpoint validation...
-			int periodCount = 0;
-			for (size_t i = 0; i < address.size(); i++)
-			{
-				if (address[i] == '.')
-					periodCount++;
-			}
-			if (periodCount != 3 || address.size() > 15)
-			{
-				codex::log::error("Provided server address is invalid: " + address);
+			//Remote endpoint
+			const protocol::Endpoint endpoint = protocol::commandLineArgumentsToEndpoint(argc, argv);
+			if (endpoint == protocol::Endpoint::invalid)
 				return 1;
-			}
-			if (port < std::numeric_limits<uint16_t>::min() || port > std::numeric_limits<uint16_t>::max())
-			{
-				codex::log::error("Provided server port is invalid: " + std::to_string(port));
-				return 1;
-			}
 
 			//try to connect
-			codex::log::info("connecting to the server at " + address + ", port: " + std::to_string(port));
-			if (connect(address, port))
+			codex::log::info("connecting to the server at " + endpoint.address + ", port: " + std::to_string(endpoint.port));
+			if (connect(endpoint))
 			{//connected
 				codex::log::info("Successfully connected to the server!");
 
@@ -235,9 +200,9 @@ namespace codex
 		socket.stopAccepting();
 	}
 
-	bool Actor::connect(const protocol::AddressType& address, const protocol::PortType& port)
+	bool Actor::connect(const protocol::Endpoint& endpoint)
 	{
-		return socket.connect(address, port);
+		return socket.connect(endpoint);
 	}
 
 	bool Actor::internalReceiveHandler(codex::protocol::ReadBuffer& buffer)

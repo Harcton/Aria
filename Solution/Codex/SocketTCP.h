@@ -30,7 +30,6 @@ namespace codex
 		virtual ~SocketTCP();
 		
 		/* Perform a synchronous connection attempt. */
-		bool connect(const protocol::AddressType& address_ipv4, const protocol::PortType& port);
 		bool connect(const protocol::Endpoint& endpoint);
 
 		/* Disconnect from the currently connected endpoint. */
@@ -112,45 +111,45 @@ namespace codex
 		bool handshakeReceived;//Refers to the current connection
 	};
 
-	class ShellSocketTCP : public SocketTCP
-	{
-	public:
-
-		ShellSocketTCP(IOService& ioService);
-		~ShellSocketTCP() override;
-
-		/*
-			Sends a ghost request to the remote endpoint, defined by the codex protocol.
-		*/
-		bool requestGhost(const std::string& ghostName);
-
-	private:
-
-		bool internalReceiveHandler(codex::protocol::ReadBuffer& buffer);
-
-		std::mutex requestGhostMutex;
-		std::atomic<bool> requestGhostResponseReceived;
-		uint64_t requestGhostReceivedResponse;
-		std::string requestGhostReceivedResponseAddress;
-		uint16_t requestGhostReceivedResponsePort;
-
-	};
-
-#ifdef GHOST_CODEX
-	class GhostSocketTCP : public SocketTCP
-	{
-	public:
-
-		GhostSocketTCP(IOService& ioService);
-		~GhostSocketTCP() override;
-
-		/*
-		Receive handler for expected ghost requests.
-		*/
-		bool ghostRequestHandler(codex::protocol::ReadBuffer& buffer);
-
-	private:
-		std::string ghostDirectory;
-	};
-#endif
+//	class ShellSocketTCP : public SocketTCP
+//	{
+//	public:
+//
+//		ShellSocketTCP(IOService& ioService);
+//		~ShellSocketTCP() override;
+//
+//		/*
+//			Sends a ghost request to the remote endpoint, defined by the codex protocol.
+//		*/
+//		bool requestGhost(const std::string& ghostName);
+//
+//	private:
+//
+//		bool internalReceiveHandler(codex::protocol::ReadBuffer& buffer);
+//
+//		std::mutex requestGhostMutex;
+//		std::atomic<bool> requestGhostResponseReceived;
+//		uint64_t requestGhostReceivedResponse;
+//		std::string requestGhostReceivedResponseAddress;
+//		uint16_t requestGhostReceivedResponsePort;
+//
+//	};
+//
+//#ifdef GHOST_CODEX
+//	class GhostSocketTCP : public SocketTCP
+//	{
+//	public:
+//
+//		GhostSocketTCP(IOService& ioService);
+//		~GhostSocketTCP() override;
+//
+//		/*
+//		Receive handler for expected ghost requests.
+//		*/
+//		bool ghostRequestHandler(codex::protocol::ReadBuffer& buffer);
+//
+//	private:
+//		std::string ghostDirectory;
+//	};
+//#endif
 }

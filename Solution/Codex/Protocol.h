@@ -51,10 +51,6 @@ namespace codex
 			invalid = 0,					//Not in use
 			handshake,						//Packet contains codex defined handshake data
 			disconnect,						//The remote end sends a packet to indicate disconnection
-			syncEntryCreate,
-			syncEntryUpdate,
-			syncEntryRemove,
-
 			undefined = 255,				//Sent data is user defined data, which is processed by a user defined receive handler.			
 		};
 
@@ -63,10 +59,13 @@ namespace codex
 		*/
 		struct Endpoint
 		{
+			static const Endpoint invalid;
 			Endpoint(const AddressType _address, const PortType _port) : address(_address), port(_port) {}
+			bool operator==(const Endpoint& other) const { return port == other.port && address == other.address; }
 			AddressType address;
 			PortType port;
 		};
+		Endpoint commandLineArgumentsToEndpoint(const int argc, const char** argv);
 
 		/*
 			An abstract base class for read/write buffers.

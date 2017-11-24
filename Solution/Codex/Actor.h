@@ -36,7 +36,7 @@ namespace codex
 		void stopReceiving();
 		void startAccepting(const protocol::PortType& port);
 		void stopAccepting();
-		bool connect(const protocol::AddressType& address, const protocol::PortType& port);
+		bool connect(const protocol::Endpoint& endpoint);
 
 	private:
 		bool internalReceiveHandler(codex::protocol::ReadBuffer& buffer);

@@ -1,0 +1,42 @@
+//Inter process synchronization
+Allocate data
+Synchronize allocation
+Manipulate data
+Synchronize manipulation
+Deallocate data
+Synchronize deallocation
+
+//Ghosts and shells
+Ghosts manipulate, shells obey.
+
+
+
+//Creation of sync managers
+Create sync managers
+register types
+connect to opposite endpoints
+exchange SyncType data
+
+
+//Sync manager in action
+[ghost]
+Create servo instance (outside of sync manager)
+Pass servo instance to sync manager
+[shell]
+Create servo instance (inside of sync manager)
+[ghost]
+Do servo update
+[shell]
+Receive servo update
+[ghost]
+Remove servo instance
+[shell]
+Remove servo instance
+
+
+
+//////////////
+// PAST LOG //
+
+
+
