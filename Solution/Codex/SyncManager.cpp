@@ -1,5 +1,7 @@
 #include "SyncManager.h"
 #include "CodexAssert.h"
+#include "IOService.h"
+#include "SocketTCP.h"
 
 
 
@@ -7,13 +9,30 @@ namespace codex
 {
 	static int debugLevel = 0;
 
-	SyncManager::SyncManager()
+	void SyncManager::SyncTypePairInfo::write(protocol::WriteBuffer& buffer)
+	{
+		buffer.write(local.name);
+		buffer.write(local.version);
+		buffer.write(remote.name);
+		buffer.write(remote.version);
+	}
+
+	void SyncManager::SyncTypePairInfo::read(protocol::ReadBuffer& buffer)
+	{
+		buffer.read(local.name);
+		buffer.read(local.version);
+		buffer.read(remote.name);
+		buffer.read(remote.version);
+	}
+
+
+
+	SyncManager::SyncManager(SocketTCP& _socket)
 		: initialized(false)
-		, ioService()
-		, socket(ioService)
+		, socket(_socket)
 		, nextGeneratedId(1)
 	{
-		socket.resizeReceiveBuffer(100000);
+
 	}
 
 	SyncManager::~SyncManager()
@@ -33,42 +52,7 @@ namespace codex
 
 	static const uint64_t syncManagerInitializeTypesMagicNumber = 0x13372112BEEF0001;
 	static const uint64_t syncManagerInitializeTypesResponseMagicNumber = 0x13372112BEEF0002;
-
-	bool SyncManager::startAccepting(const protocol::PortType port)
-	{
-		if (socket.isConnected())
-		{
-			codex::log::error("SyncManager is already connected.");
-			return false;
-		}
-		if (socket.isAccepting())
-		{
-			codex::log::error("SyncManager is already accepting.");
-			return false;
-		}
-		return socket.startAccepting(port, std::bind(&SyncManager::onAcceptCallback, this, std::placeholders::_1));
-	}
-
-	void SyncManager::onAcceptCallback(SocketTCP& socket)
-	{
-
-	}
-
-	bool SyncManager::connect(const protocol::Endpoint& endpoint)
-	{
-		return socket.connect(endpoint);
-	}
-
-	bool SyncManager::isConnected() const
-	{
-		return socket.isConnected();
-	}
-
-	bool SyncManager::isAccepting() const
-	{
-		return socket.isAccepting();
-	}
-
+	
 	bool SyncManager::initialize()
 	{
 		if (initialized)
@@ -79,14 +63,20 @@ namespace codex
 
 		if (!socket.isConnected())
 		{
-			codex::log::error("SyncManager cannot initialize, the sync manager is not in the connected state.");
+			codex::log::error("SyncManager cannot initialize, the provided socket is not in the connected state.");
+			return false;
+		}
+
+		if (socket.isReceiving())
+		{
+			codex::log::error("SyncManager cannot initialize, the provided socket is already in the receiving state.");
 			return false;
 		}
 
 		//Reset the remote sync manager state
-		for (size_t i = 0; i < remoteSyncManager.shells.size(); i++)
-			delete remoteSyncManager.shells[i];
-		remoteSyncManager.shells.clear();
+		for (size_t i = 0; i < remoteSyncManager.instances.size(); i++)
+			delete remoteSyncManager.instances[i];
+		remoteSyncManager.instances.clear();
 		remoteSyncManager.typeCompatibility = TypeCompatibility::unknown;
 		remoteSyncManager.typeCompatibilityResponse = TypeCompatibility::unknown;
 		
@@ -113,6 +103,7 @@ namespace codex
 		const time::TimeType timeout = time::seconds(999999.0f);// 10.0f);
 		while (remoteSyncManager.typeCompatibility == TypeCompatibility::unknown || remoteSyncManager.typeCompatibilityResponse == TypeCompatibility::unknown)
 		{
+			socket.update();
 			if (time::now() - begin >= timeout)
 			{//Timeouted
 				if (debugLevel >= 1)
@@ -123,6 +114,14 @@ namespace codex
 		}
 
 		//Inspect results
+		if (remoteSyncManager.typeCompatibility == TypeCompatibility::compatible)
+			log::info("SyncManager: compatible with the remote sync manager's types.");
+		else
+			log::info("SyncManager: incompatible with the remote sync manager's types.");
+		if (remoteSyncManager.typeCompatibilityResponse == TypeCompatibility::compatible)
+			log::info("SyncManager: remote sync manager is compatible with my types.");
+		else
+			log::info("SyncManager: remote sync manager is incompatible with my types.");
 		if (remoteSyncManager.typeCompatibility == TypeCompatibility::compatible && remoteSyncManager.typeCompatibilityResponse == TypeCompatibility::compatible)
 		{
 			log::info("SyncManager: initialization complete.");
@@ -148,42 +147,41 @@ namespace codex
 			{//Received remote types
 				size_t remoteRegisteredTypesCount;
 				buffer.read(remoteRegisteredTypesCount);
-				std::vector<SyncTypeInfo> remoteRegisteredTypes(remoteRegisteredTypesCount);
+				std::vector<SyncTypePairInfo> remoteRegisteredTypes(remoteRegisteredTypesCount);
 				remoteSyncManager.typeCompatibility = TypeCompatibility::compatible;
 				std::string failureString;
 				for (size_t r = 0; r < remoteRegisteredTypesCount; r++)
 				{
 					remoteRegisteredTypes[r].read(buffer);
-					const SyncTypeInfo& remoteTypeInfo = remoteRegisteredTypes[r];
+					const SyncTypePairInfo& remoteTypeInfo = remoteRegisteredTypes[r];
 					bool found = false;
 					for (size_t m = 0; m < registeredTypes.size(); m++)
 					{
-						const bool ghostMatch = registeredTypes[m].ghostName == remoteTypeInfo.ghostName;
-						const bool shellMatch = registeredTypes[m].shellName == remoteTypeInfo.shellName;
-						if (ghostMatch || shellMatch)
+						const bool localMatch = registeredTypes[m].local.name == remoteTypeInfo.local.name;
+						const bool remoteMatch = registeredTypes[m].remote.name == remoteTypeInfo.remote.name;
+						if (localMatch || remoteMatch)
 						{
-							if (ghostMatch && shellMatch)
+							if (localMatch && remoteMatch)
 							{
 								found = true;
-								if (registeredTypes[m].ghostVersion != remoteTypeInfo.ghostVersion)
-									failureString += "\nGhost '" + registeredTypes[m].ghostName + "' version mismatch, local version '" + std::to_string(registeredTypes[m].ghostVersion) + "', remote version '" + std::to_string(remoteTypeInfo.ghostVersion) + "'.";
-								if (registeredTypes[m].shellVersion != remoteTypeInfo.shellVersion)
-									failureString += "\nShell '" + registeredTypes[m].shellName + "' version mismatch, local version '" + std::to_string(registeredTypes[m].shellVersion) + "', remote version '" + std::to_string(remoteTypeInfo.shellVersion) + "'.";
+								if (registeredTypes[m].local.version != remoteTypeInfo.local.version)
+									failureString += "\nLocal type '" + registeredTypes[m].local.name + "' version mismatch, my local version '" + std::to_string(registeredTypes[m].local.version) + "', other sync manager's local version '" + std::to_string(remoteTypeInfo.local.version) + "'.";
+								if (registeredTypes[m].remote.version != remoteTypeInfo.remote.version)
+									failureString += "\nRemote type '" + registeredTypes[m].remote.name + "' version mismatch, my remote version '" + std::to_string(registeredTypes[m].remote.version) + "', other sync manager's remote version '" + std::to_string(remoteTypeInfo.remote.version) + "'.";
 							}
-							else if (!ghostMatch)
-								failureString += "\nGhost names match: '" + remoteTypeInfo.ghostName + "', but shell names mismatch: my '" + registeredTypes[m].shellName + "' remote: '" + remoteTypeInfo.shellName + "'!";
-							else if (!shellMatch)
-								failureString += "\nGhost names match: '" + remoteTypeInfo.ghostName + "', but shell names mismatch: my '" + registeredTypes[m].shellName + "' remote: '" + remoteTypeInfo.shellName + "'!";
+							else if (!localMatch)
+								failureString += "\nRemote type names match: '" + remoteTypeInfo.remote.name + "', but local names mismatch: my '" + registeredTypes[m].local.name + "' remote: '" + remoteTypeInfo.local.name + "'!";
+							else if (!remoteMatch)
+								failureString += "\nLocal type names match: '" + remoteTypeInfo.local.name + "', but remote names mismatch: my '" + registeredTypes[m].remote.name + "' remote: '" + remoteTypeInfo.remote.name + "'!";
 							break;
 						}
 					}
 					if (!found)
-						failureString += "\nUnknown remote type: ghost '" + remoteTypeInfo.ghostName + "', shell '" + remoteTypeInfo.shellName + "'!";
+						failureString += "\nUnknown type: local '" + remoteTypeInfo.local.name + "', remote '" + remoteTypeInfo.remote.name + "'!";
 				}
 				if (failureString.size() > 1)
 				{
-					remoteSyncManager.typeCompatibility = TypeCompatibility::uncompatible;
-					codex::log::info("Remote sync manager has uncompatible types. Initialization failed.");
+					remoteSyncManager.typeCompatibility = TypeCompatibility::incompatible;
 					codex::log::info(failureString);
 				}
 
@@ -196,7 +194,7 @@ namespace codex
 			else if (magic == syncManagerInitializeTypesResponseMagicNumber)
 			{//Received remote type inspectation results
 				buffer.read((uint8_t&)remoteSyncManager.typeCompatibilityResponse);
-				if (remoteSyncManager.typeCompatibilityResponse == TypeCompatibility::uncompatible)
+				if (remoteSyncManager.typeCompatibilityResponse == TypeCompatibility::incompatible)
 				{
 					codex::log::info("SyncManager: initialization failed. (my)Local types are not compatible with the remote types.");
 				}
@@ -218,6 +216,8 @@ namespace codex
 
 	void SyncManager::update(const time::TimeType& deltaTime)
 	{
+		socket.update();
+
 		if (entriesToAdd.size() > 0)
 		{
 			protocol::WriteBuffer buffer;
@@ -240,7 +240,7 @@ namespace codex
 		}
 	}
 
-	void SyncManager::addEntry(GhostSyncType& reference, const time::TimeType& syncInterval)
+	void SyncManager::addEntry(ISyncType& reference, const time::TimeType& syncInterval)
 	{
 		//Check that entry is not in the to be added queue
 		for (size_t i = 0; i < entriesToAdd.size(); i++)
@@ -267,7 +267,7 @@ namespace codex
 		entriesToAdd.back().id = nextGeneratedId++;
 	}
 
-	void SyncManager::removeEntry(GhostSyncType& reference)
+	void SyncManager::removeEntry(ISyncType& reference)
 	{
 		//Search entries to add
 		for (size_t i = 0; i < entriesToAdd.size(); i++)
@@ -292,7 +292,7 @@ namespace codex
 		log::warning("Specified entry not found from among the registered entries!");
 	}
 
-	void SyncManager::setSyncInterval(GhostSyncType& reference, const time::TimeType& syncInterval)
+	void SyncManager::setSyncInterval(ISyncType& reference, const time::TimeType& syncInterval)
 	{
 		for (size_t i = 0; i < entriesToAdd.size(); i++)
 		{

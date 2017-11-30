@@ -4,8 +4,10 @@
 #include <vector>
 #include <string>
 #include <assert.h>
-#include "Log.h"
 #include "Codex.h"
+#include "GPIO.h"
+#include "CodexTime.h"
+#include "Log.h"
 
 namespace codex
 {
@@ -43,6 +45,7 @@ namespace codex
 			switchEndpoint,					//The endpoint is switching endpoints
 			programExit,					//Used when disconnecting the socket after running the shell/ghost main program
 			timeout,						//No packets received for a 
+			unknownProtocol,				//The protocol seems to be uknown?
 		};
 
 		/* Codex sockets add a packet type header into each packet. Packet type determines the contents of the packet. Currently a packet is solely limited to a single packet type. */
@@ -60,6 +63,7 @@ namespace codex
 		struct Endpoint
 		{
 			static const Endpoint invalid;
+			Endpoint() : address(invalid.address), port(invalid.port) {}
 			Endpoint(const AddressType _address, const PortType _port) : address(_address), port(_port) {}
 			bool operator==(const Endpoint& other) const { return port == other.port && address == other.address; }
 			AddressType address;
@@ -114,6 +118,12 @@ namespace codex
 			size_t write(const bool value);
 			size_t write(const std::string& value);
 			size_t write(const PacketType value);
+			template<typename T>
+			inline size_t write(const T value)
+			{
+				static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value || std::is_enum<T>::value, "WriteBuffer::write<T>: specified type T is invalid.");
+				return write((void*)&value, sizeof(T));
+			}
 
 			const unsigned char* operator[](const size_t index) const { return &data[index]; }
 			size_t getCapacity() const override { return data.capacity(); }
@@ -151,6 +161,12 @@ namespace codex
 			size_t read(bool& value);
 			size_t read(std::string& value);
 			size_t read(PacketType& value);
+			template<typename T>
+			inline size_t read(const T& value)
+			{
+				static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value || std::is_enum<T>::value, "WriteBuffer::write<T>: specified type T is invalid.");
+				return read((void*)&value, sizeof(T));
+			}
 
 			/* Translates offset by a set amount of bytes. */
 			void translate(const int translationOffset);
@@ -181,13 +197,12 @@ namespace codex
 			size_t write(WriteBuffer& buffer) const;
 			size_t read(ReadBuffer& buffer);
 
-			CodexType getCodexType() const;
 			bool isValid() const;
 
 		private:
 			//Hidden attributes, set automatically
+			uint64_t magic;
 			VersionType handshakeVersion;//Version of handshake protocol.
-			CodexType codexType;
 			bool valid;
 		};
 	}

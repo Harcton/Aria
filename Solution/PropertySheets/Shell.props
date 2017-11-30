@@ -12,7 +12,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>/usr/glm/;/usr/boost/;/home/pi/projects/;/home/pi/projects/Codex/;$(SolutionDir)/;$(SPEHSENGINE_ROOT)/Dependencies/include/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_LINUX;SHELL_CODEX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_LINUX;SHELL_CODEX;CODEX_GPIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>/usr/boost/stage/lib/static/;/home/pi/projects/Codex/bin/$(Platform)/$(Configuration);</AdditionalLibraryDirectories>

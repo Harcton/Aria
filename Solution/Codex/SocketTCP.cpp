@@ -9,24 +9,32 @@
 #include "FileStream.h"
 #include "RAIIVariableSetter.h"
 #include "StringOperations.h"
+#include "CodexAssert.h"
 
 
 namespace codex
 {
 	extern std::string workingDirectory;
+	/*
+		level 1: prints most essential state changes.
+		level 2: prints some network traffic numbers.
+		level 3: prints receive buffer in hex string.
+	*/
 	int debugLogLevel = 0;
 	static const time::TimeType handshakeReceiveTimeout = time::seconds(10000);
 	static const time::TimeType connectionTimeout = time::seconds(10000);
 
+	SocketTCP::Id SocketTCP::nextId = 0;
 	SocketTCP::SocketTCP(IOService& _ioService)
-		: ioService(_ioService)
+		: id(nextId++)
+		, ioService(_ioService)
 		, socket(_ioService.getImplementationRef())
 		, acceptor(nullptr)
 		, codexAcceptThread(nullptr)
 		, onReceiveCallback()
 		, onAcceptCallback()
 		, expectedBytes(0)
-		, receiveBuffer(sizeof(size_t))
+		, receiveBuffer(512)
 		, lastReceiveTime(0)
 		, receiving(false)
 		, accepting(false)
@@ -34,6 +42,7 @@ namespace codex
 		, connecting(false)
 		, handshakeSent(false)
 		, handshakeReceived(false)
+		, onAcceptCallbackQueued(false)
 	{
 
 	}
@@ -55,6 +64,8 @@ namespace codex
 			delete codexAcceptThread;
 			codexAcceptThread = nullptr;
 		}
+
+		clearReceivedPackets();
 	}
 	
 	void SocketTCP::waitUntilFinishedReceiving()
@@ -79,6 +90,7 @@ namespace codex
 		{
 			codexAcceptThread->join();
 			delete codexAcceptThread;
+			codexAcceptThread = nullptr;
 		}
 	}
 
@@ -96,16 +108,27 @@ namespace codex
 		} while (wait);
 	}
 
+	void SocketTCP::clearReceivedPackets()
+	{
+		std::lock_guard<std::recursive_mutex> lock2(receivedPacketsMutex);
+		for (size_t i = 0; i < receivedPackets.size(); i++)
+			delete receivedPackets[i];
+		receivedPackets.clear();
+	}
+
 	bool SocketTCP::connect(const protocol::Endpoint& endpoint)
 	{
 		RAIIMutexVariableSetter<bool, std::recursive_mutex> connectingSetter(connecting, true, mutex);
+
+		//Stop receiving (outside the main mutex!)
+		stopReceiving();
 
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 
 			if (connected)
 			{
-				log::info("SocketTCP::connect() failed to connect. Socket is already at the connected state!");
+				log::info("SocketTCP::connect: failed to connect. Socket is already at the connected state!");
 				return false;
 			}
 
@@ -113,30 +136,41 @@ namespace codex
 			handshakeSent = false;
 			handshakeReceived = false;
 
+			//Resolve the remote endpoint
 			boost::system::error_code error;
 			boost::asio::ip::tcp::resolver resolverTCP(ioService.getImplementationRef());
 			boost::asio::ip::tcp::resolver::query query(endpoint.address, std::to_string(endpoint.port));
 			boost::asio::ip::tcp::endpoint asioEndpoint = *resolverTCP.resolve(query, error);
 			if (error)
 			{
-				log::info("SocketTCP::connect() failed to resolve the endpoint. Boost asio error: " + error.message());
+				log::info("SocketTCP::connect: failed to resolve the endpoint. Boost asio error: " + error.message());
 				return false;
 			}
+			else
+			{
+				if (debugLogLevel >= 1)
+					log::info("SocketTCP::connect: successfully resolved the remote endpoint.");
+			}
 
+			//Connect to the remote boost socket
 			try
 			{
 				socket.connect(asioEndpoint, error);
 			}
 			catch (std::exception& exception)
 			{
-				log::info(std::string("SocketTCP::connect() failed to connect. Exception thrown: ") + exception.what());
+				log::info(std::string("SocketTCP::connect: failed to connect. Exception thrown: ") + exception.what());
 				return false;
 			}
-
 			if (error)
 			{
-				log::info("SocketTCP::connect() failed to connect. Boost asio error: " + error.message());
+				log::info("SocketTCP::connect: failed to connect. Boost asio error: " + error.message());
 				return false;
+			}
+			else
+			{
+				if (debugLogLevel >= 1)
+					log::info("SocketTCP::connect: successfully connected the remote boost::asio::ip::tcp::socket.");
 			}
 
 			//Expect an incoming handshake after sending one
@@ -146,13 +180,15 @@ namespace codex
 			protocol::WriteBuffer buffer;
 			protocol::Handshake handshake;
 			handshake.write(buffer);
-			if (handshakeSent = sendPacket(buffer, protocol::PacketType::handshake))
+			handshakeSent = sendPacket(buffer, protocol::PacketType::handshake);
+			if (handshakeSent)
 			{
-				log::info("SocketTCP::connect() successfully sent handshake to the remote endpoint.");
+				if (debugLogLevel >= 1)
+					log::info("SocketTCP::connect: successfully sent handshake to the remote endpoint.");
 			}
 			else
 			{
-				log::info("SocketTCP::connect() failed to connect. Failed to send handshake.");
+				log::info("SocketTCP::connect: failed to connect. Failed to send handshake.");
 				return false;//If sending the handshake fails, connection was not successful
 			}
 		}
@@ -163,12 +199,12 @@ namespace codex
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 			if (!handshakeReceived)
 			{
-				codex::log::info("SocketTCP::connect() failed to connect! No response handshake received!");
+				codex::log::info("SocketTCP::connect: failed to connect! No response handshake received!");
 				return false;
 			}
 		}
 		if (debugLogLevel >= 1)
-			log::info("SocketTCP::connect() successfully received handshake from the remote endpoint. Socket is now in connected state.");
+			log::info("SocketTCP::connect: successfully received handshake from the remote endpoint. Socket is now in connected state.");
 		
 		//All done, socket is now at connected state!
 		std::lock_guard<std::recursive_mutex> lock(mutex);
@@ -185,6 +221,9 @@ namespace codex
 
 	void SocketTCP::disconnect(const protocol::DisconnectType disconnectType)
 	{
+		//Stop receiving (outside the main mutex!)
+		stopReceiving();
+
 		std::lock_guard<std::recursive_mutex> lock(mutex);
 		if (!connected)
 			return;
@@ -210,9 +249,18 @@ namespace codex
 
 	void SocketTCP::stopReceiving()
 	{
-		std::lock_guard<std::recursive_mutex> lock(mutex);
-		socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
-		socket.close();//TODO: this actually cancels all asynchronous operations, not just receiving...
+		{
+			std::lock_guard<std::recursive_mutex> lock(mutex);
+			if (socket.is_open())
+			{
+				socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+				socket.close();//TODO: this actually cancels all asynchronous operations, not just receiving...
+			}
+		}
+		while (isReceiving())
+		{
+			//Blocks
+		}
 	}
 
 	void SocketTCP::stopAccepting()
@@ -304,20 +352,8 @@ namespace codex
 		receiving = true;
 		lastReceiveTime = time::now();
 		onReceiveCallback = callbackFunction;
-		if (expectedBytes == 0)
-		{//Receive header
-			boost::asio::async_read(socket, boost::asio::buffer(&receiveBuffer[0], sizeof(expectedBytes)),
-				boost::bind(&SocketTCP::receiveHandler,
-					this, boost::asio::placeholders::error,
-					boost::asio::placeholders::bytes_transferred));
-		}
-		else
-		{//Receive data
-			boost::asio::async_read(socket, boost::asio::buffer(&receiveBuffer[0], expectedBytes),
-				boost::bind(&SocketTCP::receiveHandler,
-					this, boost::asio::placeholders::error,
-					boost::asio::placeholders::bytes_transferred));
-		}
+		clearReceivedPackets();
+		resumeReceiving();
 
 		if (debugLogLevel >= 2)
 		{
@@ -326,7 +362,57 @@ namespace codex
 			else
 				log::info("SocketTCP successfully started receiving. Expecting bytes header.");
 		}
+
 		return true;
+	}
+
+	void SocketTCP::resumeReceiving()
+	{
+		if (expectedBytes == 0)
+		{//Receive header
+			CODEX_ASSERT(receiveBuffer.size() >= sizeof(expectedBytes));
+			boost::asio::async_read(socket, boost::asio::buffer(&receiveBuffer[0], sizeof(expectedBytes)),
+				boost::bind(&SocketTCP::receiveHandler,
+					this, boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred));
+		}
+		else
+		{//Receive data
+			if (receiveBuffer.size() < expectedBytes)
+			{
+				if (debugLogLevel >= 1)
+					codex::log::info("SocketTCP: the current receive buffer is insufficient! Expanding to " + std::to_string(expectedBytes));
+				receiveBuffer.resize(expectedBytes);
+			}
+			boost::asio::async_read(socket, boost::asio::buffer(&receiveBuffer[0], expectedBytes),
+				boost::bind(&SocketTCP::receiveHandler,
+					this, boost::asio::placeholders::error,
+					boost::asio::placeholders::bytes_transferred));
+		}
+	}
+
+	void SocketTCP::update()
+	{
+		std::lock_guard<std::recursive_mutex> lock(mutex);
+
+		//onAccept callback
+		if (onAcceptCallbackQueued)
+		{
+			onAcceptCallbackQueued = false;
+			onAcceptCallback(*this);
+		}
+
+		//Received packets
+		std::lock_guard<std::recursive_mutex> lock2(receivedPacketsMutex);
+		if (onReceiveCallback)
+		{
+			for (size_t i = 0; i < receivedPackets.size(); i++)
+			{
+				codex::protocol::ReadBuffer buffer(receivedPackets[i]->data(), receivedPackets[i]->size());
+				onReceiveCallback(buffer);
+			}
+		}
+		clearReceivedPackets();
 	}
 
 	void SocketTCP::receiveHandler(const boost::system::error_code& error, std::size_t bytes)
@@ -388,7 +474,7 @@ namespace codex
 			if (expectedBytes == 0)
 			{//Header received
 				readBuffer.read(expectedBytes);
-				startReceiving(onReceiveCallback);
+				resumeReceiving();
 			}
 			else if (expectedBytes == bytes)
 			{//Data received
@@ -397,7 +483,7 @@ namespace codex
 				const bool keepReceiving = codexReceiveHandler(readBuffer);
 				expectedBytes = 0;//Begin to expect header next
 				if (keepReceiving)
-					startReceiving(onReceiveCallback);
+					resumeReceiving();
 			}
 			else
 			{
@@ -421,21 +507,30 @@ namespace codex
 		{
 		case protocol::PacketType::undefined:
 		{
-			//Create new read buffer that hides the codex layer
-			codex::protocol::ReadBuffer dataBuffer(buffer[buffer.getOffset()], buffer.getBytesRemaining());
-
+			const size_t userBytes = buffer.getBytesRemaining();
 			if (debugLogLevel >= 2)
-				codex::log::info("SocketTCP received user defined packet. Bytes: " + std::to_string(dataBuffer.getBytesRemaining()));
+				codex::log::info("SocketTCP received user defined packet. Bytes: " + std::to_string(userBytes));
+
 			if (onReceiveCallback)
-				return onReceiveCallback(dataBuffer);
+			{
+				//Push to received packets queue
+				std::lock_guard<std::recursive_mutex> lock2(receivedPacketsMutex);
+				receivedPackets.push_back(new std::vector<uint8_t>(userBytes));
+				memcpy(receivedPackets.back()->data(), buffer[buffer.getOffset()], userBytes);
+				return true;
+			}
 			else
+			{
+				codex::log::warning("SocketTCP::codexReceiveHandler: no receive handler provided for the user defined packet.");
 				return false;
+			}
 		}
 		case protocol::PacketType::disconnect:
 		{
 			protocol::DisconnectType disconnectType;
 			buffer.read((uint8_t&)disconnectType);
 			disconnect(protocol::DisconnectType::doNotSendDisconnectPacket);
+			codex::log::info("SocketTCP: remote socket gracefully disconnected. Disconnect type was: " + std::to_string((uint8_t)disconnectType));
 			return false;
 		}
 		case protocol::PacketType::handshake:
@@ -477,8 +572,9 @@ namespace codex
 			codex::log::warning("SocketTCP failed start accepting! Socket is currently connected!");
 			return false;
 		}
-		assert(!handshakeSent);
-		assert(!handshakeReceived);
+		CODEX_ASSERT(!handshakeSent);
+		CODEX_ASSERT(!handshakeReceived);
+		onAcceptCallbackQueued = false;
 
 		if (acceptor == nullptr)
 			acceptor = new boost::asio::ip::tcp::acceptor(ioService.getImplementationRef());
@@ -527,11 +623,11 @@ namespace codex
 	void SocketTCP::onAccept(const boost::system::error_code error)
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
-		assert(!isConnected());
-		assert(!isReceiving());
-		assert(isAccepting());
-		assert(acceptor);
-		assert(!codexAcceptThread);
+		CODEX_ASSERT(!isConnected());
+		CODEX_ASSERT(!isReceiving());
+		CODEX_ASSERT(isAccepting());
+		CODEX_ASSERT(acceptor);
+		CODEX_ASSERT(!codexAcceptThread);
 		acceptor->close();
 		if (error)
 		{
@@ -540,7 +636,10 @@ namespace codex
 			accepting = false;
 			return;
 		}
-		codexAcceptThread = new std::thread(&SocketTCP::codexAccept, this);
+		else
+		{
+			codexAcceptThread = new std::thread(&SocketTCP::codexAccept, this);
+		}
 	}
 
 	void SocketTCP::codexAccept()
@@ -558,9 +657,8 @@ namespace codex
 			if (!handshakeReceived)
 			{
 				codex::log::info("SocketTCP failed to accept an incoming connection! No response handshake received!");
-				if (onAcceptCallback)
-					onAcceptCallback(*this);
 				disconnect(protocol::DisconnectType::doNotSendDisconnectPacket);
+				onAcceptCallbackQueued = true;
 				return;
 			}
 		}
@@ -579,27 +677,21 @@ namespace codex
 		}
 		else
 		{
-			{
-				std::lock_guard<std::recursive_mutex> lock(mutex);
-				accepting = false;
-			}
 			codex::log::info("SocketTCP failed to accept an incoming connection! Could not send handshake!");
-			if (onAcceptCallback)
-				onAcceptCallback(*this);
 			disconnect(protocol::DisconnectType::doNotSendDisconnectPacket);
+
+			std::lock_guard<std::recursive_mutex> lock(mutex);
+			onAcceptCallbackQueued = true;
+			accepting = false;
 			return;
 		}
 
-		{
-			std::lock_guard<std::recursive_mutex> lock(mutex);
-			accepting = false;
-			connected = true;
-			lastReceiveTime = time::now();
-		}
-
-		//Socket is now in the connected status! Make the onAcceptCallback callback.
-		if (onAcceptCallback)
-			onAcceptCallback(*this);
+		//Socket is now in the connected state!
+		std::lock_guard<std::recursive_mutex> lock(mutex);
+		accepting = false;
+		connected = true;
+		lastReceiveTime = time::now();
+		onAcceptCallbackQueued = true;
 	}
 
 	std::string SocketTCP::getRemoteAddress() const
@@ -658,117 +750,6 @@ namespace codex
 			return false;
 		return connected;
 	}
-	
-//	static const uint64_t magicYes = 0xBAABAABBBBADAB00;
-//
-//	ShellSocketTCP::ShellSocketTCP(IOService& io)
-//		: SocketTCP(io)
-//		, requestGhostResponseReceived(false)
-//	{
-//
-//	}
-//
-//	ShellSocketTCP::~ShellSocketTCP()
-//	{
-//
-//	}
-//
-//	bool ShellSocketTCP::internalReceiveHandler(codex::protocol::ReadBuffer& buffer)
-//	{
-//		requestGhostResponseReceived = true;
-//		buffer.read(requestGhostReceivedResponse);
-//		if (requestGhostReceivedResponse == magicYes)
-//		{//Read the rest
-//			buffer.read(requestGhostReceivedResponseAddress);
-//			buffer.read(requestGhostReceivedResponsePort);
-//		}
-//		return false;
-//	}
-//
-//	bool ShellSocketTCP::requestGhost(const std::string& ghostName)
-//	{
-//		//TODO: do not limit this function for just one thread...
-//		if (!requestGhostMutex.try_lock())
-//		{
-//			log::warning("requestGhost() failed: another thread is already runnig this process!");
-//			return false;
-//		}
-//		requestGhostMutex.unlock();
-//		std::lock_guard<std::mutex> lock(requestGhostMutex);
-//
-//		if (!isConnected())
-//		{
-//			log::warning("requestGhost() failed: passed socket is not connected to an endpoint! Connect first, then request the ghost!");
-//			return false;
-//		}
-//		if (isReceiving())
-//		{
-//			log::warning("requestGhost() failed: passed socket is already receiving!");
-//			return false;
-//		}
-//
-//		codex::protocol::WriteBuffer buffer;
-//		buffer.write(ghostName);
-//		if (!sendPacket(buffer))
-//		{
-//			log::info("requestGhost() failed: sending a packet failed!");
-//			return false;
-//		}
-//
-//		requestGhostReceivedResponse = false;
-//		startReceiving(std::bind(&ShellSocketTCP::internalReceiveHandler, this, std::placeholders::_1));
-//		codex::time::TimeType startTime = time::now();
-//		while (!requestGhostReceivedResponse)
-//		{
-//			codex::time::delay(codex::time::milliseconds(1));
-//			if (time::now() - startTime > codex::time::seconds(5))
-//			{
-//				codex::log::info("requestGhost() failed: the remote socket did not respond within the given time window.");
-//				stopReceiving();
-//				return false;
-//			}
-//		}
-//
-//		if (requestGhostReceivedResponse == magicYes)
-//		{//Ghost has been deployed to the specified endpoint
-//			const protocol::AddressType remoteAddress = getRemoteAddress();
-//			const protocol::PortType remotePort = getRemotePort();
-//			disconnect(protocol::DisconnectType::switchEndpoint);
-//
-//			//Connect to ghost
-//			if (!connect(requestGhostReceivedResponseAddress.c_str(), requestGhostReceivedResponsePort))
-//			{
-//				codex::log::info("requestGhost() failed: could not connect to the provided ghost.");
-//				//Try to reconnect to the previously connected endpoint
-//				if (!connect(remoteAddress.c_str(), remotePort))
-//					codex::log::info("requestGhost() failed to reconnect back to the previous endpoint!");
-//
-//				return false;
-//			}
-//
-//		}
-//		else
-//		{
-//			codex::log::info("requestGhost() failed: the remote socket responded, but it could not currently provide a ghost with the specified name.");
-//			return true;
-//		}
-//	}
-//
-//
-//#ifdef GHOST_CODEX
-//	GhostSocketTCP::GhostSocketTCP(IOService& io)
-//		: SocketTCP(io)
-//	{
-//
-//	}
-//
-//	GhostSocketTCP::~GhostSocketTCP()
-//	{
-//
-//	}
-//
-//	bool GhostSocketTCP::ghostRequestHandler(codex::protocol::ReadBuffer& buffer)
-//	{
 //		std::string ghostName;
 //		buffer.read(ghostName);
 //		const std::string ghostPath = workingDirectory + "/" + ghostName + ".exe";
@@ -801,13 +782,5 @@ namespace codex
 //			CloseHandle(pi.hThread);
 //#elif
 //#warning Missing implementation for ghost launching on current platform
-//#endif
-//		}
-//		else
-//		{//Ghost file doesn't exist
-//
-//		}
-//		return false;//=do not start receiving again
-//	}
 //#endif
 }

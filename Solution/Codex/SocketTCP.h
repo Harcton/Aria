@@ -19,16 +19,31 @@ namespace codex
 		class WriteBuffer;
 		class ReadBuffer;
 	}
+	namespace aria
+	{
+		class Connector;
+		class Client;
+	}
 
 	class SocketTCP
 	{
 	private:
 		typedef uint32_t ExpectedBytesType;
+		typedef uint32_t Id;
+		friend class aria::Connector;
+		friend class aria::Client;
+		
 	public:
 		
 		SocketTCP(IOService& ioService);
 		virtual ~SocketTCP();
-		
+
+		/*
+			Process incoming connections(onAccept callbacks).
+			Process arrived packets(onReceive callbacks).
+		*/
+		void update();
+
 		/* Perform a synchronous connection attempt. */
 		bool connect(const protocol::Endpoint& endpoint);
 
@@ -43,7 +58,7 @@ namespace codex
 
 		/* Starts receiving data from the connected endpoint. Non-blocking call. Callback return value specifies whether to keep receiving. */
 		bool startReceiving(const std::function<bool(codex::protocol::ReadBuffer&)> onReceiveCallback);
-
+		
 		/* Starts listening for a new incoming connection. Upon success, a connection is made. Non-blocking call. Callback is called even if no connection is made! */
 		bool startAccepting(const protocol::PortType port, const std::function<void(SocketTCP&)> onAcceptCallback);
 
@@ -69,8 +84,13 @@ namespace codex
 		void enableThreadLock() { mutex.lock(); }
 		/* Releases previously enabled thread lock. */
 		void releaseThreadLock() { mutex.unlock(); }
+		
+		const Id id;
 
-	protected:
+	private:
+
+		/* Resumes receiving with the previously set callback handler, not clearing out any arrived packets. */
+		void resumeReceiving();
 		
 		/* Disconnect the socket with the specified type */
 		void disconnect(const protocol::DisconnectType disconnectType);
@@ -84,6 +104,9 @@ namespace codex
 		/* Blocks until handshakeReceived==true, or time is out. */
 		void waitUntilReceivedHandshake(const time::TimeType timeout);
 
+		/* Deallocates and clears received packet buffers. */
+		void clearReceivedPackets();
+
 		/* Boost acceptor calls this method when an incoming connection is being accepted. If no error is detected, launches the synchronous codexAccept method in a different thread (codexAcceptThread). */
 		void onAccept(const boost::system::error_code error);
 		/* Asynchronous method for running the handshake procedure with the remote endpoint. */
@@ -92,6 +115,7 @@ namespace codex
 		//Receive handlers
 		void receiveHandler(const boost::system::error_code& error, std::size_t bytes);//Boost initially passes received data to this receive handler.
 		bool codexReceiveHandler(codex::protocol::ReadBuffer& buffer);//Internal receive handler, unpacks codex header. Calls the user defined receive handler.
+
 
 		mutable std::recursive_mutex mutex;
 		IOService& ioService;
@@ -109,47 +133,13 @@ namespace codex
 		bool connecting;//Set to true for the duration of connect attempt
 		bool handshakeSent;//Refers to the current connection
 		bool handshakeReceived;//Refers to the current connection
-	};
+		bool onAcceptCallbackQueued;//If enabled, update will invoke the callback.
 
-//	class ShellSocketTCP : public SocketTCP
-//	{
-//	public:
-//
-//		ShellSocketTCP(IOService& ioService);
-//		~ShellSocketTCP() override;
-//
-//		/*
-//			Sends a ghost request to the remote endpoint, defined by the codex protocol.
-//		*/
-//		bool requestGhost(const std::string& ghostName);
-//
-//	private:
-//
-//		bool internalReceiveHandler(codex::protocol::ReadBuffer& buffer);
-//
-//		std::mutex requestGhostMutex;
-//		std::atomic<bool> requestGhostResponseReceived;
-//		uint64_t requestGhostReceivedResponse;
-//		std::string requestGhostReceivedResponseAddress;
-//		uint16_t requestGhostReceivedResponsePort;
-//
-//	};
-//
-//#ifdef GHOST_CODEX
-//	class GhostSocketTCP : public SocketTCP
-//	{
-//	public:
-//
-//		GhostSocketTCP(IOService& ioService);
-//		~GhostSocketTCP() override;
-//
-//		/*
-//		Receive handler for expected ghost requests.
-//		*/
-//		bool ghostRequestHandler(codex::protocol::ReadBuffer& buffer);
-//
-//	private:
-//		std::string ghostDirectory;
-//	};
-//#endif
+		//Received packets
+		std::recursive_mutex receivedPacketsMutex;
+		std::vector<std::vector<uint8_t>*> receivedPackets;
+
+	private:
+		static Id nextId;
+	};
 }

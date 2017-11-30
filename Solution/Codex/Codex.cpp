@@ -5,38 +5,29 @@
 #include "Log.h"
 #include <thread>
 #include <ctime>
-#ifdef SHELL_CODEX
+#ifdef CODEX_GPIO
 #include <bcm2835.h>
 #endif
 
 
 namespace codex
 {
-#ifdef GHOST_CODEX
-	const CodexType codexType = CodexType::ghost;
-#elif SHELL_CODEX
-	const CodexType codexType = CodexType::shell;
-#else
-#error Invalid codex implementation type
-	const CodexType codexType = CodexType::invalid;
-#endif
 	std::string workingDirectory;
 
 	int initialize(const int argc, const char** argv)
 	{
-#ifdef SHELL_CODEX
-		log::info("Initializing Shell Codex...");
+		log::info("Initializing Codex...");
 
-		if (!bcm2835_init())
+#ifdef CODEX_GPIO
+		if (bcm2835_init())
+		{
+			log::info("bcm2835 library successfully initialized.");
+		}
+		else
 		{
 			log::error("Failed to initialize the bcm 2835 library!");
 			return 1;
 		}
-#endif
-#ifdef GHOST_CODEX
-		log::info("Initializing Ghost Codex...");
-		if (argc > 0)
-			codex::workingDirectory = argv[0];
 #endif
 		
 		//Print unavailable integer widths
@@ -52,24 +43,24 @@ namespace codex
 		//Print hardware thread count
 		log::info(std::to_string(std::thread::hardware_concurrency()) + " hardware threads detected.");
 
-		//Print host byte order
-		//const codex::protocol::Endianness order = codex::protocol::Endianness::big;
-		//codex::log::info("Order: " + std::to_string((int)order));		
-		log::info("Host endianness is '" + protocol::getEndiannessAsString(protocol::hostByteOrder) + "', network endianness is '" + protocol::getEndiannessAsString(protocol::networkByteOrder) + "'");
+		//Print byte order
+		log::info("Host system is '" + protocol::getEndiannessAsString(protocol::hostByteOrder) + "' endian.");
+		log::info("Network traffic is set to '" + protocol::getEndiannessAsString(protocol::networkByteOrder) + "' endian.");
 
 		//Print clock accuracy
 		log::info("Codex time accuracy is " + std::to_string(codex::time::conversionRate::second) + " ticks per second.");
-		
+
+		log::info("Codex initialized.");
 		return 0;
 	}
 	void uninitialize()
 	{
-#ifdef SHELL_CODEX
-		log::info("Uninitializing ShellCodex...");
+		log::info("Uninitializing Codex...");
+
+#ifdef CODEX_GPIO
 		bcm2835_close();
 #endif
-#ifdef GHOST_CODEX
-		log::info("Uninitializing GhostCodex...");
-#endif
+
+		log::info("Codex uninitialized.");
 	}
 }

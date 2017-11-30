@@ -15,6 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Acceptor.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Aria.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Codex.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Device\DCMotorController.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Device\Display4x8.cpp" />
@@ -39,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Acceptor.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Aria.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CodexAssert.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Codex.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CodexMath.h" />

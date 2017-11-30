@@ -28,13 +28,13 @@ namespace codex
 
 		void DCMotorController::setPins(const gpio::Pin _pulseWidthPin, const gpio::Pin _inputPin1, gpio::Pin _inputPin2)
 		{
+			gpio::setPinAsOutput(_pulseWidthPin);
+			gpio::setPinAsOutput(_inputPin1);
+			gpio::setPinAsOutput(_inputPin2);
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 			pulseWidthPin = _pulseWidthPin;
 			inputPin1 = _inputPin1;
 			inputPin2 = _inputPin2;
-			bcm2835_gpio_fsel(_pulseWidthPin, BCM2835_GPIO_FSEL_OUTP);
-			bcm2835_gpio_fsel(_inputPin1, BCM2835_GPIO_FSEL_OUTP);
-			bcm2835_gpio_fsel(_inputPin2, BCM2835_GPIO_FSEL_OUTP);
 		}
 
 		void DCMotorController::setStrength(const float newStrength)

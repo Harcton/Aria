@@ -1,11 +1,49 @@
 #include <Codex/Log.h>
 #include <Codex/Codex.h>
 #include <boost/system/error_code.hpp>//->Works
+#include <Codex/Device/Servo.h>
+#include <Codex/SyncManager.h>
+#include <Codex/Aria.h>
+
 
 int main(const int argc, const char** argv)
 {
 	codex::initialize(argc, argv);
 
+	codex::time::delay(codex::time::seconds(5.0f));
+	codex::IOService ioService;
+	codex::SocketTCP socket(ioService);
+	codex::aria::Connector connector(socket, "ghostbox2", "ghostbox1", 41623);
+	if (connector.enter(codex::protocol::Endpoint("192.168.10.51", codex::protocol::defaultAriaPort)))
+		codex::log::info("yay!");
+	else
+		codex::log::info("nay!");
+	std::getchar();
+	return 0;
+
+	codex::initialize(argc, argv);
+
+	codex::SyncManager syncManager;
+	syncManager.registerType<codex::device::ServoGhost, codex::device::ServoShell>();
+	while (!syncManager.isConnected())
+	{
+		syncManager.startAccepting(41112);
+		while (syncManager.isAccepting())
+		{
+			//Blocks
+		}
+		if (!syncManager.isConnected())
+			codex::log::info("Sync manager failed to accept a connection, retrying...");
+	}
+	syncManager.initialize();
+
+	codex::time::TimeType deltaTime = 0;
+	while (syncManager.isConnected())
+	{
+		const codex::time::TimeType beginTime = codex::time::now();
+		syncManager.update(deltaTime);
+		deltaTime = codex::time::now() - beginTime;
+	}
 
 	codex::uninitialize();
 	return 0;

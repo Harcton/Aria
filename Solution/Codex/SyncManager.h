@@ -1,10 +1,9 @@
 #pragma once
 #include <functional>
+#include <vector>
 #include <atomic>
 #include "SyncType.h"
 #include "CodexTime.h"
-#include "IOService.h"
-#include "SocketTCP.h"
 #include "Log.h"
 
 namespace codex
@@ -23,14 +22,14 @@ namespace codex
 		{
 			unknown,
 			compatible,
-			uncompatible,
+			incompatible,
 		};
 		struct Entry
 		{
 			typedef uint16_t Id;
-			Entry(GhostSyncType& ref) : ptr(&ref) {}
+			Entry(ISyncType& ref) : ptr(&ref) {}
 
-			GhostSyncType* ptr;
+			ISyncType* ptr;
 			Id id = 0;
 			time::TimeType interval;
 			time::TimeType timer;
@@ -38,47 +37,42 @@ namespace codex
 
 	public:
 
-		SyncManager();
+		SyncManager(SocketTCP& socket);
 		~SyncManager();
 
-		template<typename GhostType, typename ShellType>
+		template<typename LocalSyncType, typename RemoteSyncType>
 		void registerType()
 		{
-			static_assert(!std::is_same<GhostSyncType, GhostType>::value, "Cannot register GhostSyncType as a synchronizable type!");
-			static_assert(std::is_base_of<GhostSyncType, GhostType>::value, "Cannot register a ghost type that is not derived from GhostSyncType!");
-			static_assert(!std::is_same<ShellSyncType, ShellType>::value, "Cannot register ShellSyncType as a synchronizable type!");
-			static_assert(std::is_base_of<ShellSyncType, ShellType>::value, "Cannot register a shell type that is not derived from ShellSyncType!");
+			static_assert(!std::is_same<ISyncType, LocalSyncType>::value, "Cannot register SyncType as a synchronizable type!");
+			static_assert(std::is_base_of<ISyncType, LocalSyncType>::value, "Cannot register a SyncType that is not derived from ISyncType!");
+			static_assert(!std::is_same<ISyncType, RemoteSyncType>::value, "Cannot register SyncType as a synchronizable type!");
+			static_assert(std::is_base_of<ISyncType, RemoteSyncType>::value, "Cannot register a SyncType that is not derived from ISyncType!");
 			if (initialized)
 			{
 				codex::log::error("SyncManager cannot register new types once initialized!");
 				return;
 			}
 
-			//TODO: register type data
-			registeredTypes.push_back(SyncTypeInfo());
-			registeredTypes.back().ghostName = GhostType::getGhostSyncTypeName();
-			registeredTypes.back().shellName = ShellType::getShellSyncTypeName();
-			registeredTypes.back().ghostVersion = GhostType::getGhostSyncTypeVersion();
-			registeredTypes.back().shellVersion = ShellType::getShellSyncTypeVersion();
-			registeredTypes.back().shellConstructor = []() {return new ShellType(); };
+			//Register type data
+			registeredTypes.push_back(SyncTypePairInfo());
+			registeredTypes.back().local.name = LocalSyncType::getSyncTypeName();
+			registeredTypes.back().remote.name = RemoteSyncType::getSyncTypeName();
+			registeredTypes.back().local.version = LocalSyncType::getSyncTypeVersion();
+			registeredTypes.back().remote.version = RemoteSyncType::getSyncTypeVersion();
+			registeredTypes.back().remote.constructor = []() {return new RemoteSyncType(); };
 		}
 
 		//Connect and initialize
-		bool startAccepting(const protocol::PortType port);
-		bool connect(const protocol::Endpoint& endpoint);
 		bool initialize();
-		bool isConnected() const;
-		bool isAccepting() const;
 		bool isInitialized() const;
 
 		void update(const time::TimeType& deltaTime);
-		void addEntry(GhostSyncType& reference, const time::TimeType& syncInterval);
-		void removeEntry(GhostSyncType& reference);
-		void setSyncInterval(GhostSyncType& reference, const time::TimeType& syncInterval);
+		void addEntry(ISyncType& reference, const time::TimeType& syncInterval);
+		void removeEntry(ISyncType& reference);
+		void setSyncInterval(ISyncType& reference, const time::TimeType& syncInterval);
 		
 	private:
 		bool receiveHandler(protocol::ReadBuffer& buffer);
-		void onAcceptCallback(SocketTCP& socket);
 
 		/*
 		create, allocate
@@ -86,33 +80,26 @@ namespace codex
 		*/
 
 		//SyncTypeInformation
-		struct SyncTypeInfo
+		struct SyncTypePairInfo
 		{
-			void write(protocol::WriteBuffer& buffer)
+			void write(protocol::WriteBuffer& buffer);
+			void read(protocol::ReadBuffer& buffer);
+			struct LocalSyncTypeInfo
 			{
-				buffer.write(ghostName);
-				buffer.write(shellName);
-				buffer.write(ghostVersion);
-				buffer.write(shellVersion);
-			}
-			void read(protocol::ReadBuffer& buffer)
+				std::string name;
+				ISyncType::SyncTypeVersionType version;
+			};
+			struct RemoteSyncTypeInfo : public LocalSyncTypeInfo
 			{
-				buffer.read(ghostName);
-				buffer.read(shellName);
-				buffer.read(ghostVersion);
-				buffer.read(shellVersion);
-			}
-			std::string ghostName;
-			std::string shellName;
-			GhostSyncType::GhostSyncTypeVersionType ghostVersion;
-			ShellSyncType::ShellSyncTypeVersionType shellVersion;
-			std::function<ShellSyncType*()> shellConstructor;
+				std::function<ISyncType*()> constructor;
+			};
+			LocalSyncTypeInfo local;
+			RemoteSyncTypeInfo remote;
 		};
-		std::vector<SyncTypeInfo> registeredTypes;
+		std::vector<SyncTypePairInfo> registeredTypes;
 		
 		bool initialized;
-		IOService ioService;
-		SocketTCP socket;
+		SocketTCP& socket;
 		Entry::Id nextGeneratedId;
 		std::vector<Entry> entriesToAdd;
 		std::vector<Entry> entries;
@@ -131,12 +118,12 @@ namespace codex
 			void operator=(const RemoteSyncManager& other) = delete;
 			~RemoteSyncManager()
 			{
-				for (size_t i = 0; i < shells.size(); i++)
-					delete shells[i];
+				for (size_t i = 0; i < instances.size(); i++)
+					delete instances[i];
 			}
 			std::atomic<TypeCompatibility> typeCompatibility;//My evaluation
 			std::atomic<TypeCompatibility> typeCompatibilityResponse;//Remote evaluation
-			std::vector<ShellSyncType*> shells;
+			std::vector<ISyncType*> instances;
 		} remoteSyncManager;
 	};
 }

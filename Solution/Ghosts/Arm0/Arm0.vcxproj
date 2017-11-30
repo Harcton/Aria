@@ -68,6 +68,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="ServoVisualizer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ServoVisualizer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

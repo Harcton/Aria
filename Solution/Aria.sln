@@ -13,6 +13,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ghosts", "Ghosts", "{2C068ED6-A43D-418F-9F2A-9634EF5B7768}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GhostCodex", "GhostCodex\GhostCodex.vcxproj", "{0A5CA205-143B-43F3-94B7-A4A84B51B8E4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{545A88BB-7447-428B-8A73-A1E8F2BBDB33} = {545A88BB-7447-428B-8A73-A1E8F2BBDB33}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Codex", "Codex\Codex.vcxitems", "{45D41ACC-2C3C-43D2-BC10-02AA73FFC7C7}"
 EndProject

@@ -5,6 +5,7 @@
 #include "SocketTCP.h"
 #include "CodexTime.h"
 #include "CodexAssert.h"
+#include "StringOperations.h"
 #ifdef _WIN32
 #include <Windows.h>//NOTE: must be included after boost asio stuff...
 #endif
@@ -32,7 +33,7 @@ namespace codex
 		static const union { unsigned char bytes[4]; uint32_t value; } o32_host_order = { { 0, 1, 2, 3 } };
 
 		const PortType defaultAriaPort = 49842;
-		const Endianness networkByteOrder = Endianness::big;
+		const Endianness networkByteOrder = Endianness::little;
 		const Endianness hostByteOrder = o32_host_order.value == O32_BIG_ENDIAN ? Endianness::big : (o32_host_order.value == O32_LITTLE_ENDIAN ? Endianness::little : Endianness::unknown);		
 		const Endpoint Endpoint::invalid("0.0.0.0", 0);
 
@@ -319,21 +320,14 @@ namespace codex
 		{
 			return capacity - offset;
 		}
-		
+
+		const uint64_t currentMagic = 0xC0DEC5F070C01001;//Mmmm...magic
 		const VersionType currentHandshakeVersion = 1;
 		Handshake::Handshake()
-			: handshakeVersion(currentHandshakeVersion)
-			, codexType(codex::codexType)
+			: magic(0xC0DEC5F070C01001)
+			, handshakeVersion(currentHandshakeVersion)
 			, valid(true)
 		{
-		}
-
-		CodexType Handshake::getCodexType() const
-		{
-			if (codexType == CodexType::ghost || codexType == CodexType::shell)
-				return codexType;
-			else
-				return CodexType::invalid;
 		}
 
 		bool Handshake::isValid() const
@@ -345,9 +339,9 @@ namespace codex
 		size_t Handshake::write(WriteBuffer& buffer) const
 		{
 			size_t offset = 0;
-			offset += buffer.write((uint32_t)handshakeVersion);
+			offset += buffer.write(currentMagic);
+			offset += buffer.write(handshakeVersion);
 			offset += buffer.write(endiannessCheckBytes);
-			offset += buffer.write((uint8_t)codexType);
 			return offset;
 		}
 
@@ -355,6 +349,22 @@ namespace codex
 		{//NOTE: buffer can contain invalid data! If so, set the valid boolean to false
 			size_t offset = 0;
 			valid = true;
+
+			//Magic
+			if (buffer.getBytesRemaining() < sizeof(magic))
+			{
+				log::info("Handshake::read() invalid handshake. No bytes left to read magic.");
+				valid = false;
+				return offset;
+			}
+			else
+				offset += buffer.read(magic);
+			if (magic != currentMagic)
+			{
+				log::info("Handshake::read() invalid handshake. Incompatible magic - my version: " + toHexString(currentMagic) + ", read magic: " + toHexString(magic));
+				valid = false;
+				return offset;
+			}
 
 			//Handshake version
 			if (buffer.getBytesRemaining() < sizeof(handshakeVersion))
@@ -384,21 +394,6 @@ namespace codex
 			if (readEndiannessCheckBytes != endiannessCheckBytes)
 			{
 				log::info("Handshake::read() invalid handshake. Invalid endianness check bytes.");
-				valid = false;
-				return offset;
-			}
-			//Codex implementation
-			if (buffer.getBytesRemaining() < sizeof(codexType))
-			{
-				log::info("Handshake::read() invalid handshake. No bytes left to read codex type.");
-				valid = false;
-				return offset;
-			}
-			else
-				offset += buffer.read((uint8_t&)codexType);
-			if (getCodexType() == CodexType::invalid)
-			{
-				log::info("Handshake::read() invalid handshake. Invalid codex type: " + std::to_string((uint8_t)codexType));
 				valid = false;
 				return offset;
 			}

@@ -1,4 +1,5 @@
 #include "Codex/GPIO.h"
+#include "Codex/CodexAssert.h"
 #include "Codex/Log.h"
 
 
@@ -6,6 +7,7 @@ namespace codex
 {
 	namespace gpio
 	{
+#ifdef CODEX_GPIO
 		void enable(const Pin pin)
 		{
 			bcm2835_gpio_write(pin, HIGH);
@@ -63,5 +65,41 @@ namespace codex
 		{
 			bcm2835_gpio_fsel(pin, BCM2835_GPIO_FSEL_OUTP);
 		}
+#else//CODEX_GPIO is not defined, these functions are non-functional
+		void enable(const Pin pin)
+		{
+			CODEX_ASSERT(false);
+		}
+		void disable(const Pin pin)
+		{
+			CODEX_ASSERT(false);
+		}
+		void write(const Pin pin, const PinState pinState)
+		{
+			CODEX_ASSERT(false);
+		}
+		PinState read(const Pin pin)
+		{
+			CODEX_ASSERT(false);
+			return PinState::invalid;
+		}
+		time::TimeType pulseIn(const Pin pin, const PinState pinState, const time::TimeType timeout)
+		{
+			CODEX_ASSERT(false);
+			return 0;
+		}
+		void setPinMode(const Pin pin, const PinMode mode)
+		{
+			CODEX_ASSERT(false);
+		}
+		void setPinAsInput(const Pin pin)
+		{
+			CODEX_ASSERT(false);
+		}
+		void setPinAsOutput(const Pin pin)
+		{
+			CODEX_ASSERT(false);
+		}
+#endif
 	}
 }

@@ -1,4 +1,5 @@
 #include "Servo.h"
+#include "Protocol.h"
 #include <assert.h>
 #include <algorithm>
 
@@ -6,10 +7,9 @@ namespace codex
 {
 	namespace device
 	{
-		Servo::Servo()
+		AbstractServo::AbstractServo()
 			: targetAngle(0.0f)
 			, approximatedAngle(0.0f)
-			, lastUpdateTime(0)
 			, pin(gpio::Pin::pin_none)
 			, minPulseWidth(0)
 			, maxPulseWidth(0)
@@ -19,26 +19,25 @@ namespace codex
 		{
 		}
 
-		Servo::~Servo()
+		AbstractServo::~AbstractServo()
 		{
-			stop();
-			while (isRunning()) {/*Blocks*/ }
+			std::lock_guard<std::recursive_mutex> lock(mutex);
 		}
 
-		void Servo::setTargetAngle(const float target)
+		void AbstractServo::setTargetAngle(const float target)
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 			targetAngle = target;
 		}
 
-		void Servo::setPin(const gpio::Pin _pin)
+		void AbstractServo::setPin(const gpio::Pin _pin)
 		{
+			gpio::setPinAsOutput(_pin);
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 			pin = _pin;
-			bcm2835_gpio_fsel(_pin, BCM2835_GPIO_FSEL_OUTP);
 		}
 
-		void Servo::setAngleLimits(const time::TimeType _minPulseWidth, const time::TimeType _maxPulseWidth, const float _minAngle, const float _maxAngle)
+		void AbstractServo::setAngleLimits(const time::TimeType _minPulseWidth, const time::TimeType _maxPulseWidth, const float _minAngle, const float _maxAngle)
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 			minPulseWidth = _minPulseWidth;
@@ -47,58 +46,122 @@ namespace codex
 			maxAngle = _maxAngle;
 		}
 
-		void Servo::setMinAngle(const time::TimeType _minPulseWidth, const float _minAngle)
+		void AbstractServo::setMinAngle(const time::TimeType _minPulseWidth, const float _minAngle)
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 			minPulseWidth = _minPulseWidth;
 			minAngle = _minAngle;
 		}
 
-		void Servo::setMaxAngle(const time::TimeType _maxPulseWidth, const float _maxAngle)
+		void AbstractServo::setMaxAngle(const time::TimeType _maxPulseWidth, const float _maxAngle)
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 			maxPulseWidth = _maxPulseWidth;
 			maxAngle = _maxAngle;
 		}
 
-		void Servo::setRotationSpeed(const float speed)
+		void AbstractServo::setRotationSpeed(const float speed)
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 			rotationSpeed = speed;
 		}
 
-		gpio::Pin Servo::getPin() const
+		gpio::Pin AbstractServo::getPin() const
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 			return pin;
 		}
 
-		float Servo::getApproximatedAngle() const
+		float AbstractServo::getApproximatedAngle() const
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 			return approximatedAngle;
 		}
 
-		float Servo::getRotationSpeed() const
+		float AbstractServo::getRotationSpeed() const
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 			return rotationSpeed;
 		}
 
-		void Servo::onStart()
+
+		ServoGhost::ServoGhost()
 		{
-			std::lock_guard<std::recursive_mutex> lock(mutex);
+		}
+
+		ServoGhost::~ServoGhost()
+		{
+		}
+		
+		void ServoGhost::syncCreate(protocol::WriteBuffer& buffer)
+		{
+			buffer.write<codex::gpio::Pin>(pin);
+			buffer.write<codex::time::TimeType>(minPulseWidth);
+			buffer.write<codex::time::TimeType>(maxPulseWidth);
+			buffer.write(rotationSpeed);
+			buffer.write(minAngle);
+			buffer.write(maxAngle);
+		}
+
+		void ServoGhost::syncCreate(protocol::ReadBuffer& buffer)
+		{
+
+		}
+
+		void ServoGhost::syncRemove(protocol::WriteBuffer& buffer)
+		{
+
+		}
+
+		void ServoGhost::syncRemove(protocol::ReadBuffer& buffer)
+		{
+
+		}
+
+		bool ServoGhost::syncUpdate(const time::TimeType& deltaTime)
+		{
+			return false;
+		}
+
+		void ServoGhost::syncUpdate(protocol::WriteBuffer& buffer)
+		{
+
+		}
+
+		void ServoGhost::syncUpdate(protocol::ReadBuffer& buffer)
+		{
+
+		}
+
+
+
+
+		//SHELL
+		ServoShell::ServoShell()
+			: lastUpdateTime(0)
+		{
+		}
+
+		ServoShell::~ServoShell()
+		{
+			stop();
+			while (isRunning()) {/*Blocks*/ }
+		}
+
+		void ServoShell::onStart()
+		{
+			std::lock_guard<std::recursive_mutex> lock(AbstractServo::mutex);
 			lastUpdateTime = time::now();
 		}
 
-		void Servo::update()
+		void ServoShell::update()
 		{
 			const time::TimeType updateInterval = time::milliseconds(5);
 
-			mutex.lock();
+			AbstractServo::mutex.lock();
 			if (pin == gpio::pin_none)
 			{
-				mutex.unlock();
+				AbstractServo::mutex.unlock();
 				return;
 			}
 
@@ -108,9 +171,9 @@ namespace codex
 			const float target = std::min(maxAngle, std::max(targetAngle, minAngle));
 			const float posPercentage = (target - minAngle) / (maxAngle - minAngle);
 			const time::TimeType pulseDuration = minPulseWidth + time::TimeType(float(maxPulseWidth - minPulseWidth) * posPercentage);
-			mutex.unlock();
+			AbstractServo::mutex.unlock();
 			time::delay(pulseDuration);
-			mutex.lock();
+			AbstractServo::mutex.lock();
 			//Disable
 			gpio::disable(pin);
 
@@ -137,8 +200,61 @@ namespace codex
 			}
 
 			//Delay the next update
-			mutex.unlock();
+			AbstractServo::mutex.unlock();
 			time::delay(updateInterval);
+		}
+
+		void ServoShell::syncCreate(protocol::WriteBuffer& buffer)
+		{
+
+		}
+
+		void ServoShell::syncCreate(protocol::ReadBuffer& buffer)
+		{
+			codex::gpio::Pin _pin;
+			codex::time::TimeType _minPulseWidth;
+			codex::time::TimeType _maxPulseWidth;
+			float _rotationSpeed;
+			float _minAngle;
+			float _maxAngle;
+
+			//Read specs
+			buffer.read<codex::gpio::Pin>(_pin);
+			buffer.read<codex::time::TimeType>(_minPulseWidth);
+			buffer.read<codex::time::TimeType>(_maxPulseWidth);
+			buffer.read(_rotationSpeed);
+			buffer.read(_minAngle);
+			buffer.read(_maxAngle);
+
+			//Initialize
+			setPin(pin);
+			setAngleLimits(_minPulseWidth, _maxPulseWidth, _minAngle, _maxAngle);
+			setRotationSpeed(_rotationSpeed);
+		}
+
+		void ServoShell::syncRemove(protocol::WriteBuffer& buffer)
+		{
+
+		}
+
+		void ServoShell::syncRemove(protocol::ReadBuffer& buffer)
+		{
+
+		}
+
+		bool ServoShell::syncUpdate(const time::TimeType& deltaTime)
+		{
+			return false;
+		}
+
+		void ServoShell::syncUpdate(protocol::WriteBuffer& buffer)
+		{
+
+		}
+
+		void ServoShell::syncUpdate(protocol::ReadBuffer& buffer)
+		{
+
 		}
 	}
 }

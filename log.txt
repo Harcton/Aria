@@ -6,9 +6,6 @@ Synchronize manipulation
 Deallocate data
 Synchronize deallocation
 
-//Ghosts and shells
-Ghosts manipulate, shells obey.
-
 
 
 //Creation of sync managers
@@ -16,6 +13,7 @@ Create sync managers
 register types
 connect to opposite endpoints
 exchange SyncType data
+
 
 
 //Sync manager in action
@@ -33,6 +31,19 @@ Remove servo instance
 [shell]
 Remove servo instance
 
+
+
+//Sync manager considerable notes
+Remote type instance is contained within the SyncManager
+	-Is create/update/remove sufficient for general purpose?
+Remote type must always derive from a class interface(at minimum)
+	-The interface/abstract class/base class defines the generalized functions create/update/remove
+Local/remote types are fundamentally different, altough similarities would seem to exist. Should the types derive from something else besides the SyncType?
+	-Abstract class reduces written lines but possibly introduces more bugs/complexity.
+	-Interface class increases written lines compared to abstract, but functionality is well defined within the class itself.
+	-Use no base class whatsoever. Probably equal amount of code compared to interface, but clear interface is not defined. Everything is defined by the type itself
+Data sent through the network should probably be contained in a write/readable struct.
+	-This data could be contained within the abstract class.
 
 
 //////////////

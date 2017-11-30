@@ -1,9 +1,7 @@
-#include <boost/asio.hpp>
 #include <SpehsEngine/SpehsEngine.h>
 #include <SpehsEngine/InputManager.h>
 #include <SpehsEngine/BatchManager.h>
 #include <SpehsEngine/AudioEngine.h>
-#include <SpehsEngine/StringOperations.h>
 #include <SpehsEngine/Camera2D.h>
 #include <SpehsEngine/Console.h>
 #include <SpehsEngine/Window.h>
@@ -12,39 +10,51 @@
 #include <Codex/CodexTime.h>
 #include <Codex/SocketTCP.h>
 #include <Codex/IOService.h>
+#include <Codex/Aria.h>
 #include <atomic>
 #include <functional>
 
 
-
-//Server
-void onAccept(codex::SocketTCP& socket)
-{
-	//codex::log::info("Acceptor successfully accepted an incoming connection from " + socket.getRemoteAddress());
-
-	
-	//socket.startReceiving(std::bind(&codex::AriaSocketTCP::ghostRequestHandler, &dynamic_cast<codex::AriaSocketTCP&>(socket), std::placeholders::_1));
-}
 int main(const int argc, const char** argv)
 {
 	codex::initialize(argc, argv);
-	//codex::log::info("Launching Aria.");
 
-	////Aria socket
-	//codex::IOService ioService;
-	//codex::AriaSocketTCP socket(ioService);
-	//socket.resizeReceiveBuffer(64000);
-	//std::vector<codex::SocketTCP*> sockets;
+	codex::protocol::PortType port = codex::protocol::defaultAriaPort;
+	if (argc > 1)
+		port = std::atoi(argv[1]);
 
-	////Aria main loop
-	//bool running = true;
-	//while (running)
-	//{
-	//	if (!socket.isConnected() && !socket.isAccepting())
-	//		socket.startAccepting(codex::protocol::defaultAriaPort, std::bind(&onAccept, std::placeholders::_1));
-	//}
+	codex::aria::Server aria;
+	aria.start(port);
+	while (aria.isRunning())
+	{
+	}
 
-	//codex::log::info("Aria has stopped.");
 	codex::uninitialize();
 	return 0;
 }
+
+//spehs::initialize("Aria");
+//
+////Spehs engine
+//spehs::Camera2D camera;
+//spehs::BatchManager batchManager(&camera, "ghostbox");
+//spehs::time::DeltaTimeSystem deltaTimeSystem;
+//
+//while (aria.isRunning())
+//{
+//	//Spehs update
+//	deltaTimeSystem.deltaTimeSystemUpdate();
+//	inputManager->update();
+//	spehs::audio::AudioEngine::update();
+//	spehs::console::update(deltaTimeSystem.deltaTime);
+//	if (inputManager->isQuitRequested() || inputManager->isKeyPressed(KEYBOARD_ESCAPE))
+//		aria.stop();
+//
+//	//Render
+//	spehs::getMainWindow()->renderBegin();
+//	batchManager.render();
+//	spehs::console::render();
+//	spehs::getMainWindow()->renderEnd();
+//}
+//
+//spehs::uninitialize();
