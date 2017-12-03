@@ -76,6 +76,10 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ServoCreator.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ServoCreator.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

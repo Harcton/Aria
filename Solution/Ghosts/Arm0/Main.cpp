@@ -10,9 +10,13 @@
 #include <SpehsEngine/Time.h>
 #include <SpehsEngine/RNG.h>
 //CODEX
+#include <Codex/Aria.h>
 #include <Codex/Codex.h>
-#include <Codex/SyncManager.h>
+#include <Codex/IOService.h>
+#include <Codex/SocketTCP.h>
 #include <Codex/Device/Servo.h>
+#include <Codex/Sync/SyncManager.h>
+#include <GhostCodex/ServoCreator.h>
 //ARM0
 
 
@@ -21,7 +25,7 @@ int main(const int argc, const char** argv)
 {
 	//Codex init
 	codex::initialize(argc, argv);
-
+	
 	//Spehs engine init
 	spehs::initialize("Ghostbox");
 	spehs::Camera2D camera;
@@ -29,14 +33,28 @@ int main(const int argc, const char** argv)
 	spehs::time::DeltaTimeSystem deltaTimeSystem;
 
 	//Arm0 init
-	const codex::protocol::Endpoint endpoint = codex::protocol::commandLineArgumentsToEndpoint(argc, argv);
-	if (endpoint == codex::protocol::Endpoint::invalid)
+	codex::time::delay(codex::time::seconds(1.0f));
+	codex::IOService ioService;
+	codex::SocketTCP socket(ioService);
+	codex::aria::Connector connector(socket, "ghostbox1", "ghostbox2", 41623);
+	if (connector.enter(codex::protocol::Endpoint("192.168.10.51", codex::protocol::defaultAriaPort)))
+		codex::log::info("yay!");
+	else
+	{
+		codex::log::info("nay!");
+		std::getchar();
 		return 1;
-	codex::SyncManager syncManager;
-	syncManager.registerType<codex::device::ServoGhost, codex::device::ServoShell>();
-	syncManager.connect(endpoint);
-	syncManager.initialize();
+	}
 
+	codex::sync::Manager syncManager(socket);
+	syncManager.registerType<codex::device::ServoGhost, codex::device::ServoShell>();
+	if (!syncManager.initialize())
+	{
+		std::getchar();
+		return 1;
+	}
+	codex::ServoCreator servoCreator(batchManager, syncManager);
+	
 	//Update & render loop
 	bool run = true;
 	while (run)
@@ -50,7 +68,12 @@ int main(const int argc, const char** argv)
 			run = false;
 
 		//Test update...
+		socket.update();
 		syncManager.update((codex::time::TimeType)deltaTimeSystem.deltaTime.value);
+		servoCreator.setPositionGlobal(spehs::ApplicationData::getWindowWidthHalf() - servoCreator.getWidth() / 2, spehs::ApplicationData::getWindowHeightHalf() - servoCreator.getHeight() / 2);
+		spehs::GUIRectangle::InputUpdateData guiInputUpdateData(inputManager->getMouseCoords(), deltaTimeSystem.deltaTime);
+		servoCreator.inputUpdate(guiInputUpdateData);
+		servoCreator.visualUpdate();
 
 		//Render
 		spehs::getMainWindow()->renderBegin();

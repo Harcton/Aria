@@ -11,7 +11,7 @@
 #include <SpehsEngine/RNG.h>
 
 #include <Codex/Device/Servo.h>
-#include <Codex/SyncManager.h>
+#include <Codex/Sync/SyncManager.h>
 #include <Codex/Protocol.h>
 #include <Codex/Aria.h>
 #include <Codex/RTTI.h>
@@ -24,7 +24,7 @@ int main(const int argc, const char** argv)
 {
 	codex::initialize(argc, argv);
 
-	codex::time::delay(codex::time::seconds(5.0f));
+	codex::time::delay(codex::time::seconds(1.0f));
 	codex::IOService ioService;
 	codex::SocketTCP socket(ioService);
 	codex::aria::Connector connector(socket, "ghostbox2", "ghostbox1", 41623);
@@ -44,7 +44,7 @@ int main(const int argc, const char** argv)
 	spehs::time::DeltaTimeSystem deltaTimeSystem;
 
 	//Testing initialization here please...
-	codex::SyncManager syncManager(socket);
+	codex::sync::Manager syncManager(socket);
 	syncManager.registerType<codex::device::ServoGhost, codex::device::ServoShell>();
 	if (!syncManager.initialize())
 	{
@@ -65,6 +65,7 @@ int main(const int argc, const char** argv)
 			run = false;
 
 		//Test update...
+		socket.update();
 		syncManager.update((codex::time::TimeType)deltaTimeSystem.deltaTime.value);
 
 		//Render

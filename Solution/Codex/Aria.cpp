@@ -39,6 +39,7 @@ namespace codex
 				socket.disconnect();
 			}
 
+			log::info("Aria::Connector::enter: connecting to aria...");
 			if (socket.connect(endpoint))
 			{
 				//Send enter packet
@@ -141,7 +142,7 @@ namespace codex
 			}
 			else
 			{
-				log::info("Aria::Connector::enter: Failed to connect to the provided endpoint.");
+				log::info("Aria::Connector::enter: Failed to connect to the provided aria endpoint.");
 				return false;
 			}
 		}
@@ -449,6 +450,8 @@ namespace codex
 									buffer2.write(address1);
 									buffer2.write(port1);
 									clients[c2]->socket.sendPacket(buffer2);
+
+									break;
 								}
 							}
 						}

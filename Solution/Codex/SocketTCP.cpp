@@ -59,11 +59,7 @@ namespace codex
 			delete acceptor;
 			acceptor = nullptr;
 		}
-		if (codexAcceptThread)
-		{
-			delete codexAcceptThread;
-			codexAcceptThread = nullptr;
-		}
+		CODEX_ASSERT(codexAcceptThread == nullptr);
 
 		clearReceivedPackets();
 	}
@@ -234,13 +230,7 @@ namespace codex
 			buffer.write((uint8_t)disconnectType);
 			sendPacket(buffer, protocol::PacketType::disconnect);
 		}
-
-		if (socket.is_open())
-		{//Shut down the boost socket
-			socket.shutdown(boost::asio::socket_base::shutdown_both);
-			socket.close();
-		}
-
+		
 		//Reset the connection state
 		connected = false;
 		handshakeSent = false;
@@ -253,8 +243,15 @@ namespace codex
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 			if (socket.is_open())
 			{
-				socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
-				socket.close();//TODO: this actually cancels all asynchronous operations, not just receiving...
+				try
+				{
+					socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+					socket.close();//TODO: this actually cancels all asynchronous operations, not just receiving...
+				}
+				catch (std::exception& e)
+				{
+					log::info(e.what());
+				}
 			}
 		}
 		while (isReceiving())
@@ -267,7 +264,16 @@ namespace codex
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
 		if (acceptor)
-			acceptor->close();
+		{
+			try
+			{
+				acceptor->close();
+			}
+			catch (std::exception& e)
+			{
+				log::info(e.what());
+			}
+		}
 	}
 
 	bool SocketTCP::sendPacket(const protocol::WriteBuffer& buffer, const protocol::PacketType packetType)
@@ -585,7 +591,7 @@ namespace codex
 		acceptor->open(endpoint.protocol(), error);
 		if (error)
 		{
-			log::error("Failed to open acceptor! Boost asio error: " + error.message());
+			log::warning("Failed to open acceptor! Boost asio error: " + error.message());
 			return false;
 		}
 
@@ -593,12 +599,12 @@ namespace codex
 		acceptor->bind(endpoint, error);
 		if (error)
 		{
-			log::error("Failed to bind acceptor! Boost asio error: " + error.message());
+			log::warning("Failed to bind acceptor! Boost asio error: " + error.message());
 			return false;
 		}
 		if (!acceptor->is_open())
 		{
-			log::error("Boost acceptor failed to open!");
+			log::warning("Boost acceptor failed to open!");
 			return false;
 		}
 
@@ -606,7 +612,7 @@ namespace codex
 		acceptor->listen(boost::asio::socket_base::max_connections, error);
 		if (error)
 		{
-			log::error("Failed to make acceptor listen! Boost asio error: " + error.message());
+			log::warning("Failed to make acceptor listen! Boost asio error: " + error.message());
 			return false;
 		}
 

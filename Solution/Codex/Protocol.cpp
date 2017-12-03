@@ -59,12 +59,12 @@ namespace codex
 			}
 			if (periodCount != 3 || invalidCharacters || endpoint.address.size() > 15)
 			{
-				codex::log::error("Provided server address is invalid: " + endpoint.address);
+				codex::log::warning("Provided server address is invalid: " + endpoint.address);
 				return Endpoint::invalid;
 			}
 			if (endpoint.port < 0 || endpoint.port > std::numeric_limits<uint16_t>::max())
 			{
-				codex::log::error("Provided server port is invalid: " + std::string(argv[2]));
+				codex::log::warning("Provided server port is invalid: " + std::string(argv[2]));
 				return Endpoint::invalid;
 			}
 

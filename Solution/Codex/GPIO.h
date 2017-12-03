@@ -68,5 +68,10 @@ namespace codex
 		extern void setPinMode(const Pin pin, const PinMode mode);
 		extern void setPinAsInput(const Pin pin);
 		extern void setPinAsOutput(const Pin pin);
+
+		//Pin enumeration conversion: the enumerated values do not match the naming.
+		/* Returns 0 if provided number is invalid. */
+		extern Pin getPinNumberAsEnum(const unsigned number);
+		extern unsigned getPinEnumAsNumber(const Pin pin);
 	}
 }
