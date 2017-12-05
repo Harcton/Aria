@@ -365,7 +365,8 @@ namespace codex
 
 		void ServoShell::syncRemove(protocol::ReadBuffer& buffer)
 		{
-
+			stop();
+			while(isRunning()) {}
 		}
 
 		bool ServoShell::syncUpdate(const time::TimeType& deltaTime)

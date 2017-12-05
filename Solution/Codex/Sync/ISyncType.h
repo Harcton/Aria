@@ -21,6 +21,8 @@ namespace codex
 			typedef std::string SyncTypeIdType;
 		public:
 
+			virtual ~IType() {}
+
 			/* Must implement the following static methods. Use macro below to do this the easy way. */
 			//static const std::string& getSyncTypeName();
 			//static const SyncTypeVersionType getSyncTypeVersion();

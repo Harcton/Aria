@@ -31,7 +31,7 @@ int main(const int argc, const char** argv)
 	spehs::Camera2D camera;
 	spehs::BatchManager batchManager(&camera, "ghostbox");
 	spehs::time::DeltaTimeSystem deltaTimeSystem;
-
+	
 	//Arm0 init
 	codex::time::delay(codex::time::seconds(1.0f));
 	codex::IOService ioService;

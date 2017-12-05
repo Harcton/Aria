@@ -7,25 +7,39 @@ namespace codex
 {
 	namespace gpio
 	{
-#ifdef CODEX_GPIO
 		void enable(const Pin pin)
 		{
+#ifdef CODEX_GPIO
 			bcm2835_gpio_write(pin, HIGH);
+#endif
 		}
+
 		void disable(const Pin pin)
 		{
+#ifdef CODEX_GPIO
 			bcm2835_gpio_write(pin, LOW);
+#endif
 		}
+
 		void write(const Pin pin, const PinState pinState)
 		{
+#ifdef CODEX_GPIO
 			bcm2835_gpio_write(pin, pinState);
+#endif
 		}
+
 		PinState read(const Pin pin)
 		{
+#ifdef CODEX_GPIO
 			return bcm2835_gpio_lev(pin) == HIGH ? PinState::high : PinState::low;
+#else
+			return PinState::invalid;
+#endif
 		}
+
 		time::TimeType pulseIn(const Pin pin, const PinState pinState, const time::TimeType timeout)
 		{
+#ifdef CODEX_GPIO
 			bool readyToReceivePulse = false;
 			bool pulseReceived = false;
 			const time::TimeType beginTime = time::now();
@@ -47,60 +61,37 @@ namespace codex
 					return 0;
 			}
 			return time::now() - beginTime;
+#else
+			return 0;
+#endif
 		}
+
 		void setPinMode(const Pin pin, const PinMode mode)
 		{
+#ifdef CODEX_GPIO
 			if (mode == PinMode::output)
 				bcm2835_gpio_fsel(pin, BCM2835_GPIO_FSEL_OUTP);
 			else if (mode == PinMode::input)
 				bcm2835_gpio_fsel(pin, BCM2835_GPIO_FSEL_INPT);
 			else
 				codex::log::error("setPinMode() error. Invalid pin mode.");
-		}
-		void setPinAsInput(const Pin pin)
-		{
-			bcm2835_gpio_fsel(pin, BCM2835_GPIO_FSEL_INPT);
-		}
-		void setPinAsOutput(const Pin pin)
-		{
-			bcm2835_gpio_fsel(pin, BCM2835_GPIO_FSEL_OUTP);
-		}
-#else//CODEX_GPIO is not defined, these functions are non-functional
-		void enable(const Pin pin)
-		{
-			CODEX_ASSERT(false);
-		}
-		void disable(const Pin pin)
-		{
-			CODEX_ASSERT(false);
-		}
-		void write(const Pin pin, const PinState pinState)
-		{
-			CODEX_ASSERT(false);
-		}
-		PinState read(const Pin pin)
-		{
-			CODEX_ASSERT(false);
-			return PinState::invalid;
-		}
-		time::TimeType pulseIn(const Pin pin, const PinState pinState, const time::TimeType timeout)
-		{
-			CODEX_ASSERT(false);
-			return 0;
-		}
-		void setPinMode(const Pin pin, const PinMode mode)
-		{
-			CODEX_ASSERT(false);
-		}
-		void setPinAsInput(const Pin pin)
-		{
-			CODEX_ASSERT(false);
-		}
-		void setPinAsOutput(const Pin pin)
-		{
-			CODEX_ASSERT(false);
-		}
 #endif
+		}
+
+		void setPinAsInput(const Pin pin)
+		{
+#ifdef CODEX_GPIO
+			bcm2835_gpio_fsel(pin, BCM2835_GPIO_FSEL_INPT);
+#endif
+		}
+
+		void setPinAsOutput(const Pin pin)
+		{
+#ifdef CODEX_GPIO
+			bcm2835_gpio_fsel(pin, BCM2835_GPIO_FSEL_OUTP);
+#endif
+		}
+
 		Pin getPinNumberAsEnum(const unsigned number)
 		{
 			switch (number)
