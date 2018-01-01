@@ -1,12 +1,16 @@
 #include "Ghost0.h"
 #include <Codex/CodexMath.h>
-#include <SpehsEngine/ApplicationData.h>
-#include <SpehsEngine/InputManager.h>
-#include <SpehsEngine/AudioEngine.h>
-#include <SpehsEngine/SpehsEngine.h>
-#include <SpehsEngine/Console.h>
-#include <SpehsEngine/Window.h>
-#include <SpehsEngine/Time.h>
+#include <SpehsEngine/Audio/Audio.h>
+#include <SpehsEngine/Core/Core.h>
+#include <SpehsEngine/GUI/GUI.h>
+#include <SpehsEngine/Input/Input.h>
+#include <SpehsEngine/Rendering/Rendering.h>
+#include <SpehsEngine/Core/ApplicationData.h>
+#include <SpehsEngine/Input/InputManager.h>
+#include <SpehsEngine/Audio/AudioEngine.h>
+#include <SpehsEngine/Rendering/Console.h>
+#include <SpehsEngine/Input/Window.h>
+#include <SpehsEngine/Core/Time.h>
 
 Ghost0::Ghost0()
 	: batchManager(&camera, "Ghost0")
@@ -32,7 +36,13 @@ Ghost0::~Ghost0()
 
 void Ghost0::onStart()
 {
-	spehs::initialize("Ghost0");
+	spehs::core::initialize();
+	spehs::audio::initialize();
+	spehs::input::initialize();
+	spehs::rendering::initialize();
+	spehs::gui::initialize();
+	spehs::input::getMainWindow()->setTitle("Ghost0");
+
 	deltaTimeSystem.deltaTimeSystemInitialize();
 	steerServoAngleArrow->setCameraMatrixState(false);
 	shellDCMotorStrengthArrow->setCameraMatrixState(false);
@@ -95,10 +105,10 @@ void Ghost0::update(const codex::time::TimeType deltaTime)
 			spehs::ApplicationData::getWindowHeightHalf() + spehs::ApplicationData::getWindowHeightHalf() * sinf(shellNetState.steerAngle + codex::math::pi * 0.5f)));
 
 	//Render
-	spehs::getMainWindow()->renderBegin();
+	spehs::input::getMainWindow()->renderBegin();
 	batchManager.render();
 	spehs::console::render();
-	spehs::getMainWindow()->renderEnd();
+	spehs::input::getMainWindow()->renderEnd();
 
 	//Send update
 	timeSinceSendUpdate += codex::time::seconds(deltaSeconds);
@@ -108,7 +118,11 @@ void Ghost0::update(const codex::time::TimeType deltaTime)
 
 void Ghost0::onStop()
 {
-	spehs::uninitialize();
+	spehs::gui::uninitialize();
+	spehs::rendering::uninitialize();
+	spehs::input::uninitialize();
+	spehs::audio::uninitialize();
+	spehs::core::uninitialize();
 }
 
 void Ghost0::receiveHandler(codex::protocol::ReadBuffer& buffer)

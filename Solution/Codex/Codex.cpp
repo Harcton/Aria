@@ -3,6 +3,8 @@
 #include "Protocol.h"
 #include "RTTI.h"
 #include "Log.h"
+#include "SpehsEngine/Core/Core.h"
+#include "SpehsEngine/Core/SpehsAssert.h"
 #include <thread>
 #include <ctime>
 #ifdef CODEX_GPIO
@@ -13,9 +15,17 @@
 namespace codex
 {
 	std::string workingDirectory;
+	bool initialized = false;
 
 	int initialize(const int argc, const char** argv)
 	{
+		if (initialized)
+		{
+			codex::log::info("Codex is already initialized!");
+			return 1;
+		}
+
+
 		log::info("Initializing Codex...");
 
 #ifdef CODEX_GPIO
@@ -51,10 +61,17 @@ namespace codex
 		log::info("Codex time accuracy is " + std::to_string(codex::time::conversionRate::second) + " ticks per second.");
 
 		log::info("Codex initialized.");
+		initialized = true;
 		return 0;
 	}
 	void uninitialize()
 	{
+		if (!initialized)
+		{
+			codex::log::info("Codex was not initialized!");
+			return;
+		}
+
 		log::info("Uninitializing Codex...");
 
 #ifdef CODEX_GPIO

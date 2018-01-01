@@ -45,8 +45,8 @@ namespace codex
 		addElement(rotationSpeedEditor = new spehs::GUIScalarEditor<float>(_batchManager, "rotation speed", 5.0f));
 		addElement(minAngleEditor = new spehs::GUIScalarEditor<float>(_batchManager, "min angle", 0.0f));
 		addElement(maxAngleEditor = new spehs::GUIScalarEditor<float>(_batchManager, "max angle", 9.0f));
-		addElement(minFrequencyEditor = new spehs::GUIScalarEditor<unsigned>(_batchManager, "min frequency (micro seconds)", 1000));
-		addElement(maxFrequencyEditor = new spehs::GUIScalarEditor<unsigned>(_batchManager, "max frequency (micro seconds)", 2000));
+		addElement(minFrequencyEditor = new spehs::GUIScalarEditor<unsigned>(_batchManager, "min frequency (microseconds)", 1000));
+		addElement(maxFrequencyEditor = new spehs::GUIScalarEditor<unsigned>(_batchManager, "max frequency (microseconds)", 2000));
 		addElement(createButton = new spehs::GUIRectangle(_batchManager));
 		createButton->setString("create");
 		createButton->setJustification(GUIRECT_TEXT_JUSTIFICATION_CENTER_BIT);

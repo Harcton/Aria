@@ -1,3 +1,6 @@
+Raspberry g++: (Raspbian 4.9.2-10) 4.9.2
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Here are some of my (definitely bad) advice learned from using Visual Studio for Linux development extension. //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -25,19 +28,18 @@ time/assert related errors?
 
 Avoid std::shared_ptr... gives otherworldly errors, not related to std::shared_ptr at all (I got like 16k lines of output from using one)
 
-Raspberry g++: (Raspbian 4.9.2-10) 4.9.2
-
 The stack around variable 'foo' was corrupted -> Check if there are any variables declared inside #ifdef #endif guards. For some reason these can cause stack corruption.
 
 Segmentation fault on linux can be caused by functions defining a return type, but not returning from a specific path...
 
 If starting debugging fails due to a file not found at "E:/something/local_solution_folder/bin/program.out" -> Property Pages > Linker > Copy output
 
-Error	C1047	The object or library file 'E:\Ohjelmointi\Projects\SpehsEngine\/bin/Win32/Release/v140/\SpehsEngine.lib' was created with an older compiler than other objects; rebuild old objects and libraries
+Error	C1047	The object or library file 'E:\Ohjelmointi\Projects\SpehsEngine\/bin/Win32/Release/v140/\SpehsEngine.lib' was created with an older compiler than other objects; -> rebuild old objects and libraries
 
 //!!! undefined reference to `boost::system : error : generic_category()'
 	1# boost_system isn't linked.
 	2# Adding this to main.cpp #include <boost/system/error_code.hpp> -> Works (but why?)
 	
-2>E:\Ohjelmointi\Projects\Aria\Solution\Shells\Sandshell\Main.cpp(1,25): error : Codex/Codex.h: No such file or directory
-	-> 
+//The include directory bug
+Error: FooWhatever.h: No such file or directory -> check output window that passed -I arguments are correct
+	If the passed -I arguments are incorrect -> add -I "absolute/include/path" into ProjectProperties/C++/AllOptions/Additional options.

@@ -4,10 +4,12 @@
 #include <Codex/Device/Servo.h>
 #include <Codex/Sync/SyncManager.h>
 #include <Codex/Aria.h>
+#include <SpehsEngine/Core/Core.h>
 
 
 int main(const int argc, const char** argv)
 {
+	spehs::core::initialize();
 	codex::initialize(argc, argv);
 
 	bool keepRunning = true;
@@ -15,7 +17,7 @@ int main(const int argc, const char** argv)
 	{
 		codex::IOService ioService;
 		codex::SocketTCP socket(ioService);
-		codex::aria::Connector connector(socket, "ghostbox2", "ghostbox1", 41623);
+		codex::aria::Connector connector(socket, "arm0Shell", "arm0Ghost", 41623);
 		if (connector.enter(codex::protocol::Endpoint("192.168.10.51", codex::protocol::defaultAriaPort)))
 			codex::log::info("yay!");
 		else
@@ -37,6 +39,7 @@ int main(const int argc, const char** argv)
 	}
 
 	codex::uninitialize();
+	spehs::core::uninitialize();
 	std::getchar();
 	return 0;
 }

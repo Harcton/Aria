@@ -1,12 +1,11 @@
 #pragma once
 #include <Codex/Actor.h>
-#include <SpehsEngine/Camera2D.h>
-#include <SpehsEngine/BatchManager.h>
 #include <Codex/Robot/Robot0.h>
-#include <SpehsEngine/Arrow.h>
-#include <SpehsEngine/Text.h>
-#include <SpehsEngine/Time.h>
-
+#include <SpehsEngine/Rendering/Camera2D.h>
+#include <SpehsEngine/Rendering/BatchManager.h>
+#include <SpehsEngine/Rendering/Arrow.h>
+#include <SpehsEngine/Rendering/Text.h>
+#include <SpehsEngine/Core/Time.h>
 
 class Ghost0 : public codex::Actor
 {

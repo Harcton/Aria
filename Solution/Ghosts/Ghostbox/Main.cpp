@@ -1,14 +1,19 @@
 #include <Codex/Codex.h>
-#include <SpehsEngine/ApplicationData.h>
-#include <SpehsEngine/InputManager.h>
-#include <SpehsEngine/AudioEngine.h>
-#include <SpehsEngine/SpehsEngine.h>
-#include <SpehsEngine/BatchManager.h>
-#include <SpehsEngine/Camera2D.h>
-#include <SpehsEngine/Console.h>
-#include <SpehsEngine/Window.h>
-#include <SpehsEngine/Time.h>
-#include <SpehsEngine/RNG.h>
+#include <SpehsEngine/Core/ApplicationData.h>
+#include <SpehsEngine/Input/InputManager.h>
+#include <SpehsEngine/Audio/AudioEngine.h>
+#include <SpehsEngine/Audio/Audio.h>
+#include <SpehsEngine/Core/Core.h>
+#include <SpehsEngine/Input/Input.h>
+#include <SpehsEngine/Rendering/Rendering.h>
+#include <SpehsEngine/GUI/GUI.h>
+#include <SpehsEngine/Rendering/BatchManager.h>
+#include <SpehsEngine/Rendering/Camera2D.h>
+#include <SpehsEngine/Rendering/Polygon.h>
+#include <SpehsEngine/Rendering/Console.h>
+#include <SpehsEngine/Input/Window.h>
+#include <SpehsEngine/Core/Time.h>
+#include <SpehsEngine/Core/RNG.h>
 
 #include <Codex/Device/Servo.h>
 #include <Codex/Sync/SyncManager.h>
@@ -23,40 +28,27 @@
 int main(const int argc, const char** argv)
 {
 	codex::initialize(argc, argv);
-	spehs::initialize("Ghostbox");
-
-	codex::time::delay(codex::time::seconds(1.0f));
-	codex::IOService ioService;
-	codex::SocketTCP socket(ioService);
-	codex::aria::Connector connector(socket, "ghostbox1", "ghostbox2", 41623);
-	if (connector.enter(codex::protocol::Endpoint("192.168.10.51", codex::protocol::defaultAriaPort)))
-		codex::log::info("yay!");
-	else
-	{
-		codex::log::info("nay!");
-		std::getchar();
-		return 1;
-	}
-
+	spehs::core::initialize();
+	spehs::input::initialize();
+	spehs::rendering::initialize();
+	spehs::gui::initialize();
+	spehs::audio::initialize();
+	
 	//Required class instances for spehs engine basic stuff
 	spehs::Camera2D camera;
 	spehs::BatchManager batchManager(&camera, "ghostbox");
 	spehs::time::DeltaTimeSystem deltaTimeSystem;
 	
 	//Testing initialization here please...
-	codex::sync::Manager syncManager(socket);
-	syncManager.registerType<codex::device::ServoGhost, codex::device::ServoShell>();
+	std::vector<spehs::Polygon*> polygons;
 
-	if (!syncManager.initialize())
-	{
-		std::getchar();
-		return 1;
-	}
-	
 	//Update & render loop
 	bool run = true;
+	codex::time::TimeType deltaTime = 0;
 	while (run)
 	{
+		const codex::time::TimeType beginTime = codex::time::now();
+
 		//Spehs update
 		deltaTimeSystem.deltaTimeSystemUpdate();
 		inputManager->update();
@@ -66,16 +58,30 @@ int main(const int argc, const char** argv)
 			run = false;
 
 		//Test update...
-		socket.update();
-		syncManager.update((codex::time::TimeType)deltaTimeSystem.deltaTime.value);
+		if (inputManager->isKeyDown(KEYBOARD_SPACE))
+		{
+			for (size_t i = 0; i < 10; i++)
+			{
+				polygons.push_back(batchManager.createPolygon(3, 0, 1.0f, 1.0f));
+				polygons.back()->setCameraMatrixState(false);
+				polygons.back()->setPosition(spehs::rng::random<float>(0.0f, (float)spehs::ApplicationData::getWindowWidth()), spehs::rng::random<float>(0.0f, (float)spehs::ApplicationData::getWindowHeight()));
+			}
+		}
 		
 		//Render
-		spehs::getMainWindow()->renderBegin();
+		spehs::input::getMainWindow()->renderBegin();
 		batchManager.render();
-		spehs::console::render();
-		spehs::getMainWindow()->renderEnd();
+		spehs::console::render("FPS: " + std::to_string((int)(1.0f / codex::time::toSeconds(deltaTime))));
+		spehs::input::getMainWindow()->renderEnd();
+
+		deltaTime = codex::time::now() - beginTime;
 	}
 
+	spehs::gui::uninitialize();
+	spehs::rendering::uninitialize();
+	spehs::input::uninitialize();
+	spehs::audio::uninitialize();
+	spehs::core::uninitialize();
 	codex::uninitialize();
 	return 0;
 }

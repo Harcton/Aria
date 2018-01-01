@@ -269,7 +269,8 @@ namespace codex
 					}
 					else
 					{
-						log::error("codex::sync::Manager: receive handler: PacketType::localUpdate: Unknown remote entry id!");
+						if (debugLevel >= 3)
+							log::info("codex::sync::Manager: receive handler: PacketType::localUpdate: Unknown remote entry id! Maybe entry was just removed...");
 						return true;
 					}
 				}
@@ -477,6 +478,8 @@ namespace codex
 				//Deallocate
 				if (remoteEntries[i]->removeSent)
 				{
+					if (debugLevel >= 1)
+						codex::log::info("codex::sync::Manager: removing entry id: " + std::to_string(remoteEntries[i]->id));
 					delete remoteEntries[i];
 					remoteEntries[i] = remoteEntries.back();
 					remoteEntries.pop_back();

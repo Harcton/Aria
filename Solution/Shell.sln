@@ -6,14 +6,21 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shells", "Shells", "{2C068ED6-A43D-418F-9F2A-9634EF5B7768}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShellCodex", "ShellCodex\ShellCodex.vcxproj", "{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}"
+	ProjectSection(ProjectDependencies) = postProject
+		{96A4E6B2-A6B4-4DC3-B438-507747EC9FC4} = {96A4E6B2-A6B4-4DC3-B438-507747EC9FC4}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Codex", "Codex\Codex.vcxitems", "{45D41ACC-2C3C-43D2-BC10-02AA73FFC7C7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Shell0", "Shells\Shell0\Shell0.vcxproj", "{5DF77CEB-6398-461E-AD1F-878A612E091E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{96A4E6B2-A6B4-4DC3-B438-507747EC9FC4} = {96A4E6B2-A6B4-4DC3-B438-507747EC9FC4}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Arm0", "Shells\Arm0\Arm0.vcxproj", "{E6B1CECC-A971-445B-B18E-24B10AD0911A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66} = {4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}
+		{96A4E6B2-A6B4-4DC3-B438-507747EC9FC4} = {96A4E6B2-A6B4-4DC3-B438-507747EC9FC4}
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1A84D71F-59C6-4E2D-8E1A-123B2CCCFA6C}"
@@ -21,12 +28,21 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sandshell", "Shells\Sandshell\Sandshell.vcxproj", "{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2}"
 	ProjectSection(ProjectDependencies) = postProject
 		{4565722D-9EF2-4DF6-8085-8DBB5F8E2D66} = {4565722D-9EF2-4DF6-8085-8DBB5F8E2D66}
+		{96A4E6B2-A6B4-4DC3-B438-507747EC9FC4} = {96A4E6B2-A6B4-4DC3-B438-507747EC9FC4}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoreARM", "..\..\SpehsEngine\SpehsEngine\Core\CoreARM.vcxproj", "{96A4E6B2-A6B4-4DC3-B438-507747EC9FC4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SpehsEngine", "SpehsEngine", "{09A0997F-3DD2-448A-BC99-8C05F88D4894}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoreShare", "..\..\SpehsEngine\SpehsEngine\Core\CoreShare.vcxitems", "{0C2F55CA-E03F-415D-8340-A8E33BE520B0}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\..\SpehsEngine\SpehsEngine\Core\CoreShare.vcxitems*{0c2f55ca-e03f-415d-8340-a8e33be520b0}*SharedItemsImports = 9
 		Codex\Codex.vcxitems*{4565722d-9ef2-4df6-8085-8dbb5f8e2d66}*SharedItemsImports = 4
 		Codex\Codex.vcxitems*{45d41acc-2c3c-43d2-bc10-02aa73ffc7c7}*SharedItemsImports = 9
+		..\..\SpehsEngine\SpehsEngine\Core\CoreShare.vcxitems*{96a4e6b2-a6b4-4dc3-b438-507747ec9fc4}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -49,6 +65,10 @@ Global
 		{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2}.Debug|ARM.Build.0 = Debug|ARM
 		{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2}.Release|ARM.ActiveCfg = Release|ARM
 		{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2}.Release|ARM.Build.0 = Release|ARM
+		{96A4E6B2-A6B4-4DC3-B438-507747EC9FC4}.Debug|ARM.ActiveCfg = Debug|ARM
+		{96A4E6B2-A6B4-4DC3-B438-507747EC9FC4}.Debug|ARM.Build.0 = Debug|ARM
+		{96A4E6B2-A6B4-4DC3-B438-507747EC9FC4}.Release|ARM.ActiveCfg = Release|ARM
+		{96A4E6B2-A6B4-4DC3-B438-507747EC9FC4}.Release|ARM.Build.0 = Release|ARM
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -57,5 +77,7 @@ Global
 		{5DF77CEB-6398-461E-AD1F-878A612E091E} = {2C068ED6-A43D-418F-9F2A-9634EF5B7768}
 		{E6B1CECC-A971-445B-B18E-24B10AD0911A} = {2C068ED6-A43D-418F-9F2A-9634EF5B7768}
 		{77BAA345-A43D-4EA4-A980-F3A1B8FE30D2} = {2C068ED6-A43D-418F-9F2A-9634EF5B7768}
+		{96A4E6B2-A6B4-4DC3-B438-507747EC9FC4} = {09A0997F-3DD2-448A-BC99-8C05F88D4894}
+		{0C2F55CA-E03F-415D-8340-A8E33BE520B0} = {09A0997F-3DD2-448A-BC99-8C05F88D4894}
 	EndGlobalSection
 EndGlobal

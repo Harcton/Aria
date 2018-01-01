@@ -1,14 +1,18 @@
 //SPEHS ENGINE
-#include <SpehsEngine/ApplicationData.h>
-#include <SpehsEngine/InputManager.h>
-#include <SpehsEngine/AudioEngine.h>
-#include <SpehsEngine/SpehsEngine.h>
-#include <SpehsEngine/BatchManager.h>
-#include <SpehsEngine/Camera2D.h>
-#include <SpehsEngine/Console.h>
-#include <SpehsEngine/Window.h>
-#include <SpehsEngine/Time.h>
-#include <SpehsEngine/RNG.h>
+#include <SpehsEngine/Core/ApplicationData.h>
+#include <SpehsEngine/Input/InputManager.h>
+#include <SpehsEngine/Audio/AudioEngine.h>
+#include <SpehsEngine/Audio/Audio.h>
+#include <SpehsEngine/Core/Core.h>
+#include <SpehsEngine/GUI/GUI.h>
+#include <SpehsEngine/Input/Input.h>
+#include <SpehsEngine/Rendering/Rendering.h>
+#include <SpehsEngine/Rendering/BatchManager.h>
+#include <SpehsEngine/Rendering/Camera2D.h>
+#include <SpehsEngine/Rendering/Console.h>
+#include <SpehsEngine/Input/Window.h>
+#include <SpehsEngine/Core/Time.h>
+#include <SpehsEngine/Core/RNG.h>
 //CODEX
 #include <Codex/Aria.h>
 #include <Codex/Codex.h>
@@ -27,16 +31,20 @@ int main(const int argc, const char** argv)
 	codex::initialize(argc, argv);
 	
 	//Spehs engine init
-	spehs::initialize("Ghostbox");
+	spehs::core::initialize();
+	spehs::audio::initialize();
+	spehs::input::initialize();
+	spehs::rendering::initialize();
+	spehs::gui::initialize();
 	spehs::Camera2D camera;
-	spehs::BatchManager batchManager(&camera, "ghostbox");
+	spehs::BatchManager batchManager(&camera, "arm0");
 	spehs::time::DeltaTimeSystem deltaTimeSystem;
 	
 	//Arm0 init
 	codex::time::delay(codex::time::seconds(1.0f));
 	codex::IOService ioService;
 	codex::SocketTCP socket(ioService);
-	codex::aria::Connector connector(socket, "ghostbox1", "ghostbox2", 41623);
+	codex::aria::Connector connector(socket, "arm0Ghost", "arm0Shell", 41623);
 	if (connector.enter(codex::protocol::Endpoint("192.168.10.51", codex::protocol::defaultAriaPort)))
 		codex::log::info("yay!");
 	else
@@ -76,12 +84,16 @@ int main(const int argc, const char** argv)
 		servoCreator.visualUpdate();
 
 		//Render
-		spehs::getMainWindow()->renderBegin();
+		spehs::input::getMainWindow()->renderBegin();
 		batchManager.render();
 		spehs::console::render();
-		spehs::getMainWindow()->renderEnd();
+		spehs::input::getMainWindow()->renderEnd();
 	}
 
-	spehs::uninitialize();		
+	spehs::gui::uninitialize();
+	spehs::rendering::uninitialize();
+	spehs::input::uninitialize();
+	spehs::audio::uninitialize();
+	spehs::core::uninitialize();
 	codex::uninitialize();
 }

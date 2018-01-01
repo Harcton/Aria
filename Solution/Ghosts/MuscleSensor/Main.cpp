@@ -1,21 +1,28 @@
 #include <Codex/Codex.h>
-#include <SpehsEngine/ApplicationData.h>
-#include <SpehsEngine/InputManager.h>
-#include <SpehsEngine/AudioEngine.h>
-#include <SpehsEngine/SpehsEngine.h>
-#include <SpehsEngine/BatchManager.h>
-#include <SpehsEngine/LineDiagram.h>
-#include <SpehsEngine/Camera2D.h>
-#include <SpehsEngine/Console.h>
-#include <SpehsEngine/Window.h>
-#include <SpehsEngine/Time.h>
-#include <SpehsEngine/RNG.h>
-
+#include <SpehsEngine/Audio/Audio.h>
+#include <SpehsEngine/Core/Core.h>
+#include <SpehsEngine/GUI/GUI.h>
+#include <SpehsEngine/Input/Input.h>
+#include <SpehsEngine/Rendering/Rendering.h>
+#include <SpehsEngine/Core/ApplicationData.h>
+#include <SpehsEngine/Input/InputManager.h>
+#include <SpehsEngine/Audio/AudioEngine.h>
+#include <SpehsEngine/Rendering/BatchManager.h>
+#include <SpehsEngine/Rendering/LineDiagram.h>
+#include <SpehsEngine/Rendering/Camera2D.h>
+#include <SpehsEngine/Rendering/Console.h>
+#include <SpehsEngine/Input/Window.h>
+#include <SpehsEngine/Core/Time.h>
+#include <SpehsEngine/Core/RNG.h>
 
 int main(const int argc, const char** argv)
 {
 	codex::initialize(argc, argv);
-	spehs::initialize("Ghostbox");
+	spehs::core::initialize();
+	spehs::audio::initialize();
+	spehs::input::initialize();
+	spehs::rendering::initialize();
+	spehs::gui::initialize();
 
 	//Required class instances for spehs engine basic stuff
 	spehs::Camera2D camera;
@@ -58,12 +65,17 @@ int main(const int argc, const char** argv)
 			diagram.pushBack(sin(spehs::time::getRunTime().asSeconds() * 0.5f) * 100.0f + spehs::rng::random(-50.0f, 50.0f));
 
 		//Render
-		spehs::getMainWindow()->renderBegin();
+		spehs::input::getMainWindow()->renderBegin();
 		batchManager.render();
 		spehs::console::render();
-		spehs::getMainWindow()->renderEnd();
+		spehs::input::getMainWindow()->renderEnd();
 	}
 
+	spehs::gui::uninitialize();
+	spehs::rendering::uninitialize();
+	spehs::input::uninitialize();
+	spehs::audio::uninitialize();
+	spehs::core::uninitialize();
 	codex::uninitialize();
 	return 0;
 }

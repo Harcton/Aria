@@ -45,6 +45,7 @@
     <IntDir>obj/$(Platform)/$(Configuration)/</IntDir>
     <RemoteProjectDir>$(RemoteRootDir)/Codex</RemoteProjectDir>
     <RemoteLinkLocalCopyOutput>true</RemoteLinkLocalCopyOutput>
+    <IncludePath>$(SPEHSENGINE_ROOT)/;$(SPEHSENGINE_ROOT)/Dependencies/include/;$(SolutionDir)/;$(SolutionDir)/Codex/Dependencies/include/;$(SolutionDir)/Codex/;$(IncludePath);$(ISenseIncludePath);</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <TargetExt>.a</TargetExt>
@@ -53,23 +54,34 @@
     <IntDir>obj/$(Platform)/$(Configuration)/</IntDir>
     <RemoteProjectDir>$(RemoteRootDir)/Codex</RemoteProjectDir>
     <RemoteLinkLocalCopyOutput>true</RemoteLinkLocalCopyOutput>
+    <IncludePath>$(SPEHSENGINE_ROOT)/;$(SPEHSENGINE_ROOT)/Dependencies/include/;$(SolutionDir)/;$(SolutionDir)/Codex/Dependencies/include/;$(SolutionDir)/Codex/;$(IncludePath);$(ISenseIncludePath);</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <Lib />
     <ClCompile />
     <ClCompile>
-      <AdditionalIncludeDirectories>/usr/glm/;/usr/boost/;/home/pi/projects/;/home/pi/projects/Codex/;$(SolutionDir)/Codex/Dependencies/include/;$(SolutionDir)/Codex/;$(SolutionDir);$(SPEHSENGINE_ROOT)/Dependencies/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_LINUX;SHELL_CODEX;CODEX_GPIO;</PreprocessorDefinitions>
       <Verbose>true</Verbose>
+      <AdditionalOptions>-I /usr/glm/ -I /usr/boost/ -I /home/pi/projects/ -I /home/pi/projects/Codex/ -I /home/pi/SpehsEngine/</AdditionalOptions>
     </ClCompile>
+    <Lib>
+      <AdditionalOptions> -l"pthread" -l"boost_system" -l"boost_thread" -l"SpehsCore" -l"bcm2835" %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <Lib />
     <ClCompile />
     <ClCompile>
-      <AdditionalIncludeDirectories>/usr/glm/;/usr/boost/;/home/pi/projects/;/home/pi/projects/Codex/;$(SolutionDir)/Codex/Dependencies/include/;$(SolutionDir)/Codex/;$(SolutionDir);$(SPEHSENGINE_ROOT)/Dependencies/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
       <PreprocessorDefinitions>PLATFORM_LINUX;SHELL_CODEX;NDEBUG;</PreprocessorDefinitions>
+      <AdditionalOptions>-I /usr/glm/ -I /usr/boost/ -I /home/pi/projects/ -I /home/pi/projects/Codex/ -I /home/pi/SpehsEngine/</AdditionalOptions>
     </ClCompile>
+    <Lib>
+      <AdditionalOptions> -l"pthread" -l"boost_system" -l"boost_thread" -l"SpehsCore" -l"bcm2835" %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

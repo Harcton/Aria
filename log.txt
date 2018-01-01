@@ -45,9 +45,15 @@ Local/remote types are fundamentally different, altough similarities would seem 
 Data sent through the network should probably be contained in a write/readable struct.
 	-This data could be contained within the abstract class.
 
+//Arm0 servo test results
+0 = 18, 500 / 2700
+1 = 33 1500 / 2700	//NOTE: min/max ranges change depending on servo2 position!
+2 = 31, 1500 / 2700
+3 = 40, 500 / 2700
+4 = 32, 500 / 2250
+5 = 29, 500 / 2250
+
 
 //////////////
 // PAST LOG //
-
-
 
