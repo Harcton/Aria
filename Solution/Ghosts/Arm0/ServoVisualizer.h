@@ -1,5 +1,5 @@
 #pragma once
-#include <SpehsEngine/Vector.h>
+#include <SpehsEngine/Core/Vector.h>
 #include <glm/gtc/quaternion.hpp>
 
 namespace codex

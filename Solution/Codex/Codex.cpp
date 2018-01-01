@@ -4,7 +4,6 @@
 #include "RTTI.h"
 #include "Log.h"
 #include "SpehsEngine/Core/Core.h"
-#include "SpehsEngine/Core/SpehsAssert.h"
 #include <thread>
 #include <ctime>
 #ifdef CODEX_GPIO

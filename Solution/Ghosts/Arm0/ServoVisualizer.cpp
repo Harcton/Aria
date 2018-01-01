@@ -1,6 +1,6 @@
 #include "ServoVisualizer.h"
-#include <SpehsEngine/BatchManager.h>
-#include <SpehsEngine/Time.h>
+#include <SpehsEngine/Rendering/BatchManager.h>
+#include <SpehsEngine/Core/Time.h>
 #include <Codex/Device/Servo.h>
 
 

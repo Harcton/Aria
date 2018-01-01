@@ -4,10 +4,20 @@
 #include <Codex/Device/Servo.h>
 #include <Codex/Sync/SyncManager.h>
 #include <Codex/Aria.h>
+#include <SpehsEngine/Audio/Audio.h>
+#include <SpehsEngine/Core/Core.h>
+#include <SpehsEngine/Input/Input.h>
+#include <SpehsEngine/Rendering/Rendering.h>
+#include <SpehsEngine/GUI/GUI.h>
 
 
 int main(const int argc, const char** argv)
 {
+	spehs::core::initialize();
+	spehs::input::initialize();
+	spehs::rendering::initialize();
+	spehs::gui::initialize();
+	spehs::audio::initialize();
 	codex::initialize(argc, argv);
 
 	bool keepRunning = true;
@@ -37,6 +47,11 @@ int main(const int argc, const char** argv)
 	}
 
 	codex::uninitialize();
+	spehs::gui::uninitialize();
+	spehs::rendering::uninitialize();
+	spehs::input::uninitialize();
+	spehs::audio::uninitialize();
+	spehs::core::uninitialize();
 	std::getchar();
 	return 0;
 }

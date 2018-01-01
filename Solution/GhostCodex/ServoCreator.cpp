@@ -1,6 +1,6 @@
-#include <SpehsEngine/GUICheckbox.h>
-#include <SpehsEngine/GUIStringEditor.h>
-#include <SpehsEngine/GUIRectangleScrollList.h>
+#include <SpehsEngine/GUI/GUICheckbox.h>
+#include <SpehsEngine/GUI/GUIStringEditor.h>
+#include <SpehsEngine/GUI/GUIRectangleScrollList.h>
 #include <Codex/Device/Servo.h>
 #include <Codex/Sync/SyncManager.h>
 #include "ServoCreator.h"

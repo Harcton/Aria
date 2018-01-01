@@ -27,12 +27,12 @@
 
 int main(const int argc, const char** argv)
 {
-	codex::initialize(argc, argv);
 	spehs::core::initialize();
 	spehs::input::initialize();
 	spehs::rendering::initialize();
 	spehs::gui::initialize();
 	spehs::audio::initialize();
+	codex::initialize(argc, argv);
 	
 	//Required class instances for spehs engine basic stuff
 	spehs::Camera2D camera;
@@ -77,11 +77,11 @@ int main(const int argc, const char** argv)
 		deltaTime = codex::time::now() - beginTime;
 	}
 
+	codex::uninitialize();
 	spehs::gui::uninitialize();
 	spehs::rendering::uninitialize();
 	spehs::input::uninitialize();
 	spehs::audio::uninitialize();
 	spehs::core::uninitialize();
-	codex::uninitialize();
 	return 0;
 }

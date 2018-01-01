@@ -16,7 +16,7 @@
       <AdditionalLibraryDirectories>$(SPEHSENGINE_ROOT)/Dependencies/lib/;$(SolutionDir)/Dependencies/lib/;</AdditionalLibraryDirectories>
     </Lib>
     <Link>
-      <AdditionalDependencies>SpehsEngine.lib;GhostCodex.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SpehsCore.lib;SpehsInput.lib;SpehsRendering.lib;SpehsAudio.lib;SpehsGUI.lib;GhostCodex.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)/GhostCodex/bin/$(Platform)/$(Configuration)/;$(SPEHSENGINE_ROOT)/Dependencies/lib/;$(SPEHSENGINE_ROOT)/bin/$(Platform)/$(Configuration)/$(PlatformToolset)/</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
