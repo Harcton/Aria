@@ -112,33 +112,31 @@ namespace codex
 			template<class T>
 			typename std::enable_if<has_write<T, void(T::*)(WriteBuffer&) const>::value, void>::type write(const T& t)
 			{
-				return t.write(*this);
+				t.write(*this);
 			}
 			//Const class, doesn't have const write
 			template<class T>
 			typename std::enable_if<!has_write<T, void(T::*)(WriteBuffer&) const>::value, void>::type write(const T& t)
 			{
-				static_assert(false, "To use 'WriteBuffer::write<T>(const T&)' for a class type, the type T must have a 'void write(WriteBuffer&) const' method!");
-				return 0;
+				SPEHS_ASSERT(false && "To use 'WriteBuffer::write<T>(const T&)' for a class type, the type T must have a 'void write(WriteBuffer&) const' method!");//NOTE: cannot use static assert because of g++ and SFINAE
 			}
 			//Mutable class, has mutable write
 			template<class T>
 			typename std::enable_if<has_write<T, void(T::*)(WriteBuffer&)>::value, void>::type write(T& t)
 			{
-				return t.write(*this);
+				t.write(*this);
 			}
 			//Mutable class, has const write
 			template<class T>
 			typename std::enable_if<has_write<T, void(T::*)(WriteBuffer&) const>::value, void>::type write(T& t)
 			{
-				return t.write(*this);
+				t.write(*this);
 			}
 			//Mutable class, doesn't have mutable or const write
 			template<class T>
 			typename std::enable_if<!has_write<T, void(T::*)(WriteBuffer&)>::value && !has_write<T, void(T::*)(WriteBuffer&) const>::value, void>::type write(T& t)
 			{
-				static_assert(false, "To use 'WriteBuffer::write<T>(T&)' for a class type, the type T must have a 'void write(WriteBuffer&)' or 'void write(WriteBuffer&) const' method!");
-				return 0;
+				SPEHS_ASSERT(false && "To use 'WriteBuffer::write<T>(T&)' for a class type, the type T must have a 'void write(WriteBuffer&)' or 'void write(WriteBuffer&) const' method!");//NOTE: cannot use static assert because of g++ and SFINAE
 			}
 			//Isn't class
 			template<typename T>
@@ -164,11 +162,11 @@ namespace codex
 			//Specialized cases
 			void write(spehs::time::Time& t)
 			{
-				return write(t.value);
+				write(t.value);
 			}
 			void write(const spehs::time::Time& t)
 			{
-				return write(t.value);
+				write(t.value);
 			}
 			void write(std::string& t)
 			{
@@ -207,14 +205,13 @@ namespace codex
 			template<class T>
 			typename std::enable_if<has_read<T, void(T::*)(ReadBuffer&)>::value, void>::type read(T& t)
 			{
-				return t.read(*this);
+				t.read(*this);
 			}
 			//Is class, doesn't have mutable read
 			template<class T>
 			typename std::enable_if<!has_read<T, void(T::*)(ReadBuffer&)>::value, void>::type read(T& t)
 			{
-				static_assert(false, "To use 'ReadBuffer::read<T>(T&)' for a class type, the type T must have a 'void read(ReadBuffer&)' method!");
-				return 0;
+				SPEHS_ASSERT(false && "To use 'ReadBuffer::read<T>(T&)' for a class type, the type T must have a 'void read(ReadBuffer&)' method!");//NOTE: cannot use static assert because of g++ and SFINAE
 			}
 			//Isn't class
 			template<typename T>
@@ -245,7 +242,7 @@ namespace codex
 			//Specialized cases
 			void read(spehs::time::Time& t)
 			{
-				return read(t.value);
+				read(t.value);
 			}
 			void read(std::string& t)
 			{

@@ -13,6 +13,7 @@ Advice hall of fame:
 	5. On raspberry, 'friend class MyClass' needs a prior forward declaration.
 	6. Try searching output for "ld returned 1 exit status"
 	7. Do not trust std::cout to work perfectly when remote debugging. Especially when you are flooding the thing with output...
+	8. Unlike the visual studio compiler, g++ "autofires" static_assert(false, "") regardless of SFINAE.
 	
 ld returned 1 exit status -> Check Linker/library dependencies.
 	/usr/bin/ld: cannot find -l... check the following:
