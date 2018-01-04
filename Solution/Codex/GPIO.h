@@ -1,7 +1,7 @@
 #pragma once
 #include <bcm2835.h>
 #include <stdint.h>
-#include "Codex/CodexTime.h"
+#include "SpehsEngine/Core/Time.h"
 #undef delay //"delay" is a macro defined in the bcm header...
 
 
@@ -63,7 +63,7 @@ namespace codex
 			Blocks indefinitely if no timeout parameter is specified (set to 0).
 			In case of a timeout, returns 0.
 		*/
-		extern time::TimeType pulseIn(const Pin pin, const PinState pinState, const time::TimeType timeout = 0);
+		extern spehs::time::Time pulseIn(const Pin pin, const PinState pinState, const spehs::time::Time timeout = 0);
 
 		extern void setPinMode(const Pin pin, const PinMode mode);
 		extern void setPinAsInput(const Pin pin);

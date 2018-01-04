@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <vector>
-#include "CodexTime.h"
+#include "SpehsEngine/Core/Time.h"
 #include "SyncTypeInfo.h"
 
 
@@ -42,8 +42,8 @@ namespace codex
 
 			const LocalSyncTypeInfo& typeInfo;
 			std::vector<AbstractHandle*> handles;
-			time::TimeType interval;
-			time::TimeType timer;
+			spehs::time::Time interval;
+			spehs::time::Time timer;
 			bool createReceived;
 
 		private:

@@ -39,7 +39,7 @@ namespace codex
 				receivingData,			//Receiving data bits between set intervals
 				receivingParityBit,		//Receiving the parity bit
 			};
-			time::TimeType readInterval;
+			spehs::time::Time readInterval;
 			int stopBitCount;
 			int parityBitCount;
 			ReceiveState receiveState;

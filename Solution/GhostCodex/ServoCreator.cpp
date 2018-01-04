@@ -13,7 +13,7 @@ namespace codex
 		: spehs::GUIRectangleRow(_batchManager)
 		, handle(_handle)
 	{
-		CODEX_ASSERT(handle);
+		SPEHS_ASSERT(handle);
 		addElement(remove = new spehs::GUIRectangle(_batchManager));
 		remove->setString("x");
 		addElement(active = new spehs::GUICheckbox(_batchManager));
@@ -28,7 +28,7 @@ namespace codex
 	{
 		GUIRectangleRow::inputUpdate(data);
 
-		CODEX_ASSERT(handle);
+		SPEHS_ASSERT(handle);
 		handle->setActive(active->getEditorValue());
 		handle->setTargetAngle(angleEditor->getEditorValue());
 	}
@@ -84,14 +84,14 @@ namespace codex
 		const codex::gpio::Pin pin = codex::gpio::getPinNumberAsEnum(pinEditor->getEditorValue());
 		if (pin == codex::gpio::Pin::pin_none)
 		{
-			codex::log::info("Cannot create a servo with invalid pin.");
+			spehs::log::info("Cannot create a servo with invalid pin.");
 			return;
 		}
 
 		const std::string name = nameEditor->getEditorValue();
 		if (name.empty())
 		{
-			codex::log::info("Cannot create a servo without a name.");
+			spehs::log::info("Cannot create a servo without a name.");
 			return;
 		}
 
@@ -99,7 +99,7 @@ namespace codex
 		{
 			if (servoList->at(i)->getString() == name)
 			{
-				codex::log::info("A servo with the name '" + name + "' has already been created.");
+				spehs::log::info("A servo with the name '" + name + "' has already been created.");
 				return;
 			}
 		}
@@ -110,8 +110,8 @@ namespace codex
 			//Servo configuration setup
 			servoHandle->setActive(false);
 			servoHandle->setPin(pin);
-			servoHandle->setMinAngle(codex::time::microseconds(minFrequencyEditor->getEditorValue()), minAngleEditor->getEditorValue());
-			servoHandle->setMaxAngle(codex::time::microseconds(maxFrequencyEditor->getEditorValue()), maxAngleEditor->getEditorValue());
+			servoHandle->setMinAngle(spehs::time::fromMicroseconds(minFrequencyEditor->getEditorValue()), minAngleEditor->getEditorValue());
+			servoHandle->setMaxAngle(spehs::time::fromMicroseconds(maxFrequencyEditor->getEditorValue()), maxAngleEditor->getEditorValue());
 			servoHandle->setRotationSpeed(rotationSpeedEditor->getEditorValue());
 
 			//Add element

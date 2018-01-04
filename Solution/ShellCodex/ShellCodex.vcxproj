@@ -62,7 +62,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_LINUX;SHELL_CODEX;CODEX_GPIO;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_LINUX;SHELL_CODEX;CODEX_GPIO;_DEBUG;</PreprocessorDefinitions>
       <Verbose>true</Verbose>
       <AdditionalOptions>-I /usr/glm/ -I /usr/boost/ -I /home/pi/projects/ -I /home/pi/projects/Codex/ -I /home/pi/SpehsEngine/</AdditionalOptions>
     </ClCompile>
@@ -76,7 +76,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PLATFORM_LINUX;SHELL_CODEX;NDEBUG;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PLATFORM_LINUX;SHELL_CODEX;CODEX_GPIO;NDEBUG;</PreprocessorDefinitions>
       <AdditionalOptions>-I /usr/glm/ -I /usr/boost/ -I /home/pi/projects/ -I /home/pi/projects/Codex/ -I /home/pi/SpehsEngine/</AdditionalOptions>
     </ClCompile>
     <Lib>

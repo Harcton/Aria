@@ -33,9 +33,9 @@ namespace codex
 			gpio::Pin pulseWidthPin;
 			gpio::Pin inputPin1;
 			gpio::Pin inputPin2;
-			time::TimeType pulseWidth;
+			spehs::time::Time pulseWidth;
 			float strength;
-			const codex::time::TimeType pulseInterval;
+			const spehs::time::Time pulseInterval;
 		};
 	}
 }

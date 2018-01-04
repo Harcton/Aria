@@ -10,6 +10,9 @@ namespace codex
 	{
 		struct AbstractSyncTypeInfo
 		{
+			void write(protocol::WriteBuffer& buffer) const;
+			void read(protocol::ReadBuffer& buffer);
+
 			IType::SyncTypeIdType typeId;
 			std::string name;
 			IType::SyncTypeVersionType version;
@@ -27,7 +30,7 @@ namespace codex
 
 		struct SyncTypePairInfo
 		{
-			void write(protocol::WriteBuffer& buffer);
+			void write(protocol::WriteBuffer& buffer) const;
 			void read(protocol::ReadBuffer& buffer);
 			LocalSyncTypeInfo local;
 			RemoteSyncTypeInfo remote;

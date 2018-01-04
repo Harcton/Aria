@@ -41,15 +41,15 @@ int main(const int argc, const char** argv)
 	spehs::time::DeltaTimeSystem deltaTimeSystem;
 	
 	//Arm0 init
-	codex::time::delay(codex::time::seconds(1.0f));
+	spehs::time::delay(spehs::time::fromSeconds(1.0f));
 	codex::IOService ioService;
 	codex::SocketTCP socket(ioService);
 	codex::aria::Connector connector(socket, "arm0Ghost", "arm0Shell", 41623);
 	if (connector.enter(codex::protocol::Endpoint("192.168.10.51", codex::protocol::defaultAriaPort)))
-		codex::log::info("yay!");
+		spehs::log::info("yay!");
 	else
 	{
-		codex::log::info("nay!");
+		spehs::log::info("nay!");
 		std::getchar();
 		return 1;
 	}
@@ -77,7 +77,7 @@ int main(const int argc, const char** argv)
 
 		//Test update...
 		socket.update();
-		syncManager.update((codex::time::TimeType)deltaTimeSystem.deltaTime.value);
+		syncManager.update((spehs::time::Time)deltaTimeSystem.deltaTime.value);
 		servoCreator.setPositionGlobal(spehs::ApplicationData::getWindowWidthHalf() - servoCreator.getWidth() / 2, spehs::ApplicationData::getWindowHeightHalf() - servoCreator.getHeight() / 2);
 		spehs::GUIRectangle::InputUpdateData guiInputUpdateData(inputManager->getMouseCoords(), deltaTimeSystem.deltaTime);
 		servoCreator.inputUpdate(guiInputUpdateData);

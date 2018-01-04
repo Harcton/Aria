@@ -1,7 +1,7 @@
 #include "ThreadedDevice.h"
 #include "RAIIVariableSetter.h"
 #include <assert.h>
-#include "Log.h"
+#include "SpehsEngine/Core/Log.h"
 
 
 namespace codex
@@ -33,7 +33,7 @@ namespace codex
 
 				if (isRunning())
 				{
-					log::info("Threaded device is already running!");
+					spehs::log::info("Threaded device is already running!");
 					return false;
 				}
 
@@ -44,7 +44,7 @@ namespace codex
 					thread = nullptr;
 				}
 
-				log::info("Starting threaded device...");
+				spehs::log::info("Starting threaded device...");
 
 				//Launch run thread
 				keepRunning = true;

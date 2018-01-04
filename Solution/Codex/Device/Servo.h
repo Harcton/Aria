@@ -4,8 +4,7 @@
 #include <iostream>
 #include <bcm2835.h>
 #include "GPIO.h"
-#include "CodexTime.h"
-#include "CodexAssert.h"
+#include "SpehsEngine/Core/Time.h"
 #include "ThreadedDevice.h"
 #include "Sync/ISyncType.h"
 
@@ -23,9 +22,9 @@ namespace codex
 			/* Sets the pin that the servo is connected to. */
 			virtual void setPin(const gpio::Pin pin) = 0;
 			/* Set the pulse durations used to set the servo to its minimum and maximum angles. */
-			virtual void setAngleLimits(const time::TimeType minPulseWidth, const time::TimeType maxPulseWidth, const float minAngle, const float maxAngle) = 0;
-			virtual void setMinAngle(const time::TimeType minPulseWidth, const float minAngle) = 0;
-			virtual void setMaxAngle(const time::TimeType maxPulseWidth, const float maxAngle) = 0;
+			virtual void setAngleLimits(const spehs::time::Time minPulseWidth, const spehs::time::Time maxPulseWidth, const float minAngle, const float maxAngle) = 0;
+			virtual void setMinAngle(const spehs::time::Time minPulseWidth, const float minAngle) = 0;
+			virtual void setMaxAngle(const spehs::time::Time maxPulseWidth, const float maxAngle) = 0;
 			/* Set a rotation speed per second approximation. */
 			virtual void setRotationSpeed(const float speed) = 0;
 
@@ -52,9 +51,9 @@ namespace codex
 			
 			//Servo interface
 			void setPin(const gpio::Pin pin) override;
-			void setAngleLimits(const time::TimeType minPulseWidth, const time::TimeType maxPulseWidth, const float minAngle, const float maxAngle) override;
-			void setMinAngle(const time::TimeType minPulseWidth, const float minAngle) override;
-			void setMaxAngle(const time::TimeType maxPulseWidth, const float maxAngle) override;
+			void setAngleLimits(const spehs::time::Time minPulseWidth, const spehs::time::Time maxPulseWidth, const float minAngle, const float maxAngle) override;
+			void setMinAngle(const spehs::time::Time minPulseWidth, const float minAngle) override;
+			void setMaxAngle(const spehs::time::Time maxPulseWidth, const float maxAngle) override;
 			void setRotationSpeed(const float speed) override;
 			void setActive(const bool isActive) override;
 			void setTargetAngle(const float angle) override;
@@ -69,7 +68,7 @@ namespace codex
 			void syncCreate(protocol::ReadBuffer& buffer) override;
 			void syncRemove(protocol::WriteBuffer& buffer) override;
 			void syncRemove(protocol::ReadBuffer& buffer) override;
-			bool syncUpdate(const time::TimeType& deltaTime) override;
+			bool syncUpdate(const spehs::time::Time deltaTime) override;
 			void syncUpdate(protocol::WriteBuffer& buffer) override;
 			void syncUpdate(protocol::ReadBuffer& buffer) override;
 
@@ -79,8 +78,8 @@ namespace codex
 			float targetAngle;
 			float approximatedAngle;
 			gpio::Pin pin;
-			time::TimeType minPulseWidth;
-			time::TimeType maxPulseWidth;
+			spehs::time::Time minPulseWidth;
+			spehs::time::Time maxPulseWidth;
 			float rotationSpeed;
 			float minAngle;
 			float maxAngle;
@@ -100,9 +99,9 @@ namespace codex
 
 			//Servo interface
 			void setPin(const gpio::Pin pin) override;
-			void setAngleLimits(const time::TimeType minPulseWidth, const time::TimeType maxPulseWidth, const float minAngle, const float maxAngle) override;
-			void setMinAngle(const time::TimeType minPulseWidth, const float minAngle) override;
-			void setMaxAngle(const time::TimeType maxPulseWidth, const float maxAngle) override;
+			void setAngleLimits(const spehs::time::Time minPulseWidth, const spehs::time::Time maxPulseWidth, const float minAngle, const float maxAngle) override;
+			void setMinAngle(const spehs::time::Time minPulseWidth, const float minAngle) override;
+			void setMaxAngle(const spehs::time::Time maxPulseWidth, const float maxAngle) override;
 			void setRotationSpeed(const float speed) override;
 			void setActive(const bool isActive) override;
 			void setTargetAngle(const float angle) override;
@@ -117,7 +116,7 @@ namespace codex
 			void syncCreate(protocol::ReadBuffer& buffer) override;
 			void syncRemove(protocol::WriteBuffer& buffer) override;
 			void syncRemove(protocol::ReadBuffer& buffer) override;
-			bool syncUpdate(const time::TimeType& deltaTime) override;
+			bool syncUpdate(const spehs::time::Time deltaTime) override;
 			void syncUpdate(protocol::WriteBuffer& buffer) override;
 			void syncUpdate(protocol::ReadBuffer& buffer) override;
 
@@ -128,18 +127,18 @@ namespace codex
 			void onStop() override;
 
 			mutable std::recursive_mutex mutex;
-			time::TimeType lastUpdateTime;
+			spehs::time::Time lastUpdateTime;
 			float targetAngle;
 			float approximatedAngle;
 			gpio::Pin pin;
-			time::TimeType minPulseWidth;
-			time::TimeType maxPulseWidth;
+			spehs::time::Time minPulseWidth;
+			spehs::time::Time maxPulseWidth;
 			float rotationSpeed;
 			float minAngle;
 			float maxAngle;
 			bool active;
 
-			time::TimeType updateTimer;
+			spehs::time::Time updateTimer;
 		};
 	}
 }

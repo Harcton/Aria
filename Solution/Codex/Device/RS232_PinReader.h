@@ -14,7 +14,7 @@ namespace codex
 			~RS232_PinReader();
 
 			void setPin(const gpio::Pin pin);
-			void setReadInterval(const time::TimeType interval);
+			void setReadInterval(const spehs::time::Time interval);
 			void setTransmissionUnitLength(const uint8_t length);
 			/* Can have either 1 or 2 stop bits */
 			void setStopBitCount(const int count);
@@ -53,8 +53,8 @@ namespace codex
 				receivingParityBit,		//Receiving the parity bit
 				receivingStopBits,		//Receiving the stop bit(s)
 			};
-			time::TimeType readInterval;
-			time::TimeType nextReadTime;
+			spehs::time::Time readInterval;
+			spehs::time::Time nextReadTime;
 			gpio::PinState previousReadState;
 			int stopBitCount;
 			int streamBoundaryRequiredPatternRepetitionCount;

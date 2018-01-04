@@ -21,7 +21,7 @@ namespace codex
 		public:
 			Connector(SocketTCP& socket, const std::string& name, const std::string& counterpart, const protocol::PortType& _localPortForWaiting);
 
-			bool enter(const protocol::Endpoint& endpoint);//TODO: , const time::TimeType timeout = 0
+			bool enter(const protocol::Endpoint& endpoint);//TODO: , const spehs::time::Time timeout = 0
 			bool onReceive(protocol::ReadBuffer& buffer);
 			void onAccept(SocketTCP& socket);
 
@@ -36,8 +36,8 @@ namespace codex
 			protocol::Endpoint connectEndpoint;
 
 			std::mutex pingMutex;
-			codex::time::TimeType lastPingSendTime;
-			codex::time::TimeType lastPingReceiveTime;
+			spehs::time::Time lastPingSendTime;
+			spehs::time::Time lastPingReceiveTime;
 		};
 
 		class Client

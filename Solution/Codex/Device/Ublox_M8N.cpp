@@ -1,5 +1,5 @@
 #include "Ublox_M8N.h"
-#include "Codex/Log.h"
+#include "SpehsEngine/Core/Log.h"
 #include <iostream>
 #include <cassert>
 
@@ -12,7 +12,7 @@ namespace codex
 			, receivePin(gpio::pin_none)
 			, transmitPinState(gpio::low)
 			, receivePinState(gpio::low)
-			, readInterval(time::seconds(1.0f / 9600.0f))
+			, readInterval(spehs::time::fromSeconds(1.0f / 9600.0f))
 			, stopBitCount(1)
 			, parityBitCount(0)
 			, receiveState(ReceiveState::detectStreamBoundaries)
@@ -45,7 +45,7 @@ namespace codex
 						
 			if (receiveState == ReceiveState::detectStreamBoundaries)
 			{//Block until able to resume to normal loop
-				log::info("Starting to detect stream boundaries...");
+				spehs::log::info("Starting to detect stream boundaries...");
 
 				//TODO: detect read interval
 
@@ -55,8 +55,8 @@ namespace codex
 				{
 					//Blocks until state change is detected
 				}
-				time::TimeType nextReadTime = time::now() + readInterval + readInterval / 2;
-				log::info("Initial transmitter pin state detected.");
+				spehs::time::Time nextReadTime = spehs::time::now() + readInterval + readInterval / 2;
+				spehs::log::info("Initial transmitter pin state detected.");
 
 				int analyzeCount = 0;
 				int changingEdgeSamples = 0;
@@ -71,12 +71,12 @@ namespace codex
 						{//State changed, synchronize clock at this point
 							previousReadState = readState;
 							history.push_back(readState);
-							nextReadTime = time::now() + readInterval + readInterval / 2;
+							nextReadTime = spehs::time::now() + readInterval + readInterval / 2;
 							changingEdgeSamples++;
 							break;
 						}
 
-						if (time::now() >= nextReadTime)
+						if (spehs::time::now() >= nextReadTime)
 						{//Reached the next read time mark without the pin state changing
 							history.push_back(previousReadState);
 							nextReadTime += readInterval;
@@ -161,7 +161,7 @@ namespace codex
 						
 						if (true)
 						{
-							log::info(
+							spehs::log::info(
 								"Analyze #" + std::to_string(++analyzeCount) + " Results: "
 								+ std::to_string(history.size()) + " history samples, "
 								+ std::to_string(potentialStartBits.size()) + " potential start bits, "
@@ -173,14 +173,14 @@ namespace codex
 								+ " Timed samples: " + std::to_string(timedSamples));
 						}
 						
-						if (time::now() >= nextReadTime)
+						if (spehs::time::now() >= nextReadTime)
 						{//Analyze took too long! Missed the next read!
 							history.clear();
 							previousReadState = gpio::read(transmitPin);
-							nextReadTime = std::numeric_limits<time::TimeType>::max();//Wait for pin state to change before reading again
+							nextReadTime = std::numeric_limits<spehs::time::Time>::max();//Wait for pin state to change before reading again
 							changingEdgeSamples = 0;
 							timedSamples = 0;
-							log::info("Analyze took too long! Sample history has been reset.");
+							spehs::log::info("Analyze took too long! Sample history has been reset.");
 						}
 
 						if (validPatterns.size() == 1)

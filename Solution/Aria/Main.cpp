@@ -6,7 +6,6 @@
 #include <SpehsEngine/Input/Window.h>
 #include <SpehsEngine/Core/Time.h>
 #include <Codex/Codex.h>
-#include <Codex/CodexTime.h>
 #include <Codex/SocketTCP.h>
 #include <Codex/IOService.h>
 #include <Codex/Aria.h>

@@ -1,5 +1,5 @@
 #include "SyncEntry.h"
-#include "CodexAssert.h"
+#include "SpehsEngine/Core/Log.h"
 
 
 
@@ -15,7 +15,7 @@ namespace codex
 			, removeSent(false)
 			, removeReceived(false)
 		{
-			CODEX_ASSERT(_passData);
+			SPEHS_ASSERT(_passData);
 		}
 
 		AbstractEntry::~AbstractEntry()

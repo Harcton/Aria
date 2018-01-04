@@ -1,6 +1,5 @@
 #include "Codex/GPIO.h"
-#include "Codex/CodexAssert.h"
-#include "Codex/Log.h"
+#include "SpehsEngine/Core/Log.h"
 
 
 namespace codex
@@ -37,12 +36,12 @@ namespace codex
 #endif
 		}
 
-		time::TimeType pulseIn(const Pin pin, const PinState pinState, const time::TimeType timeout)
+		spehs::time::Time pulseIn(const Pin pin, const PinState pinState, const spehs::time::Time timeout)
 		{
 #ifdef CODEX_GPIO
 			bool readyToReceivePulse = false;
 			bool pulseReceived = false;
-			const time::TimeType beginTime = time::now();
+			const spehs::time::Time beginTime = spehs::time::now();
 			while (true)
 			{
 				if (gpio::read(pin) == pinState)
@@ -57,10 +56,10 @@ namespace codex
 					else
 						readyToReceivePulse = true;
 				}
-				if (timeout && time::now() - beginTime >= timeout)
+				if (timeout && spehs::time::now() - beginTime >= timeout)
 					return 0;
 			}
-			return time::now() - beginTime;
+			return spehs::time::now() - beginTime;
 #else
 			return 0;
 #endif
@@ -74,7 +73,7 @@ namespace codex
 			else if (mode == PinMode::input)
 				bcm2835_gpio_fsel(pin, BCM2835_GPIO_FSEL_INPT);
 			else
-				codex::log::error("setPinMode() error. Invalid pin mode.");
+				spehs::log::error("setPinMode() error. Invalid pin mode.");
 #endif
 		}
 

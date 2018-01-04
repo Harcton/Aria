@@ -10,7 +10,7 @@
 
 #include "Protocol.h"
 #include "IOService.h"
-#include "CodexTime.h"
+#include "SpehsEngine/Core/Time.h"
 
 namespace codex
 {
@@ -102,7 +102,7 @@ namespace codex
 		void waitUntilFinishedAccepting();
 		
 		/* Blocks until handshakeReceived==true, or time is out. */
-		void waitUntilReceivedHandshake(const time::TimeType timeout);
+		void waitUntilReceivedHandshake(const spehs::time::Time timeout);
 
 		/* Deallocates and clears received packet buffers. */
 		void clearReceivedPackets();
@@ -126,7 +126,7 @@ namespace codex
 		std::function<void(SocketTCP&)> onAcceptCallback;
 		ExpectedBytesType expectedBytes;
 		std::vector<unsigned char> receiveBuffer;
-		codex::time::TimeType lastReceiveTime;
+		spehs::time::Time lastReceiveTime;
 		bool receiving;
 		bool accepting;
 		bool connected;

@@ -1,6 +1,6 @@
 #include "DCMotorController.h"
-#include "CodexTime.h"
-#include "Log.h"
+#include "SpehsEngine/Core/Time.h"
+#include "SpehsEngine/Core/Log.h"
 #include <cmath>
 #include <bcm2835.h>
 
@@ -15,7 +15,7 @@ namespace codex
 			, inputPin2(gpio::Pin::pin_none)
 			, pulseWidth(0)
 			, strength(0.0f)
-			, pulseInterval(codex::time::milliseconds(2.0f))
+			, pulseInterval(spehs::time::fromMilliseconds(2.0f))
 		{
 
 		}
@@ -49,7 +49,7 @@ namespace codex
 				strength = 1.0f;
 
 			//Calculate pulse width
-			pulseWidth = abs(strength) * (float)pulseInterval;
+			pulseWidth = pulseInterval * abs(strength);
 
 			//Polarity
 			if (strength > 0.0f)
@@ -85,14 +85,14 @@ namespace codex
 		{
 			mutex.lock();
 			const codex::gpio::Pin _pulseWidthPin = pulseWidthPin;
-			const codex::time::TimeType _pulseWidth = pulseWidth;
-			const codex::time::TimeType _pulseInterval = pulseInterval;
+			const spehs::time::Time _pulseWidth = pulseWidth;
+			const spehs::time::Time _pulseInterval = pulseInterval;
 			mutex.unlock();
 
 			codex::gpio::enable(_pulseWidthPin);
-			codex::time::delay(_pulseWidth);
+			spehs::time::delay(_pulseWidth);
 			codex::gpio::disable(_pulseWidthPin);
-			codex::time::delay(_pulseInterval - _pulseWidth);
+			spehs::time::delay(_pulseInterval - _pulseWidth);
 		}
 
 		void DCMotorController::onStop()
@@ -107,9 +107,9 @@ namespace codex
 
 /*
 
-const codex::time::TimeType pulseInterval = codex::time::nanoseconds(2000000);
+const spehs::time::Time pulseInterval = spehs::time::fromNanoseconds(2000000);
 int direction = 1;
-codex::time::TimeType data = 0;
+spehs::time::Time data = 0;
 
 while (keepRunning)
 {
@@ -121,9 +121,9 @@ else if (data >= pulseInterval)
 direction = -1000;
 data += direction;
 codex::gpio::enable(pulseWidthPin);
-codex::time::delay(data);
+spehs::time::delay(data);
 codex::gpio::disable(pulseWidthPin);
-codex::time::delay(pulseInterval - data);
+spehs::time::delay(pulseInterval - data);
 
 keepRunning = !stopRequested;
 }

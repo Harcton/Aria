@@ -1,6 +1,5 @@
 #include "Aria.h"
 #include "RAIIVariableSetter.h"
-#include "CodexAssert.h"
 
 
 
@@ -35,17 +34,17 @@ namespace codex
 		{
 			if (socket.isConnected())
 			{
-				log::info("Aria::enter: Socket was already connected. Disconnecting before trying to enter...");
+				spehs::log::info("Aria::enter: Socket was already connected. Disconnecting before trying to enter...");
 				socket.disconnect();
 			}
 
-			log::info("Aria::Connector::enter: connecting to aria...");
+			spehs::log::info("Aria::Connector::enter: connecting to aria...");
 			if (socket.connect(endpoint))
 			{
 				//Send enter packet
 				protocol::WriteBuffer buffer;
 				buffer.write(ariaMagicHeader);
-				buffer.write<PacketType>(PacketType::enter);
+				buffer.write(PacketType::enter);
 				buffer.write(name);
 				buffer.write(counterpart);
 				buffer.write(localPortForWaiting);
@@ -58,13 +57,13 @@ namespace codex
 				//Prepare to ping				
 				{
 					std::lock_guard<std::mutex> lock(pingMutex);
-					lastPingSendTime = codex::time::now();
+					lastPingSendTime = spehs::time::now();
 					lastPingReceiveTime = lastPingSendTime;
 				}
 				protocol::WriteBuffer pingBuffer;
 				pingBuffer.write(ariaMagicHeader);
-				pingBuffer.write<PacketType>(PacketType::ping);
-				const codex::time::TimeType pingTimeout = codex::time::seconds(10000.0f);
+				pingBuffer.write(PacketType::ping);
+				const spehs::time::Time pingTimeout = spehs::time::fromSeconds(10000.0f);
 
 				//Wait for server to find a counterpart
 				while (enterResult == EnterResult::none)
@@ -72,17 +71,17 @@ namespace codex
 
 					socket.update();
 					
-					if (codex::time::now() - lastPingSendTime > pingTimeout / 2)
+					if (spehs::time::now() - lastPingSendTime > pingTimeout / 2)
 					{//Send ping
 						socket.sendPacket(pingBuffer);
 						std::lock_guard<std::mutex> lock(pingMutex);
-						lastPingSendTime = codex::time::now();
+						lastPingSendTime = spehs::time::now();
 					}
 
 					std::lock_guard<std::mutex> lock(pingMutex);
 					if (lastPingSendTime - lastPingReceiveTime >= pingTimeout)
 					{//Ping timeout
-						codex::log::info("Aria::Connector::enter: failed. Connection to the remote server was lost (timeout).");
+						spehs::log::info("Aria::Connector::enter: failed. Connection to the remote server was lost (timeout).");
 						enterResult = EnterResult::fail;
 					}
 				}
@@ -94,17 +93,17 @@ namespace codex
 				if (enterResult == EnterResult::accept)
 				{
 					socket.startAccepting(localPortForWaiting, std::bind(&Connector::onAccept, this, std::placeholders::_1));
-					const time::TimeType beginTime = codex::time::now();
-					codex::log::info("Aria::Connector::enter: counterpart found. Awaiting for the counterpart to connect to this...");
+					const spehs::time::Time beginTime = spehs::time::now();
+					spehs::log::info("Aria::Connector::enter: counterpart found. Awaiting for the counterpart to connect to this...");
 					while (socket.isAccepting())
 					{
 						socket.update();
 
 						//Blocks while accepting
-						if (codex::time::now() - beginTime >= pingTimeout)
+						if (spehs::time::now() - beginTime >= pingTimeout)
 						{
 							socket.stopAccepting();
-							codex::log::info("Aria::Connector::enter: failed. A counterpart was found, but counterpart didn't connect to this within the given time.");
+							spehs::log::info("Aria::Connector::enter: failed. A counterpart was found, but counterpart didn't connect to this within the given time.");
 							while (socket.isAccepting()) {}
 							return false;
 						}
@@ -112,29 +111,29 @@ namespace codex
 
 					if (socket.isConnected())
 					{
-						codex::log::info("Aria::Connector::enter: success.");
+						spehs::log::info("Aria::Connector::enter: success.");
 						return true;
 					}
 					else
 					{
-						codex::log::info("Aria::Connector::enter: failed.");
+						spehs::log::info("Aria::Connector::enter: failed.");
 						return false;
 					}
 				}
 				else if (enterResult == EnterResult::connect)
 				{
-					codex::log::info("Aria::Connector::enter: counterpart found. Connecting to the counterpart...");
-					const time::TimeType beginTime = codex::time::now();
+					spehs::log::info("Aria::Connector::enter: counterpart found. Connecting to the counterpart...");
+					const spehs::time::Time beginTime = spehs::time::now();
 					while (!socket.connect(connectEndpoint))
 					{
-						if (codex::time::now() - beginTime >= pingTimeout)
+						if (spehs::time::now() - beginTime >= pingTimeout)
 						{
-							codex::log::info("Aria::Connector::enter: failed.");
+							spehs::log::info("Aria::Connector::enter: failed.");
 							return false;
 						}
 					}
-					CODEX_ASSERT(socket.isConnected());
-					codex::log::info("Aria::Connector::enter: success.");
+					SPEHS_ASSERT(socket.isConnected());
+					spehs::log::info("Aria::Connector::enter: success.");
 					return true;
 				}
 				else
@@ -142,7 +141,7 @@ namespace codex
 			}
 			else
 			{
-				log::info("Aria::Connector::enter: Failed to connect to the provided aria endpoint.");
+				spehs::log::info("Aria::Connector::enter: Failed to connect to the provided aria endpoint.");
 				return false;
 			}
 		}
@@ -154,7 +153,7 @@ namespace codex
 			if (headerVerification == ariaMagicHeader)
 			{
 				PacketType packetType;
-				buffer.read<PacketType>(packetType);
+				buffer.read(packetType);
 				switch (packetType)
 				{
 				case PacketType::counterpartEndpointAccept:
@@ -166,14 +165,14 @@ namespace codex
 					enterResult = EnterResult::connect;
 					break;
 				case PacketType::shutdown:
-					codex::log::info("Aria::Connector::enter: failed. The Aria server is shutting down...");
+					spehs::log::info("Aria::Connector::enter: failed. The Aria server is shutting down...");
 					enterResult = EnterResult::fail;
 					break;
 				case PacketType::ping:
 				{
 					std::lock_guard<std::mutex> lock(pingMutex);
-					lastPingReceiveTime = codex::time::now();
-					codex::log::info("Aria::Connector::enter: server ping: " + std::to_string((int)codex::time::toMilliseconds(lastPingReceiveTime - lastPingSendTime)) + " ms");
+					lastPingReceiveTime = spehs::time::now();
+					spehs::log::info("Aria::Connector::enter: server ping: " + std::to_string((int)(lastPingReceiveTime - lastPingSendTime).asMilliseconds()) + " ms");
 				}
 					break;
 				}
@@ -183,7 +182,7 @@ namespace codex
 			else
 			{
 				socket.disconnect(protocol::DisconnectType::unknownProtocol);
-				log::info("Aria::Connector::enter: failed. Remote endpoint responded with an unexpected response. Perhaps it is not an aria server, or an incompatible version.");
+				spehs::log::info("Aria::Connector::enter: failed. Remote endpoint responded with an unexpected response. Perhaps it is not an aria server, or an incompatible version.");
 				return false;
 			}
 		}
@@ -216,7 +215,7 @@ namespace codex
 				//Send name and counterpart query
 				protocol::WriteBuffer buffer;
 				buffer.write(ariaMagicHeader);
-				buffer.write<PacketType>(PacketType::enter);
+				buffer.write(PacketType::enter);
 				socket.sendPacket(buffer);
 
 				//Start receiving
@@ -231,7 +230,7 @@ namespace codex
 			if (headerVerification == ariaMagicHeader)
 			{
 				PacketType packetType;
-				buffer.read<PacketType>(packetType);
+				buffer.read(packetType);
 				switch (packetType)
 				{
 				case PacketType::enter:
@@ -241,7 +240,7 @@ namespace codex
 					buffer.read(name);
 					buffer.read(counterpart);
 					buffer.read(localPortForWaiting);
-					codex::log::info("Aria: client entered: '" + name + "', looking for counterpart: '" + counterpart + "'");
+					spehs::log::info("Aria: client entered: '" + name + "', looking for counterpart: '" + counterpart + "'");
 				}
 				break;
 				case PacketType::ping:
@@ -250,7 +249,7 @@ namespace codex
 					if (pingBuffer.getOffset() == 0)
 					{
 						pingBuffer.write(ariaMagicHeader);
-						pingBuffer.write<PacketType>(PacketType::ping);
+						pingBuffer.write(PacketType::ping);
 					}
 					socket.sendPacket(pingBuffer);
 				}
@@ -287,14 +286,14 @@ namespace codex
 
 			//Join thread
 			std::lock_guard<std::recursive_mutex> lock(mutex);
-			CODEX_ASSERT(!keepRunning);
+			SPEHS_ASSERT(!keepRunning);
 			if (thread)
 			{
 				thread->join();
 				delete thread;
 			}
 
-			CODEX_ASSERT(clients.empty());
+			SPEHS_ASSERT(clients.empty());
 		}
 
 		void Server::start(const protocol::PortType& _localPort)
@@ -304,7 +303,7 @@ namespace codex
 
 				if (isRunning())
 				{
-					log::info("Aria is already running!");
+					spehs::log::info("Aria is already running!");
 					return;
 				}
 
@@ -316,7 +315,7 @@ namespace codex
 				}
 				
 				//Launch run thread
-				log::info("Aria::start: starting at port '" + std::to_string(_localPort) + "'...");
+				spehs::log::info("Aria::start: starting at port '" + std::to_string(_localPort) + "'...");
 				keepRunning = true;
 				canExitStart = false;
 				localPort = _localPort;
@@ -354,7 +353,7 @@ namespace codex
 			}
 
 			//Run loop
-			log::info("Aria::run: started.");
+			spehs::log::info("Aria::run: started.");
 			while (true)
 			{
 				std::lock_guard<std::recursive_mutex> lock(mutex);
@@ -393,7 +392,7 @@ namespace codex
 				}
 				else
 				{
-					CODEX_ASSERT(accepting == 1);
+					SPEHS_ASSERT(accepting == 1);
 				}
 
 				//Remove idle clients
@@ -401,7 +400,7 @@ namespace codex
 				{
 					if (!clients[i]->socket.isAccepting() && !clients[i]->socket.isConnected())
 					{
-						codex::log::info("Aria::run removing an idle client...");
+						spehs::log::info("Aria::run removing an idle client...");
 						delete clients[i];
 						clients[i] = clients.back();
 						clients.pop_back();
@@ -434,19 +433,19 @@ namespace codex
 
 								if (name1.size() > 0 && name2.size() > 0 && counterpart1 == name2 && counterpart2 == name1)
 								{//Match
-									codex::log::info("Aria::run found a client pair: '" + name1 + "' & '" + name2 + "'");
+									spehs::log::info("Aria::run found a client pair: '" + name1 + "' & '" + name2 + "'");
 
 									//c1 will accept
 									protocol::WriteBuffer buffer1;
 									buffer1.write(ariaMagicHeader);
-									buffer1.write<PacketType>(PacketType::counterpartEndpointAccept);
+									buffer1.write(PacketType::counterpartEndpointAccept);
 									clients[c1]->socket.sendPacket(buffer1);
 
 									//c2 will connect
 									const protocol::AddressType address1 = clients[c1]->socket.getRemoteAddress();
 									protocol::WriteBuffer buffer2;
 									buffer2.write(ariaMagicHeader);
-									buffer2.write<PacketType>(PacketType::counterpartEndpointConnect);
+									buffer2.write(PacketType::counterpartEndpointConnect);
 									buffer2.write(address1);
 									buffer2.write(port1);
 									clients[c2]->socket.sendPacket(buffer2);

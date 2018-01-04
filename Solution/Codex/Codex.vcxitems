@@ -26,16 +26,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Device\ThreadedDevice.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Device\Ublox_M8N.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Sync\SyncEntry.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FileStream.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)GPIO.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)IOService.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Log.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Protocol.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Actor.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)RTTI.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SocketTCP.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)CodexTime.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)StringOperations.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Sync\SyncHandle.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Sync\SyncManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Sync\ISyncType.cpp" />
@@ -44,9 +38,7 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Acceptor.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Aria.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)CodexAssert.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Codex.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)CodexMath.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Device\DCMotorController.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Device\Display4x8.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Device\HC_SR04.h" />
@@ -56,18 +48,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Device\ThreadedDevice.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Device\Ublox_M8N.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Sync\SyncEntry.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FileStream.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)GPIO.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)IOService.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Log.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Protocol.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RAIIVariableSetter.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Actor.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Robot\Robot0.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)RTTI.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SocketTCP.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)CodexTime.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)StringOperations.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Sync\SyncHandle.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Sync\SyncManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Sync\ISyncType.h" />

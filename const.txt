@@ -1,4 +1,5 @@
-Raspberry g++: (Raspbian 4.9.2-10) 4.9.2
+g++ --version
+	-> Raspberry g++: (Raspbian 4.9.2-10) 4.9.2
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Here are some of my (definitely bad) advice learned from using Visual Studio for Linux development extension. //

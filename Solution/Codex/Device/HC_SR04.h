@@ -20,7 +20,7 @@ namespace codex
 			void onStop() override;
 
 			void setPins(const gpio::Pin trigger, const gpio::Pin echo);
-			void setPollInterval(const time::TimeType time);
+			void setPollInterval(const spehs::time::Time time);
 
 			float getDistance() const;
 
@@ -29,7 +29,7 @@ namespace codex
 			gpio::Pin triggerPin;
 			gpio::Pin echoPin;
 			float distance;
-			time::TimeType pollInterval;
+			spehs::time::Time pollInterval;
 		};
 	}
 }

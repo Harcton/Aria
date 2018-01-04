@@ -1,6 +1,6 @@
 #include "Codex/Device/RS232_PinReader.h"
-#include "Codex/StringOperations.h"
-#include "Codex/Log.h"
+#include "SpehsEngine/Core/StringOperations.h"
+#include "SpehsEngine/Core/Log.h"
 #include <iostream>
 #include <cassert>
 
@@ -23,7 +23,7 @@ namespace codex
 
 		RS232_PinReader::RS232_PinReader()
 			: pin(gpio::pin_none)
-			, readInterval(time::seconds(1.0f / 9600.0f))
+			, readInterval(spehs::time::fromSeconds(1.0f / 9600.0f))
 			, nextReadTime(0)
 			, previousReadState(gpio::PinState::invalid)
 			, stopBitCount(1)
@@ -46,7 +46,7 @@ namespace codex
 			pin = _pin;
 		}
 
-		void RS232_PinReader::setReadInterval(const time::TimeType interval)
+		void RS232_PinReader::setReadInterval(const spehs::time::Time interval)
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 			readInterval = interval;
@@ -114,13 +114,13 @@ namespace codex
 				{//Start bit received, proceed to receive data
 
 					//Synchronize read times from the point of receiving the start bit
-					nextReadTime = time::now() + readInterval + readInterval / 2;
+					nextReadTime = spehs::time::now() + readInterval + readInterval / 2;
 
 					receiveState = ReceiveState::receivingData;
 					transmittingUnit = 0x00;
 					transmittingUnitBitIndex = 0;
 					if (debugLogLevel >= 2)
-						log::info("RS232_PinReader start bit received.");
+						spehs::log::info("RS232_PinReader start bit received.");
 				}
 			}
 			else if (receiveState == ReceiveState::receivingData)
@@ -131,9 +131,9 @@ namespace codex
 				if (readState != previousReadState)
 				{
 					bitReceived = true;
-					nextReadTime = time::now() + readInterval + readInterval / 2;
+					nextReadTime = spehs::time::now() + readInterval + readInterval / 2;
 				}
-				else if (time::now() >= nextReadTime)
+				else if (spehs::time::now() >= nextReadTime)
 				{
 					bitReceived = true;
 					nextReadTime += readInterval;
@@ -143,7 +143,7 @@ namespace codex
 				{//Reached the next read time mark without the pin state changing
 					
 					if (debugLogLevel >= 3)
-						log::info("RS232_PinReader data bit received.");
+						spehs::log::info("RS232_PinReader data bit received.");
 
 					if (readState == enabledDataBitState)
 						transmittingUnit |= 0x01 << transmittingUnitBitIndex;
@@ -152,7 +152,7 @@ namespace codex
 					{//Read the entire transmitting unit
 
 						if (debugLogLevel >= 3)
-							log::info("RS232_PinReader received unit: " + std::to_string(transmittingUnit));
+							spehs::log::info("RS232_PinReader received unit: " + std::to_string(transmittingUnit));
 
 						if (parityCheckEnabled)
 							receiveState = ReceiveState::receivingParityBit;
@@ -171,9 +171,9 @@ namespace codex
 				if (readState != previousReadState)
 				{
 					bitReceived = true;
-					nextReadTime = time::now() + readInterval + readInterval / 2;
+					nextReadTime = spehs::time::now() + readInterval + readInterval / 2;
 				}
-				else if (time::now() >= nextReadTime)
+				else if (spehs::time::now() >= nextReadTime)
 				{
 					bitReceived = true;
 					nextReadTime += readInterval;
@@ -183,7 +183,7 @@ namespace codex
 				{//Read a parity bit from the stream
 					
 					if (debugLogLevel >= 2)
-						log::info("RS232_PinReader parity bit received.");
+						spehs::log::info("RS232_PinReader parity bit received.");
 
 					int checksum = 0;
 					for (uint8_t i = 0; i < transmissionUnitLength; i++)
@@ -196,12 +196,12 @@ namespace codex
 					{//Checksum checks out == successfully received
 						receiveBuffer.push_back(transmittingUnit);
 						if (debugLogLevel >= 2)
-							log::info("RS232_PinReader checksum checks out.");
+							spehs::log::info("RS232_PinReader checksum checks out.");
 					}
 					else
 					{//Error
 						if (debugLogLevel >= 2)
-							log::info("RS232_PinReader checksum error!");
+							spehs::log::info("RS232_PinReader checksum error!");
 					}
 
 					receiveState = ReceiveState::receivingStopBits;
@@ -209,12 +209,12 @@ namespace codex
 			}
 			else if (receiveState == ReceiveState::receivingStopBits)
 			{
-				if (readState != previousReadState || time::now() >= nextReadTime)
+				if (readState != previousReadState || spehs::time::now() >= nextReadTime)
 				{
 					if (readState == stopBitState)
 					{
 						if (debugLogLevel >= 2)
-							log::info("RS232_PinReader stop bit received.");
+							spehs::log::info("RS232_PinReader stop bit received.");
 						receiveState = ReceiveState::awaitingStartBit;
 					}
 					else
@@ -227,19 +227,19 @@ namespace codex
 						const int printSize = receiveBuffer.size() > 1024 ? 1024 : receiveBuffer.size();
 					 	for (size_t i = 0; i < printSize; i++)
 					 	{
-					 		hexStr += " " + toHexString(receiveBuffer[i]);
+					 		hexStr += " " + spehs::toHexString(receiveBuffer[i]);
 					 		charStr += receiveBuffer[i];
 							if (charStr.size() >= 32)
 							{
-								codex::log::info(hexStr + charStr);
+								spehs::log::info(hexStr + charStr);
 								hexStr.clear();
 								charStr.clear();
 							}
 					 	}
-					 	codex::log::info(hexStr + charStr);
+					 	spehs::log::info(hexStr + charStr);
 
 						if (debugLogLevel >= 1)
-							log::info("RS232_PinReader no stop bit received. Receive buffer size: " + std::to_string(receiveBuffer.size()));
+							spehs::log::info("RS232_PinReader no stop bit received. Receive buffer size: " + std::to_string(receiveBuffer.size()));
 						receiveBuffer.resize(0);
 						receiveState = ReceiveState::invalid;
 					}
@@ -261,10 +261,10 @@ namespace codex
 		bool RS232_PinReader::detectStreamBoundaries()
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
-			const time::TimeType detectStreamBoundariesBeginTime = time::now();
+			const spehs::time::Time detectStreamBoundariesBeginTime = spehs::time::now();
 
 			if (debugLogLevel >= 1)
-				log::info("RS232_PinReader: Starting to detect stream boundaries. Set options: baud rate '" + std::to_string(int(1.0f / ((float)readInterval / (float)time::conversionRate::second))) + "', parity check " + (parityCheckEnabled ? "enabled" : "disabled"));
+				spehs::log::info("RS232_PinReader: Starting to detect stream boundaries. Set options: baud rate '" + std::to_string(int(1.0f / ((float)readInterval / (float)spehs::time::conversionRate::second))) + "', parity check " + (parityCheckEnabled ? "enabled" : "disabled"));
 			
 			std::vector<gpio::PinState> history(16384);
 			int analyzeCount = 0;
@@ -283,9 +283,9 @@ namespace codex
 			{
 				//Blocks until in high state
 			}
-			nextReadTime = time::now() + readInterval + readInterval / 2;
+			nextReadTime = spehs::time::now() + readInterval + readInterval / 2;
 			if (debugLogLevel >= 2)
-				log::info("RS232_PinReader: Initial transmitter pin state detected. Reading is now synchronized.");
+				spehs::log::info("RS232_PinReader: Initial transmitter pin state detected. Reading is now synchronized.");
 
 			while (true)
 			{
@@ -297,11 +297,11 @@ namespace codex
 					if (readState != initialPinState)
 					{//State changed, synchronize clock at this point
 						history.push_back(readState);
-						nextReadTime = time::now() + readInterval + readInterval / 2;
+						nextReadTime = spehs::time::now() + readInterval + readInterval / 2;
 						changingEdgeSamples++;
 						break;
 					}
-					else if (time::now() >= nextReadTime)
+					else if (spehs::time::now() >= nextReadTime)
 					{//Reached the next read time mark without the pin state changing
 						history.push_back(readState);
 						nextReadTime += readInterval;
@@ -399,7 +399,7 @@ namespace codex
 
 					if (debugLogLevel >= 2)
 					{
-						log::info(
+						spehs::log::info(
 							"RS232_PinReader: Analyze #" + std::to_string(++analyzeCount) + " Results: "
 							+ std::to_string(history.size()) + " history samples, "
 							+ std::to_string(potentialStartBits.size()) + " potential start bits, "
@@ -412,13 +412,13 @@ namespace codex
 							+ ", Timed samples: " + std::to_string(timedSamples));
 					}
 
-					if (time::now() >= nextReadTime)
+					if (spehs::time::now() >= nextReadTime)
 					{//Analyze took too long! Missed the next read!
 						if (debugLogLevel >= 1)
-							log::info("RS232_PinReader: Analyze took too long! (-" + std::to_string(time::toMilliseconds(time::now() - nextReadTime)) + " ms) Sample history has been reset.");
+							spehs::log::info("RS232_PinReader: Analyze took too long! (-" + std::to_string((spehs::time::now() - nextReadTime).asMilliseconds()) + " ms) Sample history has been reset.");
 						history.clear();
 						validPatterns.clear();
-						nextReadTime = std::numeric_limits<time::TimeType>::max();//Wait for pin state to change before reading again
+						nextReadTime = std::numeric_limits<spehs::time::Time>::max();//Wait for pin state to change before reading again
 						changingEdgeSamples = 0;
 						timedSamples = 0;
 					}
@@ -427,8 +427,8 @@ namespace codex
 
 						//Wait until the end of the currently transmitting sequence (at the time of stop bit)
 						int readSkipCount = sequenceLength - ((history.size() - validPatterns[0]) % sequenceLength);
-						const time::TimeType t1 = time::now();
-						//log::info("RS232_PinReader skipping the next " + std::to_string(readSkipCount) + " reads. Estimated skip time: " + std::to_string((nextReadTime - time::now() + time::TimeType(readSkipCount - 1) * readInterval) / time::conversionRate::nanosecond) + " ns.");
+						const spehs::time::Time t1 = spehs::time::now();
+						//log::info("RS232_PinReader skipping the next " + std::to_string(readSkipCount) + " reads. Estimated skip time: " + std::to_string((nextReadTime - time::now() + spehs::time::Time(readSkipCount - 1) * readInterval) / time::conversionRate::nanosecond) + " ns.");
 						//log::info("History size: " + std::to_string(history.size()));
 						//log::info("Pattern begins at: " + std::to_string(validPatterns[0]));
 						//log::info("Sequence length: " + std::to_string(sequenceLength));
@@ -439,10 +439,10 @@ namespace codex
 							const gpio::PinState readState = gpio::read(pin);
 							if (readState != initialPinState)
 							{//State changed, synchronize clock at this point
-								nextReadTime = time::now() + readInterval + readInterval / 2;
+								nextReadTime = spehs::time::now() + readInterval + readInterval / 2;
 								readSkipCount--;
 							}
-							else if (time::now() >= nextReadTime)
+							else if (spehs::time::now() >= nextReadTime)
 							{//Reached the next read time mark without the pin state changing
 								nextReadTime += readInterval;
 								readSkipCount--;
@@ -456,24 +456,24 @@ namespace codex
 						nextReadTime += readInterval;
 						if (gpio::read(pin) != stopBitState)
 						{
-							log::info("RS232_PinReader failed to arrive at the stop bit!");
+							spehs::log::info("RS232_PinReader failed to arrive at the stop bit!");
 							return false;
 						}
 						
 						receiveState = ReceiveState::awaitingStartBit;
 						if (debugLogLevel >= 2)
 						{
-							const time::TimeType detectStreamBoundariesDuration = time::now() - detectStreamBoundariesBeginTime;
+							const spehs::time::Time detectStreamBoundariesDuration = spehs::time::now() - detectStreamBoundariesBeginTime;
 							std::string str = "Took ";
-							if (detectStreamBoundariesDuration > time::conversionRate::second)
-								str += std::to_string(time::toSeconds(detectStreamBoundariesDuration)) + " seconds";
-							else if (detectStreamBoundariesDuration > time::conversionRate::millisecond)
-								str += std::to_string(time::toMilliseconds(detectStreamBoundariesDuration)) + " milliseconds";
-							else if (detectStreamBoundariesDuration > time::conversionRate::microsecond)
-								str += std::to_string(time::toMicroseconds(detectStreamBoundariesDuration)) + " microseconds";
-							else if (detectStreamBoundariesDuration > time::conversionRate::nanosecond)
-								str += std::to_string(time::toNanoseconds(detectStreamBoundariesDuration)) + " nanoseconds";
-							log::info("RS232_PinReader: successfully detected stream boundaries! " + str);
+							if (detectStreamBoundariesDuration > spehs::time::second)
+								str += std::to_string((detectStreamBoundariesDuration).asSeconds()) + " seconds";
+							else if (detectStreamBoundariesDuration > spehs::time::millisecond)
+								str += std::to_string((detectStreamBoundariesDuration).asMilliseconds()) + " milliseconds";
+							else if (detectStreamBoundariesDuration > spehs::time::microsecond)
+								str += std::to_string((detectStreamBoundariesDuration).asMicroseconds()) + " microseconds";
+							else if (detectStreamBoundariesDuration > spehs::time::nanosecond)
+								str += std::to_string((detectStreamBoundariesDuration).asNanoseconds()) + " nanoseconds";
+							spehs::log::info("RS232_PinReader: successfully detected stream boundaries! " + str);
 						}
 						return true;
 					}

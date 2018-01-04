@@ -1,5 +1,5 @@
 #include "Codex/Device/PIR_MotionSensor.h"
-#include "Codex/Log.h"
+#include "SpehsEngine/Core/Log.h"
 
 namespace codex
 {

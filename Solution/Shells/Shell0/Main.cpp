@@ -1,5 +1,5 @@
-#include <Codex/Log.h>
 #include <Codex/Codex.h>
+#include "SpehsEngine/Core/Log.h"
 #include "Shell0.h"
 
 
@@ -39,7 +39,7 @@ int main(const int argc, const char** argv)
 //keepRunningInput = true;
 //while (keepRunningInput)
 //{
-//codex::log::info("Input strength:\n>");
+//spehs::log::info("Input strength:\n>");
 //int val;
 //std::cin >> val;
 //strength = val;
@@ -52,8 +52,8 @@ int main(const int argc, const char** argv)
 //codex::gpio::setPinAsOutput(pin);
 //while (strength >= 0)
 //{
-//codex::time::TimeType interval = codex::time::milliseconds(1);
-//codex::time::delay(interval);
+//spehs::time::Time interval = spehs::time::fromMilliseconds(1);
+//spehs::time::delay(interval);
 //}
 //inputThread.join();
 //

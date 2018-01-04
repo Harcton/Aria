@@ -3,11 +3,13 @@
 #include <cstring>
 #include <vector>
 #include <string>
+#include <type_traits>
 #include <assert.h>
 #include "Codex.h"
 #include "GPIO.h"
-#include "CodexTime.h"
-#include "Log.h"
+#include "SpehsEngine/Core/Time.h"
+#include "SpehsEngine/Core/Log.h"
+#include "SpehsEngine/Core/HasMemberFunction.h"
 
 namespace codex
 {
@@ -22,6 +24,8 @@ namespace codex
 		typedef uint16_t PortType;
 		typedef std::string AddressType;
 		extern const PortType defaultAriaPort;
+		SPEHS_HAS_MEMBER_FUNCTION(write, has_write);
+		SPEHS_HAS_MEMBER_FUNCTION(read, has_read);
 		
 		/* Byte endianness ordering */
 		enum class Endianness : uint8_t
@@ -33,8 +37,7 @@ namespace codex
 		extern std::string getEndiannessAsString(const Endianness endianness);
 		extern const Endianness hostByteOrder;
 		extern const Endianness networkByteOrder;
-
-
+		
 		/* Specify a reason for disconnection. */
 		enum class DisconnectType : uint8_t
 		{
@@ -105,24 +108,79 @@ namespace codex
 			
 			void reserve(const size_t capacity);
 
-			size_t write(const uint8_t value);
-			size_t write(const int8_t value);
-			size_t write(const uint16_t value);
-			size_t write(const int16_t value);
-			size_t write(const uint32_t value);
-			size_t write(const int32_t value);
-			size_t write(const uint64_t value);
-			size_t write(const int64_t value);
-			size_t write(const float value);
-			size_t write(const double value);
-			size_t write(const bool value);
-			size_t write(const std::string& value);
-			size_t write(const PacketType value);
-			template<typename T>
-			inline size_t write(const T value)
+			//Const class, has const write
+			template<class T>
+			typename std::enable_if<has_write<T, void(T::*)(WriteBuffer&) const>::value, void>::type write(const T& t)
 			{
-				static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value || std::is_enum<T>::value, "WriteBuffer::write<T>: specified type T is invalid.");
-				return write((void*)&value, sizeof(T));
+				return t.write(*this);
+			}
+			//Const class, doesn't have const write
+			template<class T>
+			typename std::enable_if<!has_write<T, void(T::*)(WriteBuffer&) const>::value, void>::type write(const T& t)
+			{
+				static_assert(false, "To use 'WriteBuffer::write<T>(const T&)' for a class type, the type T must have a 'void write(WriteBuffer&) const' method!");
+				return 0;
+			}
+			//Mutable class, has mutable write
+			template<class T>
+			typename std::enable_if<has_write<T, void(T::*)(WriteBuffer&)>::value, void>::type write(T& t)
+			{
+				return t.write(*this);
+			}
+			//Mutable class, has const write
+			template<class T>
+			typename std::enable_if<has_write<T, void(T::*)(WriteBuffer&) const>::value, void>::type write(T& t)
+			{
+				return t.write(*this);
+			}
+			//Mutable class, doesn't have mutable or const write
+			template<class T>
+			typename std::enable_if<!has_write<T, void(T::*)(WriteBuffer&)>::value && !has_write<T, void(T::*)(WriteBuffer&) const>::value, void>::type write(T& t)
+			{
+				static_assert(false, "To use 'WriteBuffer::write<T>(T&)' for a class type, the type T must have a 'void write(WriteBuffer&)' or 'void write(WriteBuffer&) const' method!");
+				return 0;
+			}
+			//Isn't class
+			template<typename T>
+			typename std::enable_if<!std::is_class<T>::value, void>::type write (const T& t)
+			{
+				const size_t bytes = sizeof(T);
+				data.resize(data.size() + bytes);
+
+				if (hostByteOrder == networkByteOrder)
+				{//Write in native order
+					memcpy(&data[offset], &t, bytes);
+					offset += bytes;
+				}
+				else
+				{//Write in reversed order
+					size_t endOffset = bytes;
+					for (size_t i = 0; i < bytes; i++)
+					{
+						data[offset++] = ((const unsigned char*)&t)[--endOffset];
+					}
+				}
+			}
+			//Specialized cases
+			void write(spehs::time::Time& t)
+			{
+				return write(t.value);
+			}
+			void write(const spehs::time::Time& t)
+			{
+				return write(t.value);
+			}
+			void write(std::string& t)
+			{
+				write(t.size());
+				for (size_t i = 0; i < t.size(); i++)
+					write(t[i]);
+			}
+			void write(const std::string& t)
+			{
+				write(t.size());
+				for (size_t i = 0; i < t.size(); i++)
+					write(t[i]);
 			}
 
 			const unsigned char* operator[](const size_t index) const { return &data[index]; }
@@ -132,9 +190,6 @@ namespace codex
 
 			/* Extends the buffer by increasing its size, without affecting the current offset. */
 			bool extend(const size_t addedBytes);
-
-			/* Writes to data*/
-			size_t write(const void* buffer, const size_t length);
 
 			std::vector<unsigned char> data;
 		};
@@ -148,24 +203,57 @@ namespace codex
 			ReadBuffer(const void* pointedMemory, const size_t length);
 			~ReadBuffer() override;
 
-			size_t read(uint8_t& value);
-			size_t read(int8_t& value);
-			size_t read(uint16_t& value);
-			size_t read(int16_t& value);
-			size_t read(uint32_t& value);
-			size_t read(int32_t& value);
-			size_t read(uint64_t& value);
-			size_t read(int64_t& value);
-			size_t read(float& value);
-			size_t read(double& value);
-			size_t read(bool& value);
-			size_t read(std::string& value);
-			size_t read(PacketType& value);
-			template<typename T>
-			inline size_t read(const T& value)
+			//Is class, has mutable read
+			template<class T>
+			typename std::enable_if<has_read<T, void(T::*)(ReadBuffer&)>::value, void>::type read(T& t)
 			{
-				static_assert(std::is_integral<T>::value || std::is_floating_point<T>::value || std::is_enum<T>::value, "WriteBuffer::write<T>: specified type T is invalid.");
-				return read((void*)&value, sizeof(T));
+				return t.read(*this);
+			}
+			//Is class, doesn't have mutable read
+			template<class T>
+			typename std::enable_if<!has_read<T, void(T::*)(ReadBuffer&)>::value, void>::type read(T& t)
+			{
+				static_assert(false, "To use 'ReadBuffer::read<T>(T&)' for a class type, the type T must have a 'void read(ReadBuffer&)' method!");
+				return 0;
+			}
+			//Isn't class
+			template<typename T>
+			typename std::enable_if<!std::is_class<T>::value, void>::type read(T& t)
+			{
+				const size_t bytes = sizeof(T);
+				if (offset + bytes > capacity)
+				{
+					spehs::log::warning("Cannot read past the buffer!");
+					return;
+				}
+
+				if (hostByteOrder == networkByteOrder)
+				{//Read in native byte order
+					memcpy(&t, &data[offset], bytes);
+				}
+				else
+				{//Read in reversed byte order
+					size_t readOffset = offset + bytes;
+					for (size_t i = 0; i < bytes; i++)
+					{
+						((unsigned char*)&t)[i] = data[--readOffset];
+					}
+				}
+
+				offset += bytes;
+			}
+			//Specialized cases
+			void read(spehs::time::Time& t)
+			{
+				return read(t.value);
+			}
+			void read(std::string& t)
+			{
+				size_t sizeBytes;
+				read(sizeBytes);
+				t.resize(sizeBytes);
+				for (size_t i = 0; i < sizeBytes; i++)
+					read(t[i]);
 			}
 
 			/* Translates offset by a set amount of bytes. */
@@ -179,8 +267,6 @@ namespace codex
 			const unsigned char* operator[](const size_t index) const { return &data[index]; }
 			
 		private:
-			/* Reads bytes into destination. */
-			size_t read(void* destination, const size_t bytes);
 
 			size_t capacity;
 			const unsigned char* data;
@@ -194,8 +280,8 @@ namespace codex
 		public:
 			Handshake();
 
-			size_t write(WriteBuffer& buffer) const;
-			size_t read(ReadBuffer& buffer);
+			void write(WriteBuffer& buffer) const;
+			void read(ReadBuffer& buffer);
 
 			bool isValid() const;
 

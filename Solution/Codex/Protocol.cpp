@@ -3,9 +3,8 @@
 #include <atomic>
 #include "Protocol.h"
 #include "SocketTCP.h"
-#include "CodexTime.h"
-#include "CodexAssert.h"
-#include "StringOperations.h"
+#include "SpehsEngine/Core/Time.h"
+#include "SpehsEngine/Core/StringOperations.h"
 #ifdef _WIN32
 #include <Windows.h>//NOTE: must be included after boost asio stuff...
 #endif
@@ -41,7 +40,7 @@ namespace codex
 		{
 			if (argc < 3)
 			{
-				log::info("Provided command line arguments cannot be used to form an endpoint: too few arguments.");
+				spehs::log::info("Provided command line arguments cannot be used to form an endpoint: too few arguments.");
 				return Endpoint::invalid;
 			}
 
@@ -59,12 +58,12 @@ namespace codex
 			}
 			if (periodCount != 3 || invalidCharacters || endpoint.address.size() > 15)
 			{
-				codex::log::warning("Provided server address is invalid: " + endpoint.address);
+				spehs::log::warning("Provided server address is invalid: " + endpoint.address);
 				return Endpoint::invalid;
 			}
 			if (endpoint.port < 0 || endpoint.port > std::numeric_limits<uint16_t>::max())
 			{
-				codex::log::warning("Provided server port is invalid: " + std::string(argv[2]));
+				spehs::log::warning("Provided server port is invalid: " + std::string(argv[2]));
 				return Endpoint::invalid;
 			}
 
@@ -96,100 +95,10 @@ namespace codex
 		{
 
 		}
-
-		size_t WriteBuffer::write(const void* buffer, const size_t bytes)
-		{
-			data.resize(data.size() + bytes);
-
-			if (hostByteOrder == networkByteOrder)
-			{//Write in native order
-				memcpy(&data[offset], buffer, bytes);
-				offset += bytes;
-			}
-			else
-			{//Write in reversed order
-				size_t endOffset = bytes;
-				for (size_t i = 0; i < bytes; i++)
-				{
-					data[offset++] = ((const unsigned char*)buffer)[--endOffset];
-				}
-			}
-
-			return bytes;
-		}
-
-		size_t WriteBuffer::write(const uint8_t value)
-		{
-			return write(&value, sizeof(value));
-		}
-
-		size_t WriteBuffer::write(const int8_t value)
-		{
-			return write(&value, sizeof(value));
-		}
-
-		size_t WriteBuffer::write(const uint16_t value)
-		{
-			return write(&value, sizeof(value));
-		}
-
-		size_t WriteBuffer::write(const int16_t value)
-		{
-			return write(&value, sizeof(value));
-		}
-
-		size_t WriteBuffer::write(const uint32_t value)
-		{
-			return write(&value, sizeof(value));
-		}
-
-		size_t WriteBuffer::write(const int32_t value)
-		{
-			return write(&value, sizeof(value));
-		}
-
-		size_t WriteBuffer::write(const uint64_t value)
-		{
-			return write(&value, sizeof(value));
-		}
-
-		size_t WriteBuffer::write(const int64_t value)
-		{
-			return write(&value, sizeof(value));
-		}
-
-		size_t WriteBuffer::write(const float value)
-		{
-			return write(&value, sizeof(value));
-		}
-
-		size_t WriteBuffer::write(const double value)
-		{
-			return write(&value, sizeof(value));
-		}
-
-		size_t WriteBuffer::write(const bool value)
-		{
-			return write(&value, sizeof(value));
-		}
-
-		size_t WriteBuffer::write(const std::string& value)
-		{
-			const uint32_t length = value.size();
-			write(&length, sizeof(length));
-			if (length == 0)
-				return sizeof(length);
-			return sizeof(length) + write(&value[0], length);
-		}
-
-		size_t WriteBuffer::write(const PacketType value)
-		{
-			return write(&value, sizeof(value));
-		}
-
+		
 		void WriteBuffer::reserve(const size_t capacity)
 		{
-			CODEX_ASSERT(capacity >= data.capacity());
+			SPEHS_ASSERT(capacity >= data.capacity());
 			data.reserve(capacity);
 		}
 
@@ -207,110 +116,15 @@ namespace codex
 			: data((const unsigned char*)pointedMemory)
 			, capacity(length)
 		{
-			assert(pointedMemory);
-			assert(length > 0);
+			SPEHS_ASSERT(pointedMemory);
+			SPEHS_ASSERT(length > 0);
 		}
 
 		ReadBuffer::~ReadBuffer()
 		{
 			//NOTE: do not deallocate data! data is owned by an external source!
 		}
-
-		size_t ReadBuffer::read(void* destination, const size_t bytes)
-		{
-			if (offset + bytes > capacity)
-			{
-				log::warning("Cannot read past the buffer!");
-				return 0;
-			}
-
-			if (hostByteOrder == networkByteOrder)
-			{//Read in native byte order
-				memcpy(destination, &data[offset], bytes);
-			}
-			else
-			{//Read in reversed byte order
-				size_t readOffset = offset + bytes;
-				for (size_t i = 0; i < bytes; i++)
-				{
-					((unsigned char*)destination)[i] = data[--readOffset];
-				}
-			}
-
-			offset += bytes;
-			return bytes;
-		}
-
-		size_t ReadBuffer::read(uint8_t& value)
-		{
-			return read(&value, sizeof(value));
-		}
-
-		size_t ReadBuffer::read(int8_t& value)
-		{
-			return read(&value, sizeof(value));
-		}
-
-		size_t ReadBuffer::read(uint16_t& value)
-		{
-			return read(&value, sizeof(value));
-		}
-
-		size_t ReadBuffer::read(int16_t& value)
-		{
-			return read(&value, sizeof(value));
-		}
-
-		size_t ReadBuffer::read(uint32_t& value)
-		{
-			return read(&value, sizeof(value));
-		}
-
-		size_t ReadBuffer::read(int32_t& value)
-		{
-			return read(&value, sizeof(value));
-		}
-
-		size_t ReadBuffer::read(uint64_t& value)
-		{
-			return read(&value, sizeof(value));
-		}
-
-		size_t ReadBuffer::read(int64_t& value)
-		{
-			return read(&value, sizeof(value));
-		}
-
-		size_t ReadBuffer::read(float& value)
-		{
-			return read(&value, sizeof(value));
-		}
-
-		size_t ReadBuffer::read(double& value)
-		{
-			return read(&value, sizeof(value));
-		}
-
-		size_t ReadBuffer::read(bool& value)
-		{
-			return read(&value, sizeof(value));
-		}
-
-		size_t ReadBuffer::read(std::string& value)
-		{
-			uint32_t length;
-			read(length);
-			value.resize(length);
-			if (length > 0)
-				read(&value[0], length);
-			return sizeof(length) + length;
-		}
-
-		size_t ReadBuffer::read(PacketType& value)
-		{
-			return read(&value, sizeof(value));
-		}
-
+		
 		void ReadBuffer::translate(const int translationOffset)
 		{
 			offset += translationOffset;
@@ -336,16 +150,14 @@ namespace codex
 		}
 
 		const uint16_t endiannessCheckBytes = 0xACDC;
-		size_t Handshake::write(WriteBuffer& buffer) const
+		void Handshake::write(WriteBuffer& buffer) const
 		{
-			size_t offset = 0;
-			offset += buffer.write(currentMagic);
-			offset += buffer.write(handshakeVersion);
-			offset += buffer.write(endiannessCheckBytes);
-			return offset;
+			buffer.write(currentMagic);
+			buffer.write(handshakeVersion);
+			buffer.write(endiannessCheckBytes);
 		}
 
-		size_t Handshake::read(ReadBuffer& buffer)
+		void Handshake::read(ReadBuffer& buffer)
 		{//NOTE: buffer can contain invalid data! If so, set the valid boolean to false
 			size_t offset = 0;
 			valid = true;
@@ -353,52 +165,50 @@ namespace codex
 			//Magic
 			if (buffer.getBytesRemaining() < sizeof(magic))
 			{
-				log::info("Handshake::read() invalid handshake. No bytes left to read magic.");
+				spehs::log::info("Handshake::read() invalid handshake. No bytes left to read magic.");
 				valid = false;
-				return offset;
+				return;
 			}
 			else
-				offset += buffer.read(magic);
+				buffer.read(magic);
 			if (magic != currentMagic)
 			{
-				log::info("Handshake::read() invalid handshake. Incompatible magic - my version: " + toHexString(currentMagic) + ", read magic: " + toHexString(magic));
+				spehs::log::info("Handshake::read() invalid handshake. Incompatible magic - my version: " + spehs::toHexString(currentMagic) + ", read magic: " + spehs::toHexString(magic));
 				valid = false;
-				return offset;
+				return;
 			}
 
 			//Handshake version
 			if (buffer.getBytesRemaining() < sizeof(handshakeVersion))
 			{
-				log::info("Handshake::read() invalid handshake. No bytes left to read handshake version.");
+				spehs::log::info("Handshake::read() invalid handshake. No bytes left to read handshake version.");
 				valid = false;
-				return offset;
+				return;
 			}
 			else
-				offset += buffer.read((uint32_t&)handshakeVersion);
+				buffer.read((uint32_t&)handshakeVersion);
 			if (handshakeVersion != currentHandshakeVersion)
 			{
-				log::info("Handshake::read() invalid handshake. Incompatible versions - my version: " + std::to_string(currentHandshakeVersion) + ", other version: " + std::to_string(handshakeVersion));
+				spehs::log::info("Handshake::read() invalid handshake. Incompatible versions - my version: " + std::to_string(currentHandshakeVersion) + ", other version: " + std::to_string(handshakeVersion));
 				valid = false;
-				return offset;
+				return;
 			}
 			//Endianness check bytes
 			uint16_t readEndiannessCheckBytes;
 			if (buffer.getBytesRemaining() < sizeof(endiannessCheckBytes))
 			{
-				log::info("Handshake::read() invalid handshake. No bytes left to read endianness check bytes.");
+				spehs::log::info("Handshake::read() invalid handshake. No bytes left to read endianness check bytes.");
 				valid = false;
-				return offset;
+				return;
 			}
 			else
-				offset += buffer.read(readEndiannessCheckBytes);
+				buffer.read(readEndiannessCheckBytes);
 			if (readEndiannessCheckBytes != endiannessCheckBytes)
 			{
-				log::info("Handshake::read() invalid handshake. Invalid endianness check bytes.");
+				spehs::log::info("Handshake::read() invalid handshake. Invalid endianness check bytes.");
 				valid = false;
-				return offset;
+				return;
 			}
-
-			return offset;
 		}
 	}
 }

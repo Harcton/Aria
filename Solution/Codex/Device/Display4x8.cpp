@@ -1,6 +1,6 @@
 #include "Display4x8.h"
 #include "GPIO.h"
-#include "CodexTime.h"
+#include "SpehsEngine/Core/Time.h"
 
 
 namespace codex
@@ -78,7 +78,7 @@ namespace codex
 				for (size_t s = 0; s < 8; s++)
 					codex::gpio::write(ledPins[s], (codex::gpio::PinState)symbols[number][s]);
 
-				codex::time::delay(codex::time::milliseconds(100));
+				spehs::time::delay(spehs::time::fromMilliseconds(100));
 				if (++number == 11)
 				{
 					number = 0;

@@ -1,8 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <string>
-#include "CodexTime.h"
-#include "CodexAssert.h"
+#include "SpehsEngine/Core/Time.h"
 
 namespace codex
 {
@@ -28,7 +27,7 @@ namespace codex
 			//static const SyncTypeVersionType getSyncTypeVersion();
 
 			/* By returning true, the sync type indicates that it is ready to write an update packet. */
-			virtual bool syncUpdate(const time::TimeType& deltaTime) { return false; }
+			virtual bool syncUpdate(const spehs::time::Time deltaTime) { return false; }
 
 			/* Sync packets */
 			virtual void syncCreate(protocol::WriteBuffer& buffer) {}

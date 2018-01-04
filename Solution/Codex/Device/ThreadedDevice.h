@@ -1,7 +1,7 @@
 #pragma once
 #include <thread>
 #include <mutex>
-#include "CodexTime.h"
+#include "SpehsEngine/Core/Time.h"
 
 namespace codex
 {

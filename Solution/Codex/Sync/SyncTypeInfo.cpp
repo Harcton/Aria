@@ -7,24 +7,30 @@ namespace codex
 {
 	namespace sync
 	{
-		void SyncTypePairInfo::write(protocol::WriteBuffer& buffer)
+		void AbstractSyncTypeInfo::write(protocol::WriteBuffer& buffer) const
 		{
-			buffer.write(local.name);
-			buffer.write(local.typeId);
-			buffer.write(local.version);
-			buffer.write(remote.name);
-			buffer.write(remote.typeId);
-			buffer.write(remote.version);
+			buffer.write(name);
+			buffer.write(typeId);
+			buffer.write(version);
+		}
+
+		void AbstractSyncTypeInfo::read(protocol::ReadBuffer& buffer)
+		{
+			buffer.read(name);
+			buffer.read(typeId);
+			buffer.read(version);
+		}
+
+		void SyncTypePairInfo::write(protocol::WriteBuffer& buffer) const
+		{
+			buffer.write(local);
+			buffer.write(remote);
 		}
 
 		void SyncTypePairInfo::read(protocol::ReadBuffer& buffer)
 		{
-			buffer.read(local.name);
-			buffer.read(local.typeId);
-			buffer.read(local.version);
-			buffer.read(remote.name);
-			buffer.read(remote.typeId);
-			buffer.read(remote.version);
+			buffer.read(local);
+			buffer.read(remote);
 		}
 	}
 }

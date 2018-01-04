@@ -10,7 +10,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SPEHSENGINE_ROOT)/Dependencies/include/;$(SPEHSENGINE_ROOT)/;$(SolutionDir)/Codex/Dependencies/include/;$(SolutionDir)/Codex/;$(SolutionDir)/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>GHOST_CODEX;PLATFORM_WINDOWS;WIN32_LEAN_AND_MEAN;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GHOST_CODEX;PLATFORM_WINDOWS;WIN32_LEAN_AND_MEAN;_MBCS;GLM_FORCE_RADIANS;NOMINMAX;PI=3.14159265359f;TWO_PI=6.28318530718f;HALF_PI=1.57079632679f;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Lib>
       <AdditionalLibraryDirectories>$(SPEHSENGINE_ROOT)/Dependencies/lib/;$(SolutionDir)/Dependencies/lib/;</AdditionalLibraryDirectories>

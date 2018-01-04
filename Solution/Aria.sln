@@ -101,9 +101,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Rendering", "..\..\SpehsEng
 		{CE4F0DDF-B21D-4E85-961E-5DE4F41FFEB8} = {CE4F0DDF-B21D-4E85-961E-5DE4F41FFEB8}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoreShare", "..\..\SpehsEngine\SpehsEngine\Core\CoreShare.vcxitems", "{0C2F55CA-E03F-415D-8340-A8E33BE520B0}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Codex\Codex.vcxitems*{0a5ca205-143b-43f3-94b7-a4a84b51b8e4}*SharedItemsImports = 4
+		..\..\SpehsEngine\SpehsEngine\Core\CoreShare.vcxitems*{0c2f55ca-e03f-415d-8340-a8e33be520b0}*SharedItemsImports = 9
 		Codex\Codex.vcxitems*{45d41acc-2c3c-43d2-bc10-02aa73ffc7c7}*SharedItemsImports = 9
 		..\..\SpehsEngine\SpehsEngine\Core\CoreShare.vcxitems*{cbb134b8-c9fe-4129-a6dd-58b94cbe1096}*SharedItemsImports = 4
 	EndGlobalSection
@@ -211,5 +214,6 @@ Global
 		{5F7EC1B1-79D0-410B-AAA5-67AE29DD3843} = {40D57D9E-9F49-48F9-8060-5D130ABB0DCF}
 		{CE4F0DDF-B21D-4E85-961E-5DE4F41FFEB8} = {40D57D9E-9F49-48F9-8060-5D130ABB0DCF}
 		{14BC9A36-0173-4D60-B341-B92B6E3CA892} = {40D57D9E-9F49-48F9-8060-5D130ABB0DCF}
+		{0C2F55CA-E03F-415D-8340-A8E33BE520B0} = {40D57D9E-9F49-48F9-8060-5D130ABB0DCF}
 	EndGlobalSection
 EndGlobal

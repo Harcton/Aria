@@ -1,6 +1,6 @@
 #include "Codex/Device/HC_SR04.h"
-#include "Codex/CodexTime.h"
-#include "Codex/Log.h"
+#include "SpehsEngine/Core/Time.h"
+#include "SpehsEngine/Core/Log.h"
 
 
 namespace codex
@@ -11,7 +11,7 @@ namespace codex
 			: triggerPin(gpio::pin_none)
 			, echoPin(gpio::pin_none)
 			, distance(0.0f)
-			, pollInterval(codex::time::milliseconds(100))
+			, pollInterval(spehs::time::fromMilliseconds(100))
 		{
 		}
 
@@ -43,25 +43,25 @@ namespace codex
 			mutex.unlock();
 			
 			//Fire trigger
-			const time::TimeType delay1 = time::milliseconds(2);
-			const time::TimeType delay2 = time::milliseconds(10);
-			const time::TimeType beginTime = time::now();
+			const spehs::time::Time delay1 = spehs::time::fromMilliseconds(2);
+			const spehs::time::Time delay2 = spehs::time::fromMilliseconds(10);
+			const spehs::time::Time beginTime = spehs::time::now();
 			gpio::disable(trigger);
-			time::delay(delay1);
+			spehs::time::delay(delay1);
 			gpio::enable(trigger);
-			time::delay(delay2);
+			spehs::time::delay(delay2);
 			gpio::disable(trigger);
 
 			//Measure pulse
-			const time::TimeType duration = gpio::pulseIn(echo, gpio::high, time::milliseconds(1000));
+			const spehs::time::Time duration = gpio::pulseIn(echo, gpio::high, spehs::time::fromMilliseconds(1000));
 
 			//Update distance value
 			mutex.lock();
-			distance = (time::toMicroseconds(duration) * 0.5f) / 29.1;
+			distance = (duration.asMicroseconds() * 0.5f) / 29.1;
 			//Delay by poll interval
-			const time::TimeType interval = pollInterval + beginTime - time::now();
+			const spehs::time::Time interval = pollInterval + beginTime - spehs::time::now();
 			mutex.unlock();
-			time::delay(interval);
+			spehs::time::delay(interval);
 		}
 
 		void HC_SR04::onStop()

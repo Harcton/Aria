@@ -1,4 +1,3 @@
-#include <Codex/Log.h>
 #include <Codex/Codex.h>
 #include <boost/system/error_code.hpp>//->Works
 #include <Codex/Device/Servo.h>
@@ -19,21 +18,21 @@ int main(const int argc, const char** argv)
 		codex::SocketTCP socket(ioService);
 		codex::aria::Connector connector(socket, "arm0Shell", "arm0Ghost", 41623);
 		if (connector.enter(codex::protocol::Endpoint("192.168.10.51", codex::protocol::defaultAriaPort)))
-			codex::log::info("yay!");
+			spehs::log::info("yay!");
 		else
-			codex::log::info("nay!");
+			spehs::log::info("nay!");
 
 		codex::sync::Manager syncManager(socket);
 		syncManager.registerType<codex::device::ServoGhost, codex::device::ServoShell>();
 		if (syncManager.initialize())
 		{
-			codex::time::TimeType deltaTime = 0;
+			spehs::time::Time deltaTime = 0;
 			while (socket.isConnected())
 			{
-				const codex::time::TimeType beginTime = codex::time::now();
+				const spehs::time::Time beginTime = spehs::time::now();
 				socket.update();
 				syncManager.update(deltaTime);
-				deltaTime = codex::time::now() - beginTime;
+				deltaTime = spehs::time::now() - beginTime;
 			}
 		}
 	}
@@ -84,7 +83,7 @@ int main(const int argc, const char** argv)
 //keepRunningInput = true;
 //while (keepRunningInput)
 //{
-//codex::log::info("Input strength:\n>");
+//spehs::log::info("Input strength:\n>");
 //int val;
 //std::cin >> val;
 //strength = val;
@@ -97,8 +96,8 @@ int main(const int argc, const char** argv)
 //codex::gpio::setPinAsOutput(pin);
 //while (strength >= 0)
 //{
-//codex::time::TimeType interval = codex::time::milliseconds(1);
-//codex::time::delay(interval);
+//spehs::time::Time interval = spehs::time::fromMilliseconds(1);
+//spehs::time::delay(interval);
 //}
 //inputThread.join();
 //

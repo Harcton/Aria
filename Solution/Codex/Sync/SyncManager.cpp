@@ -1,8 +1,7 @@
 #include "SyncManager.h"
-#include "CodexAssert.h"
 #include "IOService.h"
 #include "SocketTCP.h"
-#include <Codex/StringOperations.h>
+#include "SpehsEngine/Core/StringOperations.h"
 
 
 
@@ -35,19 +34,19 @@ namespace codex
 		{
 			if (initialized)
 			{
-				codex::log::error("codex::sync::Manager is already initialized.");
+				spehs::log::error("codex::sync::Manager is already initialized.");
 				return false;
 			}
 
 			if (!socket.isConnected())
 			{
-				codex::log::error("codex::sync::Manager cannot initialize, the provided socket is not in the connected state.");
+				spehs::log::error("codex::sync::Manager cannot initialize, the provided socket is not in the connected state.");
 				return false;
 			}
 
 			if (socket.isReceiving())
 			{
-				codex::log::error("codex::sync::Manager cannot initialize, the provided socket is already in the receiving state.");
+				spehs::log::error("codex::sync::Manager cannot initialize, the provided socket is already in the receiving state.");
 				return false;
 			}
 
@@ -66,43 +65,43 @@ namespace codex
 			//Print my registered type info(?)
 			if (debugLevel >= 1)
 			{
-				log::info("codex::sync::Manager registered types:");
+				spehs::log::info("codex::sync::Manager registered types:");
 				for (size_t i = 0; i < registeredTypes.size(); i++)
 				{
-					log::info("[" + std::to_string(i) + "]\tLocal: name: " + registeredTypes[i].local.name + " typeid: " + registeredTypes[i].local.typeId);
-					log::info("\tRemote: name: " + registeredTypes[i].remote.name + " typeid: " + registeredTypes[i].remote.typeId);
+					spehs::log::info("[" + std::to_string(i) + "]\tLocal: name: " + registeredTypes[i].local.name + " typeid: " + registeredTypes[i].local.typeId);
+					spehs::log::info("\tRemote: name: " + registeredTypes[i].remote.name + " typeid: " + registeredTypes[i].remote.typeId);
 				}
 			}
 
 			//Prepare a packet for the remote sync manager
 			protocol::WriteBuffer buffer;
 			if (debugLevel >= 1)
-				log::info("codex::sync::Manager: writing an init packet for the remote counterpart...");
+				spehs::log::info("codex::sync::Manager: writing an init packet for the remote counterpart...");
 			//Write a header value for some packet verification
-			buffer.write<PacketType>(PacketType::types);
+			buffer.write(PacketType::types);
 			buffer.write(syncManagerInitializeTypesMagicNumber);
 			//Write my registered types
 			const size_t registeredTypesCount = registeredTypes.size();
 			buffer.write(registeredTypesCount);
 			for (size_t i = 0; i < registeredTypesCount; i++)
-				registeredTypes[i].write(buffer);
+				buffer.write(registeredTypes[i]);
 			//Send
 			socket.sendPacket(buffer);
 			if (debugLevel >= 1)
-				log::info("codex::sync::Manager: sending an init packet for the remote counterpart...");
+				spehs::log::info("codex::sync::Manager: sending an init packet for the remote counterpart...");
 			//Start receiving
 			socket.startReceiving(std::bind(&Manager::receiveHandler, this, std::placeholders::_1));
 
 			//Wait...
-			const time::TimeType begin = time::now();
-			const time::TimeType timeout = time::seconds(999999.0f);// 10.0f);
+			const spehs::time::Time begin = spehs::time::now();
+			const spehs::time::Time timeout = spehs::time::fromSeconds(999999.0f);// 10.0f);
 			while (remoteManager.typeCompatibility == TypeCompatibility::unknown || remoteManager.typeCompatibilityResponse == TypeCompatibility::unknown)
 			{
 				socket.update();
-				if (time::now() - begin >= timeout)
+				if (spehs::time::now() - begin >= timeout)
 				{//Timeouted
 					if (debugLevel >= 1)
-						log::info("codex::sync::Manager: initialize timeouted. The remote sync manager did not respond within the given time limit");
+						spehs::log::info("codex::sync::Manager: initialize timeouted. The remote sync manager did not respond within the given time limit");
 					socket.stopReceiving();
 					return false;
 				}
@@ -110,16 +109,16 @@ namespace codex
 
 			//Inspect results
 			if (remoteManager.typeCompatibility == TypeCompatibility::compatible)
-				log::info("codex::sync::Manager: compatible with the remote sync manager's types.");
+				spehs::log::info("codex::sync::Manager: compatible with the remote sync manager's types.");
 			else
-				log::info("codex::sync::Manager: incompatible with the remote sync manager's types.");
+				spehs::log::info("codex::sync::Manager: incompatible with the remote sync manager's types.");
 			if (remoteManager.typeCompatibilityResponse == TypeCompatibility::compatible)
-				log::info("codex::sync::Manager: remote sync manager is compatible with my types.");
+				spehs::log::info("codex::sync::Manager: remote sync manager is compatible with my types.");
 			else
-				log::info("codex::sync::Manager: remote sync manager is incompatible with my types.");
+				spehs::log::info("codex::sync::Manager: remote sync manager is incompatible with my types.");
 			if (remoteManager.typeCompatibility == TypeCompatibility::compatible && remoteManager.typeCompatibilityResponse == TypeCompatibility::compatible)
 			{
-				log::info("codex::sync::Manager: initialization complete.");
+				spehs::log::info("codex::sync::Manager: initialization complete.");
 				initialized = true;
 				return true;
 			}
@@ -134,17 +133,17 @@ namespace codex
 			while (buffer.getBytesRemaining())
 			{
 				PacketType packetType;
-				buffer.read<PacketType>(packetType);
+				buffer.read(packetType);
 				if (!isInitialized() && packetType != PacketType::types)
 				{
-					log::warning("codex::sync::Manager: first received packet type is expected to contain type data! Packet type was set to: " + std::to_string((int)packetType));
+					spehs::log::warning("codex::sync::Manager: first received packet type is expected to contain type data! Packet type was set to: " + std::to_string((int)packetType));
 					return true;
 				}
 
 				switch (packetType)
 				{
 				default:
-					codex::log::warning("codex::sync::Manager: received unknown packet type: " + std::to_string((int)packetType));
+					spehs::log::warning("codex::sync::Manager: received unknown packet type: " + std::to_string((int)packetType));
 					return true;
 				case PacketType::types:
 				{//Not initialized
@@ -159,7 +158,7 @@ namespace codex
 						std::string failureString;
 						for (size_t r = 0; r < remoteRegisteredTypesCount; r++)
 						{
-							remoteRegisteredTypes[r].read(buffer);
+							buffer.read(remoteRegisteredTypes[r]);
 							const SyncTypePairInfo& remoteTypeInfo = remoteRegisteredTypes[r];
 							bool found = false;
 							for (size_t m = 0; m < registeredTypes.size(); m++)
@@ -193,28 +192,31 @@ namespace codex
 						if (failureString.size() > 1)
 						{
 							remoteManager.typeCompatibility = TypeCompatibility::incompatible;
-							codex::log::info(failureString);
+							spehs::log::info(failureString);
 						}
 
 						//Write a response packet
 						protocol::WriteBuffer response;
-						response.write<PacketType>(PacketType::types);
+						response.write(PacketType::types);
 						response.write(syncManagerInitializeTypesResponseMagicNumber);
-						response.write((uint8_t)remoteManager.typeCompatibility.load());
+						const TypeCompatibility val = remoteManager.typeCompatibility.load();
+						response.write(val);
 						socket.sendPacket(response);
 					}
 					else if (magic == syncManagerInitializeTypesResponseMagicNumber)
 					{//Received remote type inspectation results
-						buffer.read((uint8_t&)remoteManager.typeCompatibilityResponse);
+						TypeCompatibility val;
+						buffer.read(val);
+						remoteManager.typeCompatibilityResponse = val;
 						if (remoteManager.typeCompatibilityResponse == TypeCompatibility::incompatible)
 						{
-							codex::log::info("codex::sync::Manager: initialization failed. (my)Local types are not compatible with the remote types.");
+							spehs::log::info("codex::sync::Manager: initialization failed. (my)Local types are not compatible with the remote types.");
 						}
 					}
 					else
 					{
 						if (debugLevel >= 1)
-							log::info("codex::sync::Manager: received an invalid packet while waiting for the init packet.");
+							spehs::log::info("codex::sync::Manager: received an invalid packet while waiting for the init packet.");
 					}
 				}
 				break;
@@ -229,11 +231,11 @@ namespace codex
 					LocalSyncTypeInfo* localSyncTypeInfo = findLocalTypeInfo(typeId);
 					if (!localSyncTypeInfo)
 					{
-						log::warning("codex::sync::Manager: PacketType::localCreate had invalid typeId value. The typeId value did not correspond to any known typeId. typeId: " + typeId);
+						spehs::log::warning("codex::sync::Manager: PacketType::localCreate had invalid typeId value. The typeId value did not correspond to any known typeId. typeId: " + typeId);
 						return false;
 					}
 					RemoteSyncTypeInfo* remoteSyncTypeInfo = findRemoteTypeInfo(*localSyncTypeInfo);
-					CODEX_ASSERT(remoteSyncTypeInfo);
+					SPEHS_ASSERT(remoteSyncTypeInfo);
 					IType* instance = remoteSyncTypeInfo->constructor();
 					RemoteEntry* remoteEntry = new RemoteEntry(*this, instance, id, *remoteSyncTypeInfo);
 					instance->syncCreate(buffer);
@@ -253,7 +255,7 @@ namespace codex
 					}
 					else
 					{
-						log::error("codex::sync::Manager: receive handler: PacketType::remoteCreate: Unknown local entry id!");
+						spehs::log::error("codex::sync::Manager: receive handler: PacketType::remoteCreate: Unknown local entry id!");
 						return true;
 					}
 				}
@@ -270,7 +272,7 @@ namespace codex
 					else
 					{
 						if (debugLevel >= 3)
-							log::info("codex::sync::Manager: receive handler: PacketType::localUpdate: Unknown remote entry id! Maybe entry was just removed...");
+							spehs::log::info("codex::sync::Manager: receive handler: PacketType::localUpdate: Unknown remote entry id! Maybe entry was just removed...");
 						return true;
 					}
 				}
@@ -286,7 +288,7 @@ namespace codex
 					}
 					else
 					{
-						log::error("codex::sync::Manager: receive handler: PacketType::remoteUpdate: Unknown remote entry id!");
+						spehs::log::error("codex::sync::Manager: receive handler: PacketType::remoteUpdate: Unknown remote entry id!");
 						return true;
 					}
 				}
@@ -303,7 +305,7 @@ namespace codex
 					}
 					else
 					{
-						log::error("codex::sync::Manager: receive handler: PacketType::localRemove: Unknown remote entry id!");
+						spehs::log::error("codex::sync::Manager: receive handler: PacketType::localRemove: Unknown remote entry id!");
 						return true;
 					}
 				}
@@ -320,7 +322,7 @@ namespace codex
 					}
 					else
 					{
-						log::error("codex::sync::Manager: receive handler: PacketType::remoteRemove: Unknown local entry id!");
+						spehs::log::error("codex::sync::Manager: receive handler: PacketType::remoteRemove: Unknown local entry id!");
 						return true;
 					}
 				}
@@ -335,20 +337,20 @@ namespace codex
 			return initialized;
 		}
 
-		void Manager::update(const time::TimeType& deltaTime)
+		void Manager::update(const spehs::time::Time& deltaTime)
 		{
-			CODEX_ASSERT(isInitialized());
+			SPEHS_ASSERT(isInitialized());
 
 			//Local types
 			for (size_t i = 0; i < localEntries.size();)
 			{
-				CODEX_ASSERT(localEntries[i] && localEntries[i]->ptr);
+				SPEHS_ASSERT(localEntries[i] && localEntries[i]->ptr);
 
 				//Create
 				if (!localEntries[i]->createSent)
 				{
 					protocol::WriteBuffer buffer;
-					buffer.write<PacketType>(PacketType::localCreate);
+					buffer.write(PacketType::localCreate);
 					buffer.write(localEntries[i]->typeInfo.typeId);
 					buffer.write(localEntries[i]->id);
 					localEntries[i]->ptr->syncCreate(buffer);
@@ -358,9 +360,9 @@ namespace codex
 						const LocalSyncTypeInfo* typeInfo = findLocalTypeInfo(localEntries[i]->typeInfo.typeId);
 						const std::string typeName = typeInfo ? typeInfo->name : "unknown";
 						if (localEntries[i]->createSent)
-							codex::log::info("codex::sync::Manager: PacketType::localCreate sent for instance of type: " + typeName);
+							spehs::log::info("codex::sync::Manager: PacketType::localCreate sent for instance of type: " + typeName);
 						else
-							codex::log::info("codex::sync::Manager: failed to send PacketType::localCreate for instance of type: " + typeName);
+							spehs::log::info("codex::sync::Manager: failed to send PacketType::localCreate for instance of type: " + typeName);
 					}
 				}
 
@@ -370,7 +372,7 @@ namespace codex
 				{
 					localEntries[i]->timer = 0;
 					protocol::WriteBuffer buffer;
-					buffer.write<PacketType>(PacketType::localUpdate);
+					buffer.write(PacketType::localUpdate);
 					buffer.write(localEntries[i]->id);
 					localEntries[i]->ptr->syncUpdate(buffer);
 					const bool updateSent = socket.sendPacket(buffer);
@@ -379,9 +381,9 @@ namespace codex
 						const LocalSyncTypeInfo* typeInfo = findLocalTypeInfo(localEntries[i]->typeInfo.typeId);
 						const std::string typeName = typeInfo ? typeInfo->name : "unknown";
 						if (updateSent)
-							codex::log::info("codex::sync::Manager: PacketType::localUpdate sent for instance of type: " + typeName);
+							spehs::log::info("codex::sync::Manager: PacketType::localUpdate sent for instance of type: " + typeName);
 						else
-							codex::log::info("codex::sync::Manager: failed to send PacketType::localUpdate for instance of type: " + typeName);
+							spehs::log::info("codex::sync::Manager: failed to send PacketType::localUpdate for instance of type: " + typeName);
 					}
 				}
 
@@ -389,7 +391,7 @@ namespace codex
 				if (localEntries[i]->handles.empty() && !localEntries[i]->removeSent)
 				{
 					protocol::WriteBuffer buffer;
-					buffer.write<PacketType>(PacketType::localRemove);
+					buffer.write(PacketType::localRemove);
 					buffer.write(localEntries[i]->id);
 					localEntries[i]->ptr->syncRemove(buffer);
 					localEntries[i]->removeSent = socket.sendPacket(buffer);
@@ -398,9 +400,9 @@ namespace codex
 						const LocalSyncTypeInfo* typeInfo = findLocalTypeInfo(localEntries[i]->typeInfo.typeId);
 						const std::string typeName = typeInfo ? typeInfo->name : "unknown";
 						if (localEntries[i]->removeSent)
-							codex::log::info("codex::sync::Manager: PacketType::localRemove sent for instance of type: " + typeName);
+							spehs::log::info("codex::sync::Manager: PacketType::localRemove sent for instance of type: " + typeName);
 						else
-							codex::log::info("codex::sync::Manager: failed to send PacketType::localRemove for instance of type: " + typeName);
+							spehs::log::info("codex::sync::Manager: failed to send PacketType::localRemove for instance of type: " + typeName);
 					}
 				}
 
@@ -422,7 +424,7 @@ namespace codex
 				if (!remoteEntries[i]->createSent)
 				{
 					protocol::WriteBuffer buffer;
-					buffer.write<PacketType>(PacketType::remoteCreate);
+					buffer.write(PacketType::remoteCreate);
 					buffer.write(remoteEntries[i]->id);
 					remoteEntries[i]->ptr->syncCreate(buffer);
 					remoteEntries[i]->createSent = socket.sendPacket(buffer);
@@ -431,9 +433,9 @@ namespace codex
 						const RemoteSyncTypeInfo* typeInfo = findRemoteTypeInfo(remoteEntries[i]->typeInfo.typeId);
 						const std::string typeName = typeInfo ? typeInfo->name : "unknown";
 						if (remoteEntries[i]->createSent)
-							codex::log::info("codex::sync::Manager: PacketType::remoteCreate sent for instance of type: " + typeName);
+							spehs::log::info("codex::sync::Manager: PacketType::remoteCreate sent for instance of type: " + typeName);
 						else
-							codex::log::info("codex::sync::Manager: failed to send PacketType::remoteCreate for instance of type: " + typeName);
+							spehs::log::info("codex::sync::Manager: failed to send PacketType::remoteCreate for instance of type: " + typeName);
 					}
 				}
 
@@ -441,7 +443,7 @@ namespace codex
 				if (remoteEntries[i]->ptr->syncUpdate(deltaTime))
 				{
 					protocol::WriteBuffer buffer;
-					buffer.write<PacketType>(PacketType::remoteUpdate);
+					buffer.write(PacketType::remoteUpdate);
 					buffer.write(remoteEntries[i]->id);
 					remoteEntries[i]->ptr->syncUpdate(buffer);
 					const bool updateSent = socket.sendPacket(buffer);
@@ -450,9 +452,9 @@ namespace codex
 						const RemoteSyncTypeInfo* typeInfo = findRemoteTypeInfo(remoteEntries[i]->typeInfo.typeId);
 						const std::string typeName = typeInfo ? typeInfo->name : "unknown";
 						if (updateSent)
-							codex::log::info("codex::sync::Manager: PacketType::remoteUpdate sent for instance of type: " + typeName);
+							spehs::log::info("codex::sync::Manager: PacketType::remoteUpdate sent for instance of type: " + typeName);
 						else
-							codex::log::info("codex::sync::Manager: failed to send PacketType::remoteUpdate for instance of type: " + typeName);
+							spehs::log::info("codex::sync::Manager: failed to send PacketType::remoteUpdate for instance of type: " + typeName);
 					}
 				}
 
@@ -460,7 +462,7 @@ namespace codex
 				if (remoteEntries[i]->removeReceived && !remoteEntries[i]->removeSent)
 				{
 					protocol::WriteBuffer buffer;
-					buffer.write<PacketType>(PacketType::remoteRemove);
+					buffer.write(PacketType::remoteRemove);
 					buffer.write(remoteEntries[i]->id);
 					remoteEntries[i]->ptr->syncRemove(buffer);
 					remoteEntries[i]->removeSent = socket.sendPacket(buffer);
@@ -469,9 +471,9 @@ namespace codex
 						const RemoteSyncTypeInfo* typeInfo = findRemoteTypeInfo(remoteEntries[i]->typeInfo.typeId);
 						const std::string typeName = typeInfo ? typeInfo->name : "unknown";
 						if (remoteEntries[i]->removeSent)
-							codex::log::info("codex::sync::Manager: PacketType::remoteRemove sent for instance of type: " + typeName);
+							spehs::log::info("codex::sync::Manager: PacketType::remoteRemove sent for instance of type: " + typeName);
 						else
-							codex::log::info("codex::sync::Manager: failed to send PacketType::remoteRemove for instance of type: " + typeName);
+							spehs::log::info("codex::sync::Manager: failed to send PacketType::remoteRemove for instance of type: " + typeName);
 					}
 				}
 
@@ -479,7 +481,7 @@ namespace codex
 				if (remoteEntries[i]->removeSent)
 				{
 					if (debugLevel >= 1)
-						codex::log::info("codex::sync::Manager: removing entry id: " + std::to_string(remoteEntries[i]->id));
+						spehs::log::info("codex::sync::Manager: removing entry id: " + std::to_string(remoteEntries[i]->id));
 					delete remoteEntries[i];
 					remoteEntries[i] = remoteEntries.back();
 					remoteEntries.pop_back();

@@ -2,7 +2,7 @@
 #include <vector>
 #include "Sync/ISyncType.h"
 #include "Sync/SyncEntry.h"
-#include "CodexAssert.h"
+#include "SpehsEngine/Core/Log.h"//SPEH_ASSERT...
 
 namespace codex
 {
@@ -53,7 +53,7 @@ namespace codex
 							break;
 						}
 					}
-					CODEX_ASSERT(other.entry == nullptr && entry != nullptr);
+					SPEHS_ASSERT(other.entry == nullptr && entry != nullptr);
 				}
 			}
 
@@ -88,7 +88,7 @@ namespace codex
 							break;
 						}
 					}
-					CODEX_ASSERT(entry);
+					SPEHS_ASSERT(entry);
 				}
 			}
 
@@ -107,7 +107,7 @@ namespace codex
 							break;
 						}
 					}
-					CODEX_ASSERT(entry == nullptr);
+					SPEHS_ASSERT(entry == nullptr);
 				}
 			}
 

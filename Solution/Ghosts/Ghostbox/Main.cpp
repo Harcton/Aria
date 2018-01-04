@@ -1,4 +1,3 @@
-#include <Codex/Codex.h>
 #include <SpehsEngine/Core/ApplicationData.h>
 #include <SpehsEngine/Input/InputManager.h>
 #include <SpehsEngine/Audio/AudioEngine.h>
@@ -14,14 +13,11 @@
 #include <SpehsEngine/Input/Window.h>
 #include <SpehsEngine/Core/Time.h>
 #include <SpehsEngine/Core/RNG.h>
-
 #include <Codex/Device/Servo.h>
 #include <Codex/Sync/SyncManager.h>
 #include <Codex/Protocol.h>
+#include <Codex/Codex.h>
 #include <Codex/Aria.h>
-#include <Codex/RTTI.h>
-
-
 
 
 
@@ -44,10 +40,10 @@ int main(const int argc, const char** argv)
 
 	//Update & render loop
 	bool run = true;
-	codex::time::TimeType deltaTime = 0;
+	spehs::time::Time deltaTime = 0;
 	while (run)
 	{
-		const codex::time::TimeType beginTime = codex::time::now();
+		const spehs::time::Time beginTime = spehs::time::now();
 
 		//Spehs update
 		deltaTimeSystem.deltaTimeSystemUpdate();
@@ -71,10 +67,10 @@ int main(const int argc, const char** argv)
 		//Render
 		spehs::input::getMainWindow()->renderBegin();
 		batchManager.render();
-		spehs::console::render("FPS: " + std::to_string((int)(1.0f / codex::time::toSeconds(deltaTime))));
+		spehs::console::render("FPS: " + std::to_string((int)(1.0f / deltaTime.asSeconds())));
 		spehs::input::getMainWindow()->renderEnd();
 
-		deltaTime = codex::time::now() - beginTime;
+		deltaTime = spehs::time::now() - beginTime;
 	}
 
 	codex::uninitialize();

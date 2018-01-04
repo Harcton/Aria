@@ -1,5 +1,5 @@
 #include "IOService.h"
-#include "Log.h"
+#include "SpehsEngine/Core/Log.h"
 #include <boost/bind.hpp>
 
 
@@ -21,7 +21,7 @@ namespace codex
 		}
 		catch (std::exception& e)
 		{
-			log::info(e.what());
+			spehs::log::info(e.what());
 		}
 		thread.join();
 	}
@@ -34,7 +34,7 @@ namespace codex
 		}
 		catch (std::exception& e)
 		{
-			log::info(e.what());
+			spehs::log::info(e.what());
 		}
 	}
 
