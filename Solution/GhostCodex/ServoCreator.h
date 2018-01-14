@@ -18,9 +18,9 @@ namespace codex
 	class ServoElement : public spehs::GUIRectangleRow
 	{
 	public:
-		ServoElement(spehs::BatchManager& _batchManager, const sync::Handle<codex::device::ServoGhost>& _handle);
+		ServoElement(spehs::GUIContext& context, const sync::Handle<codex::device::ServoGhost>& _handle);
 
-		void inputUpdate(InputUpdateData& data) override;
+		void inputUpdate() override;
 
 		sync::Handle<codex::device::ServoGhost> handle;
 
@@ -34,10 +34,10 @@ namespace codex
 	class ServoCreator : public spehs::GUIRectangleColumn
 	{
 	public:
-		ServoCreator(spehs::BatchManager& _batchManager, sync::Manager& _syncManager);
+		ServoCreator(spehs::GUIContext& context, sync::Manager& _syncManager);
 		~ServoCreator();
 
-		void inputUpdate(InputUpdateData& data) override;
+		void inputUpdate() override;
 
 		sync::Manager& syncManager;
 

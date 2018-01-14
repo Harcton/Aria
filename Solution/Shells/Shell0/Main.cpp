@@ -1,6 +1,7 @@
 #include <Codex/Codex.h>
-#include "SpehsEngine/Core/Log.h"
-#include "Shell0.h"
+#include <boost/system/error_code.hpp>//->Works
+#include <SpehsEngine/Core/Log.h>
+#include <SpehsEngine/Core/Core.h>
 
 
 /*
@@ -16,12 +17,13 @@
 */
 int main(const int argc, const char** argv)
 {
+	spehs::CoreLib core;
 	codex::initialize(argc, argv);
 
-	while (1)
+	bool keepRunning = true;
+	while (keepRunning)
 	{
-		Shell0 shell0;
-		shell0.start(argc, argv);
+
 	}
 
 	codex::uninitialize();

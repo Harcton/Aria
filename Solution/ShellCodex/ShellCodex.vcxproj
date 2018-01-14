@@ -67,7 +67,7 @@
       <AdditionalOptions>-I /usr/glm/ -I /usr/boost/ -I /home/pi/projects/ -I /home/pi/projects/Codex/ -I /home/pi/SpehsEngine/</AdditionalOptions>
     </ClCompile>
     <Lib>
-      <AdditionalOptions> -l"pthread" -l"boost_system" -l"boost_thread" -l"SpehsCore" -l"bcm2835" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-L"/home/pi/SpehsEngine/bin/Debug/" -l"pthread" -l"boost_system" -l"boost_thread" -l"SpehsCore" -l"bcm2835" %(AdditionalOptions)</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
@@ -80,7 +80,7 @@
       <AdditionalOptions>-I /usr/glm/ -I /usr/boost/ -I /home/pi/projects/ -I /home/pi/projects/Codex/ -I /home/pi/SpehsEngine/</AdditionalOptions>
     </ClCompile>
     <Lib>
-      <AdditionalOptions> -l"pthread" -l"boost_system" -l"boost_thread" -l"SpehsCore" -l"bcm2835" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-L"/home/pi/SpehsEngine/bin/Release/" -l"pthread" -l"boost_system" -l"boost_thread" -l"SpehsCore" -l"bcm2835" %(AdditionalOptions)</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

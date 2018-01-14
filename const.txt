@@ -20,7 +20,15 @@ ld returned 1 exit status -> Check Linker/library dependencies.
 		Generated .a file is named with the lib- prefix
 		NO l- or lib- prefix in the linker input!
 	
-Unable to start debugging, remote connection closed -> clean & rebuild
+Full rebuild: Core and Codex succeed, shell project fails and prints some errors regarding undefined reference
+	Afterwards, building the shell project causes it to succeed.
+		Starting the debugging session yields: unable to start debugging. unexpected gdb output from command "-interpreter-exec console "target remote localhost:2437"". Remote connection closed
+			Since the only solution for this is to rebuild, the cycle repeats.
+	Further investigation shows, that changing something in the shell project causes the _next_ build to fail, while the build after that succeeds. Starting the program is still impossible because of the "unable to start debugging" issue.
+
+	
+unable to start debugging. unexpected gdb output from command "-interpreter-exec console "target remote localhost:2437"". Remote connection closed
+	-> The remote and local source files are out of sync -> clean & rebuild
 
 WinSock.h has already been included?
 	Check that no Windows.h is included before boost
@@ -45,3 +53,6 @@ Error	C1047	The object or library file 'E:\Ohjelmointi\Projects\SpehsEngine\/bin
 //The include directory bug
 Error: FooWhatever.h: No such file or directory -> check output window that passed -I arguments are correct
 	If the passed -I arguments are incorrect -> add -I "absolute/include/path" into ProjectProperties/C++/AllOptions/Additional options.
+	
+undefined reference to `boost::random::random_device : error : ...' -> Sometimes shit just don't work. Keep rebuilding, restarting visual studio and wishfully gazing into the stars
+

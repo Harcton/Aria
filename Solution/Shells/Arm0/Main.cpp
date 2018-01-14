@@ -8,7 +8,7 @@
 
 int main(const int argc, const char** argv)
 {
-	spehs::core::initialize();
+	spehs::CoreLib core;
 	codex::initialize(argc, argv);
 
 	bool keepRunning = true;
@@ -38,7 +38,6 @@ int main(const int argc, const char** argv)
 	}
 
 	codex::uninitialize();
-	spehs::core::uninitialize();
 	std::getchar();
 	return 0;
 }

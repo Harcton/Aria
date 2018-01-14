@@ -1,15 +1,18 @@
 #include <Codex/Codex.h>
+#include <boost/system/error_code.hpp>//->Works
 #include <Codex/Device/HC_SR04.h>
 #include <Codex/Device/RS232_PinReader.h>
 #include <Codex/Device/PIR_MotionSensor.h>
 #include <glm/glm.hpp>
 #include <iostream>
 #include <boost/system/error_code.hpp>
+#include "SpehsEngine/Core/Core.h"
 #include "SpehsEngine/Core/Log.h"
 
 
 int main(const int argc, const char** argv)
 {
+	spehs::CoreLib core;
 	codex::initialize(argc, argv);
 
 	spehs::log::info("Sandshell");
