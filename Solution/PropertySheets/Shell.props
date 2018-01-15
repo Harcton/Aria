@@ -19,7 +19,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>/usr/boost/stage/lib/static/;/home/pi/projects/Codex/bin/$(Platform)/$(Configuration);/home/pi/SpehsEngine/bin/$(Configuration)/;</AdditionalLibraryDirectories>
-      <LibraryDependencies>pthread;boost_system;boost_thread;SpehsCore;ShellCodex;bcm2835;</LibraryDependencies>
+      <LibraryDependencies>ShellCodex;SpehsCore;pthread;boost_system;boost_thread;boost_filesystem;boost_random;bcm2835;</LibraryDependencies>
       <VerboseOutput>false</VerboseOutput>
     </Link>
     <Lib />

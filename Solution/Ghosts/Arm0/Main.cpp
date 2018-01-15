@@ -10,7 +10,11 @@
 #include <SpehsEngine/Rendering/BatchManager.h>
 #include <SpehsEngine/Rendering/Camera2D.h>
 #include <SpehsEngine/Rendering/Console.h>
-#include <SpehsEngine/Input/Window.h>
+#include <SpehsEngine/Rendering/GLContext.h>
+#include <SpehsEngine/Rendering/Window.h>
+#include <SpehsEngine/Rendering/Console.h>
+#include <SpehsEngine/Rendering/ShaderManager.h>
+#include <SpehsEngine/Rendering/TextureManager.h>
 #include <SpehsEngine/Core/Time.h>
 #include <SpehsEngine/Core/RNG.h>
 //CODEX
@@ -31,14 +35,21 @@ int main(const int argc, const char** argv)
 	codex::initialize(argc, argv);
 	
 	//Spehs engine init
-	spehs::core::initialize();
-	spehs::audio::initialize();
-	spehs::input::initialize();
-	spehs::rendering::initialize();
-	spehs::gui::initialize();
-	spehs::Camera2D camera;
-	spehs::BatchManager batchManager(&camera, "arm0");
+	spehs::CoreLib core;
+	spehs::AudioLib audio(core);
+	spehs::RenderingLib rendering(core);
+	spehs::InputLib input(rendering);
+	spehs::GUILib gui(input, audio);
+	spehs::Window window(500, 500);
+	spehs::InputManager inputManager(window);
+	spehs::GLContext glContext(window);
+	spehs::Camera2D camera(window);
+	spehs::TextureManager textureManager(glContext);
+	spehs::ShaderManager shaderManager;
+	spehs::BatchManager batchManager(window, camera, textureManager, shaderManager, "arm0");
 	spehs::time::DeltaTimeSystem deltaTimeSystem;
+	spehs::GUIContext guiContext(batchManager, inputManager, deltaTimeSystem);
+	spehs::Console console(batchManager, inputManager);
 	
 	//Arm0 init
 	spehs::time::delay(spehs::time::fromSeconds(1.0f));
@@ -61,7 +72,7 @@ int main(const int argc, const char** argv)
 		std::getchar();
 		return 1;
 	}
-	codex::ServoCreator servoCreator(batchManager, syncManager);
+	codex::ServoCreator servoCreator(guiContext, syncManager);
 	
 	//Update & render loop
 	bool run = true;
@@ -69,31 +80,25 @@ int main(const int argc, const char** argv)
 	{
 		//Spehs update
 		deltaTimeSystem.deltaTimeSystemUpdate();
-		inputManager->update();
+		inputManager.update();
 		spehs::audio::AudioEngine::update();
-		spehs::console::update(deltaTimeSystem.deltaTime);
-		if (inputManager->isQuitRequested() || inputManager->isKeyPressed(KEYBOARD_ESCAPE))
+		console.update(deltaTimeSystem.deltaTime);
+		if (inputManager.isQuitRequested() || inputManager.isKeyPressed(KEYBOARD_ESCAPE))
 			run = false;
 
 		//Test update...
 		socket.update();
 		syncManager.update((spehs::time::Time)deltaTimeSystem.deltaTime.value);
-		servoCreator.setPositionGlobal(spehs::ApplicationData::getWindowWidthHalf() - servoCreator.getWidth() / 2, spehs::ApplicationData::getWindowHeightHalf() - servoCreator.getHeight() / 2);
-		spehs::GUIRectangle::InputUpdateData guiInputUpdateData(inputManager->getMouseCoords(), deltaTimeSystem.deltaTime);
-		servoCreator.inputUpdate(guiInputUpdateData);
+		servoCreator.setPositionGlobal(servoCreator.batchManager.window.getWidth() / 2 - servoCreator.getWidth() / 2, servoCreator.batchManager.window.getHeight() - servoCreator.getHeight() / 2);
+		servoCreator.inputUpdate();
 		servoCreator.visualUpdate();
 
 		//Render
-		spehs::input::getMainWindow()->renderBegin();
+		window.renderBegin();
 		batchManager.render();
-		spehs::console::render();
-		spehs::input::getMainWindow()->renderEnd();
+		console.render();
+		window.renderEnd();
 	}
 
-	spehs::gui::uninitialize();
-	spehs::rendering::uninitialize();
-	spehs::input::uninitialize();
-	spehs::audio::uninitialize();
-	spehs::core::uninitialize();
 	codex::uninitialize();
 }

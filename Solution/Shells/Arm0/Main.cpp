@@ -5,7 +5,6 @@
 #include <Codex/Aria.h>
 #include <SpehsEngine/Core/Core.h>
 
-
 int main(const int argc, const char** argv)
 {
 	spehs::CoreLib core;
