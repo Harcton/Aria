@@ -25,32 +25,16 @@
 
 #include "SpehsEngine/Core/ApplicationData.h"
 
-
-int main(const int argc, const char** argv)
+void runWindow(const std::string& windowName)
 {
-	//Appvars
-	spehs::Appvars appvars("Input");
-	spehs::Appvar<int> windowWidth(appvars, "Input", "Window width", 900);
-	spehs::Appvar<int> windowHeight(appvars, "Input", "Window height", 600);
-
-	//Initialize libraries
-	spehs::CoreLib core;
-	spehs::RenderingLib rendering(core);
-	spehs::InputLib input(rendering);
-	spehs::AudioLib audio(core);
-	spehs::GUILib gui(rendering, audio);
-	codex::initialize(argc, argv);
-
-	//Required class instances for spehs engine basic stuff
-	spehs::Window window(windowWidth, windowHeight);
-	spehs::GLContext glContext(window);
+	spehs::Window window(300, 300);
+	window.setClearColor(spehs::Color(64, 0, 0));
+	window.setTitle(windowName.c_str());
 	spehs::Camera2D camera(window);
-	spehs::TextureManager textureManger(glContext);
 	spehs::ShaderManager shaderManager;
-	spehs::BatchManager batchManager(window, camera, textureManger, shaderManager, "ghostbox");
+	spehs::BatchManager batchManager(window, shaderManager, camera, "ghostbox");
 	spehs::InputManager inputManager(window);
 	spehs::Console console(batchManager, inputManager);
-	
 	spehs::time::DeltaTimeSystem deltaTimeSystem;
 	spehs::GUIContext guiContext(batchManager, inputManager, deltaTimeSystem);
 	spehs::GUIRectangle rect(guiContext);
@@ -76,7 +60,7 @@ int main(const int argc, const char** argv)
 		console.update(deltaTimeSystem.deltaTime);
 		if (inputManager.isQuitRequested() || inputManager.isKeyPressed(KEYBOARD_ESCAPE))
 			run = false;
-		
+
 		rect.inputUpdate();
 		rect.visualUpdate();
 
@@ -90,14 +74,46 @@ int main(const int argc, const char** argv)
 				polygons.back()->setPosition(spehs::rng::random<float>(0.0f, (float)window.getWidth()), spehs::rng::random<float>(0.0f, (float)window.getHeight()));
 			}
 		}
-		
+
 		//Render
 		window.renderBegin();
 		batchManager.render();
 		console.render("FPS: " + std::to_string((int)(1.0f / deltaTime.asSeconds())));
 		window.renderEnd();
 
+		window.renderBegin();
+		batchManager.render();
+		console.render();
+		window.renderEnd();
+
 		deltaTime = spehs::time::now() - beginTime;
+	}
+}
+
+int main(const int argc, const char** argv)
+{
+	//Appvars
+	spehs::Appvars appvars("Input");
+	spehs::Appvar<int> windowWidth(appvars, "Input", "Window width", 900);
+	spehs::Appvar<int> windowHeight(appvars, "Input", "Window height", 600);
+
+	//Initialize libraries
+	spehs::CoreLib core;
+	spehs::RenderingLib rendering(core);
+	spehs::InputLib input(rendering);
+	spehs::AudioLib audio(core);
+	spehs::GUILib gui(rendering, audio);
+	codex::initialize(argc, argv);
+
+	const size_t threadCount = 4;
+	std::thread* threads[threadCount];
+	for (size_t i = 0; i < threadCount; i++)
+		threads[i] = new std::thread(runWindow, "Window" + std::to_string(i + 1));
+
+	for (size_t i = 0; i < threadCount; i++)
+	{
+		threads[i]->join();
+		delete threads[i];
 	}
 
 	codex::uninitialize();

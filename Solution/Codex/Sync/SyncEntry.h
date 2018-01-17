@@ -13,10 +13,11 @@ namespace codex
 		class AbstractHandle;
 		class Manager;
 		class IType;
-
 		
-
-		class AbstractEntry
+		/*
+			Local instances are managed through entries.
+		*/
+		class Entry
 		{
 		public:
 			typedef uint16_t Id;
@@ -29,41 +30,18 @@ namespace codex
 			bool createSent;
 			bool removeSent;
 			bool removeReceived;
+			bool createReceived;
+			const bool locallyInstantiated;//True if instantiated locally, lifetime depends on handles.
 
-		protected:
-			friend class Manager;
-			AbstractEntry(Manager& _manager, IType* _passData, const Id _id);
-			virtual ~AbstractEntry();
-		};
-
-		class LocalEntry : public AbstractEntry
-		{
-		public:			
-
-			const LocalSyncTypeInfo& typeInfo;
+			const TypeInfo& typeInfo;
 			std::vector<AbstractHandle*> handles;
 			spehs::time::Time interval;
 			spehs::time::Time timer;
-			bool createReceived;
 
 		private:
 			friend class Manager;
-			LocalEntry(Manager& _manager, IType* _passData, const Id _id, const LocalSyncTypeInfo& _typeInfo);
-			~LocalEntry();
-		};
-		
-		class RemoteEntry : public AbstractEntry
-		{
-		public:
-			typedef uint16_t Id;
-		public:
-
-			const RemoteSyncTypeInfo& typeInfo;
-			
-		private:
-			friend class Manager;
-			RemoteEntry(Manager& _manager, IType* _passData, const Id _id, const RemoteSyncTypeInfo& _typeInfo);
-			~RemoteEntry();
+			Entry(Manager& _manager, IType* _passData, const Id _id, const TypeInfo& _typeInfo, const bool locallyInstantiated);
+			virtual ~Entry();
 		};
 	}
 }

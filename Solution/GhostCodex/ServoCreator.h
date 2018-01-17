@@ -1,7 +1,10 @@
 #pragma once
-#include <SpehsEngine/GUI/GUIRectangleColumn.h>
-#include <SpehsEngine/GUI/GUIRectangleRow.h>
-#include <SpehsEngine/GUI/GUIScalarEditor.h>
+#include "SpehsEngine/GUI/GUIRectangleColumn.h"
+#include "SpehsEngine/GUI/GUIRectangleRow.h"
+#include "SpehsEngine/GUI/GUIScalarEditor.h"
+#include "Codex/Sync/SyncHandle.h"
+#include "Codex/Device/Servo.h"
+
 namespace spehs
 {
 	class GUIStringEditor;

@@ -6,7 +6,7 @@ namespace codex
 {
 	namespace sync
 	{
-		AbstractHandle::AbstractHandle(LocalEntry* _entry)
+		AbstractHandle::AbstractHandle(Entry* _entry)
 			: entry(_entry)
 		{
 

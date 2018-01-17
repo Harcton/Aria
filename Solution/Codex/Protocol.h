@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <typeinfo>
 #include <cstring>
 #include <vector>
 #include <string>
@@ -118,6 +119,7 @@ namespace codex
 			template<class T>
 			typename std::enable_if<!has_write<T, void(T::*)(WriteBuffer&) const>::value, void>::type write(const T& t)
 			{
+				spehs::log::info(typeid(T).name());
 				SPEHS_ASSERT(false && "To use 'WriteBuffer::write<T>(const T&)' for a class type, the type T must have a 'void write(WriteBuffer&) const' method!");//NOTE: cannot use static assert because of g++ and SFINAE
 			}
 			//Mutable class, has mutable write
@@ -136,6 +138,7 @@ namespace codex
 			template<class T>
 			typename std::enable_if<!has_write<T, void(T::*)(WriteBuffer&)>::value && !has_write<T, void(T::*)(WriteBuffer&) const>::value, void>::type write(T& t)
 			{
+				spehs::log::info(typeid(T).name());
 				SPEHS_ASSERT(false && "To use 'WriteBuffer::write<T>(T&)' for a class type, the type T must have a 'void write(WriteBuffer&)' or 'void write(WriteBuffer&) const' method!");//NOTE: cannot use static assert because of g++ and SFINAE
 			}
 			//Isn't class
@@ -211,6 +214,7 @@ namespace codex
 			template<class T>
 			typename std::enable_if<!has_read<T, void(T::*)(ReadBuffer&)>::value, void>::type read(T& t)
 			{
+				spehs::log::info(typeid(T).name());
 				SPEHS_ASSERT(false && "To use 'ReadBuffer::read<T>(T&)' for a class type, the type T must have a 'void read(ReadBuffer&)' method!");//NOTE: cannot use static assert because of g++ and SFINAE
 			}
 			//Isn't class

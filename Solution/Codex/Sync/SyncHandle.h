@@ -9,13 +9,13 @@ namespace codex
 	namespace sync
 	{
 		class Manager;
-		class LocalEntry;
+		class Entry;
 
 		class AbstractHandle
 		{
 		protected:
-			AbstractHandle(LocalEntry* _entry);
-			LocalEntry* entry;
+			AbstractHandle(Entry* _entry);
+			Entry* entry;
 		};
 
 		template<typename SyncType>
@@ -92,7 +92,7 @@ namespace codex
 				}
 			}
 
-			/* Frees the referenced entry from this. The type remains to exist as long as other handles remain referencing it.*/
+			/* Frees the referenced entry from this. The type remains to exist as long as other handles remain referencing it. */
 			void free()
 			{
 				if (entry)
@@ -167,7 +167,7 @@ namespace codex
 			}
 
 		private:
-			Handle(sync::LocalEntry& _entry)
+			Handle(sync::Entry& _entry)
 				: AbstractHandle(&_entry)
 			{
 				entry->handles.push_back(this);

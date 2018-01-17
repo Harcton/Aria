@@ -7,48 +7,26 @@ namespace codex
 {
 	namespace sync
 	{
-		AbstractEntry::AbstractEntry(Manager& _manager, IType* _passData, const Id _id)
+		Entry::Entry(Manager& _manager, IType* _passData, const Id _id, const TypeInfo& _typeInfo, const bool _locallyInstantiated)
 			: manager(_manager)
 			, ptr(_passData)
 			, id(_id)
 			, createSent(false)
 			, removeSent(false)
 			, removeReceived(false)
+			, createReceived(false)
+			, locallyInstantiated(_locallyInstantiated)
+			, handles()
+			, interval(0)
+			, timer(0)
+			, typeInfo(_typeInfo)
 		{
 			SPEHS_ASSERT(_passData);
 		}
 
-		AbstractEntry::~AbstractEntry()
+		Entry::~Entry()
 		{
 			delete ptr;
-		}
-		
-		LocalEntry::LocalEntry(Manager& _manager, IType* _passData, const Id _id, const LocalSyncTypeInfo& _typeInfo)
-			: AbstractEntry(_manager, _passData, _id)
-			, typeInfo(_typeInfo)
-			, handles()
-			, interval(0)
-			, timer(0)
-			, createReceived(false)
-		{
-
-		}
-
-		LocalEntry::~LocalEntry()
-		{
-
-		}
-
-		RemoteEntry::RemoteEntry(Manager& _manager, IType* _passData, const Id _id, const RemoteSyncTypeInfo& _typeInfo)
-			: AbstractEntry(_manager, _passData, _id)
-			, typeInfo(_typeInfo)
-		{
-
-		}
-
-		RemoteEntry::~RemoteEntry()
-		{
-
 		}
 	}
 }

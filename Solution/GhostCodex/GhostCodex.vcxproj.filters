@@ -2,8 +2,12 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="ServoCreator.h" />
+    <ClInclude Include="PinReaderCreator.h" />
+    <ClInclude Include="PinReaderPWMCreator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ServoCreator.cpp" />
+    <ClCompile Include="PinReaderCreator.cpp" />
+    <ClCompile Include="PinReaderPWMCreator.cpp" />
   </ItemGroup>
 </Project>

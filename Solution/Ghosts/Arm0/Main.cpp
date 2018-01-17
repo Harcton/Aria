@@ -23,34 +23,21 @@
 #include <Codex/IOService.h>
 #include <Codex/SocketTCP.h>
 #include <Codex/Device/Servo.h>
+#include <Codex/Device/PinReader.h>
 #include <Codex/Sync/SyncManager.h>
 #include <GhostCodex/ServoCreator.h>
+#include <GhostCodex/PinReaderCreator.h>
 //ARM0
 
 
 
 int main(const int argc, const char** argv)
 {
-	//Codex init
-	codex::initialize(argc, argv);
-	
 	//Spehs engine init
 	spehs::CoreLib core;
-	spehs::AudioLib audio(core);
-	spehs::RenderingLib rendering(core);
-	spehs::InputLib input(rendering);
-	spehs::GUILib gui(input, audio);
-	spehs::Window window(500, 500);
-	spehs::InputManager inputManager(window);
-	spehs::GLContext glContext(window);
-	spehs::Camera2D camera(window);
-	spehs::TextureManager textureManager(glContext);
-	spehs::ShaderManager shaderManager;
-	spehs::BatchManager batchManager(window, camera, textureManager, shaderManager, "arm0");
-	spehs::time::DeltaTimeSystem deltaTimeSystem;
-	spehs::GUIContext guiContext(batchManager, inputManager, deltaTimeSystem);
-	spehs::Console console(batchManager, inputManager);
 	
+	//Codex init
+	codex::initialize(argc, argv);
 	//Arm0 init
 	spehs::time::delay(spehs::time::fromSeconds(1.0f));
 	codex::IOService ioService;
@@ -65,14 +52,29 @@ int main(const int argc, const char** argv)
 		return 1;
 	}
 
+	spehs::AudioLib audio(core);
+	spehs::RenderingLib rendering(core);
+	spehs::InputLib input(rendering);
+	spehs::GUILib gui(input, audio);
+	spehs::Window window(900, 600); window.setBorderless(true); window.setTitle("Arm0 ghost");
+	spehs::InputManager inputManager(window);
+	spehs::Camera2D camera(window);
+	spehs::ShaderManager shaderManager;
+	spehs::BatchManager batchManager(window, shaderManager, camera, "arm0");
+	spehs::time::DeltaTimeSystem deltaTimeSystem;
+	spehs::GUIContext guiContext(batchManager, inputManager, deltaTimeSystem);
+	spehs::Console console(batchManager, inputManager);
+
 	codex::sync::Manager syncManager(socket);
-	syncManager.registerType<codex::device::ServoGhost, codex::device::ServoShell>();
+	syncManager.registerType<codex::device::ServoGhost>(codex::device::ServoShell::getSyncTypeName(), codex::device::ServoShell::getSyncTypeId(), codex::device::ServoShell::getSyncTypeVersion());
+	syncManager.registerType<codex::device::PinReaderGhost>(codex::device::PinReaderShell::getSyncTypeName(), codex::device::PinReaderShell::getSyncTypeId(), codex::device::PinReaderShell::getSyncTypeVersion());
 	if (!syncManager.initialize())
 	{
 		std::getchar();
 		return 1;
 	}
 	codex::ServoCreator servoCreator(guiContext, syncManager);
+	codex::PinReaderCreator pinReaderCreator(guiContext, syncManager);
 	
 	//Update & render loop
 	bool run = true;
@@ -89,9 +91,16 @@ int main(const int argc, const char** argv)
 		//Test update...
 		socket.update();
 		syncManager.update((spehs::time::Time)deltaTimeSystem.deltaTime.value);
-		servoCreator.setPositionGlobal(servoCreator.batchManager.window.getWidth() / 2 - servoCreator.getWidth() / 2, servoCreator.batchManager.window.getHeight() - servoCreator.getHeight() / 2);
+		const float elementsHeight = servoCreator.getHeight() + pinReaderCreator.getHeight();
+		float penPositionY = (0.5f * window.getHeight()) - (0.5f * elementsHeight);
+		servoCreator.setPositionGlobal(servoCreator.batchManager.window.getWidth() / 2 - servoCreator.getWidth() / 2, penPositionY);
+		penPositionY += servoCreator.getHeight();
 		servoCreator.inputUpdate();
 		servoCreator.visualUpdate();
+		pinReaderCreator.setPositionGlobal(pinReaderCreator.batchManager.window.getWidth() / 2 - pinReaderCreator.getWidth() / 2, penPositionY);
+		penPositionY += pinReaderCreator.getHeight();
+		pinReaderCreator.inputUpdate();
+		pinReaderCreator.visualUpdate();
 
 		//Render
 		window.renderBegin();

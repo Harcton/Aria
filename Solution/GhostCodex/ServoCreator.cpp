@@ -70,10 +70,10 @@ namespace codex
 
 			for (unsigned i = 0; i < servoList->elementsSize(); i++)
 			{
-				ServoCreator* servoCreator = (ServoCreator*)servoList->at(i);
-				if (servoCreator->at(0/*remove*/)->getMouseHover())
+				ServoElement* servo = (ServoElement*)servoList->at(i);
+				if (servo->at(0/*remove*/)->getMouseHover())
 				{
-					servoList->removeElement(servoCreator);
+					servoList->removeElement(servo);
 				}
 			}
 		}
@@ -104,10 +104,11 @@ namespace codex
 			}
 		}
 		
-		sync::Handle<codex::device::ServoGhost> servoHandle = syncManager.create<codex::device::ServoGhost>(name);
+		sync::Handle<codex::device::ServoGhost> servoHandle = syncManager.create<codex::device::ServoGhost>();
 		if (servoHandle)
 		{
 			//Servo configuration setup
+			servoHandle->name = name;
 			servoHandle->setActive(false);
 			servoHandle->setPin(pin);
 			servoHandle->setMinAngle(spehs::time::fromMicroseconds(minFrequencyEditor->getEditorValue()), minAngleEditor->getEditorValue());

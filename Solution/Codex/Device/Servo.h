@@ -46,7 +46,7 @@ namespace codex
 		{
 			CODEX_SYNC_TYPE_DECL(ServoGhost, 0)
 		public:
-			ServoGhost(const std::string& n);
+			ServoGhost();
 			~ServoGhost();
 			
 			//Servo interface
@@ -72,7 +72,7 @@ namespace codex
 			void syncUpdate(protocol::WriteBuffer& buffer) override;
 			void syncUpdate(protocol::ReadBuffer& buffer) override;
 
-			const std::string name;
+			std::string name;
 
 		private:
 			float targetAngle;

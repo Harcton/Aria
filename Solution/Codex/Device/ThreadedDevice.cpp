@@ -8,6 +8,8 @@ namespace codex
 {
 	namespace device
 	{
+		static const int debugLevel = 1;
+
 		ThreadedDevice::ThreadedDevice()
 			: thread(nullptr)
 			, keepRunning(false)
@@ -44,7 +46,8 @@ namespace codex
 					thread = nullptr;
 				}
 
-				spehs::log::info("Starting threaded device...");
+				if (debugLevel >= 2)
+					spehs::log::info("Starting threaded device...");
 
 				//Launch run thread
 				keepRunning = true;
@@ -69,6 +72,9 @@ namespace codex
 			if (!thread || !keepRunning)
 				return;
 
+			if (debugLevel >= 2)
+				spehs::log::info("Stopping threaded device...");
+
 			//Request the run thread to exit
 			keepRunning = false;
 			return;
@@ -86,9 +92,14 @@ namespace codex
 
 			//Make onStart() call, device can prepare for running.
 			onStart();
+			if (debugLevel >= 1)
+				spehs::log::info("Threaded device started.");
+
 			//Update until stop is requested
 			while (true)
 			{
+				if (debugLevel >= 3)
+					spehs::log::info("Updating threaded device...");
 				update();
 				std::lock_guard<std::recursive_mutex> lock(mutex);
 				if (!keepRunning)
@@ -97,6 +108,8 @@ namespace codex
 
 			//Make onStop() call, device can do post-run operations.
 			onStop();
+			if (debugLevel >= 1)
+				spehs::log::info("Threaded device stopped.");
 		}
 
 		bool ThreadedDevice::isRunning() const

@@ -10,8 +10,8 @@ namespace codex
 	{
 		static const int debugLevel = 2;
 
-		ServoGhost::ServoGhost(const std::string& n)
-			: name(n)
+		ServoGhost::ServoGhost()
+			: name()
 			, targetAngle(0.0f)
 			, approximatedAngle(0.0f)
 			, pin(gpio::Pin::pin_none)

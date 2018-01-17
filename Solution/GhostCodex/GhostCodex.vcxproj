@@ -79,9 +79,13 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="PinReaderCreator.h" />
+    <ClInclude Include="PinReaderPWMCreator.h" />
     <ClInclude Include="ServoCreator.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="PinReaderCreator.cpp" />
+    <ClCompile Include="PinReaderPWMCreator.cpp" />
     <ClCompile Include="ServoCreator.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
