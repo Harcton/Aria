@@ -34,6 +34,7 @@ namespace codex
 		public:
 			void write(protocol::WriteBuffer& buffer) const;
 			void read(protocol::ReadBuffer& buffer);
+			gpio::PinState stateAtTime(const spehs::time::Time& time) const;
 		};
 
 		class PinReaderGhost : public sync::IType
@@ -100,8 +101,6 @@ namespace codex
 			bool clearHistory;
 			bool active;
 			PinReaderHistory history;
-			spehs::time::Time lastReadTime;
-
 		};
 	}
 }

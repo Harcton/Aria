@@ -26,17 +26,20 @@ namespace codex
 			sync::Manager& manager;
 			sync::IType* ptr;
 			const Id id;
-
-			bool createSent;
-			bool removeSent;
-			bool removeReceived;
-			bool createReceived;
+			const TypeInfo& typeInfo;
 			const bool locallyInstantiated;//True if instantiated locally, lifetime depends on handles.
 
-			const TypeInfo& typeInfo;
+			bool createSent = false;
+			bool removeSent = false;
+			bool removeReceived = false;
+			bool createReceived = false;
+
+			bool sendRemoteUpdateInterval = false;
+			spehs::time::Time requestedRemoteUpdateInterval = 0;
+
 			std::vector<AbstractHandle*> handles;
-			spehs::time::Time interval;
-			spehs::time::Time timer;
+			spehs::time::Time interval = 0;
+			spehs::time::Time timer = 0;
 
 		private:
 			friend class Manager;

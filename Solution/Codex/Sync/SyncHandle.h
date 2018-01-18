@@ -13,13 +13,16 @@ namespace codex
 
 		class AbstractHandle
 		{
+		public:
+			void setLocalUpdateInterval(const spehs::time::Time& interval);
+			void setRemoteUpdateInterval(const spehs::time::Time& interval);
 		protected:
 			AbstractHandle(Entry* _entry);
 			Entry* entry;
 		};
 
 		template<typename SyncType>
-		class Handle : AbstractHandle
+		class Handle : public AbstractHandle
 		{
 			friend class Manager;
 		public:
@@ -165,7 +168,7 @@ namespace codex
 			{
 				return entry ? &entry->manager : nullptr;
 			}
-
+			
 		private:
 			Handle(sync::Entry& _entry)
 				: AbstractHandle(&_entry)

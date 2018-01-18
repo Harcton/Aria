@@ -10,6 +10,7 @@ namespace spehs
 	class GUIStringEditor;
 	class GUICheckbox;
 	class LineDiagram;
+	class LineDiagram2;
 }
 
 namespace codex
@@ -36,7 +37,8 @@ namespace codex
 			spehs::GUIRectangle* remove;
 			spehs::GUICheckbox* active;
 			spehs::GUIRectangle* name;
-			spehs::LineDiagram* lineDiagram;
+			spehs::LineDiagram2* lineDiagram;
+			spehs::time::Time timeOrigin = 0;
 		};
 	public:
 		PinReaderCreator(spehs::GUIContext& context, sync::Manager& _syncManager);

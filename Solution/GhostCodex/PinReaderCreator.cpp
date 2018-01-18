@@ -21,7 +21,7 @@ namespace codex
 		addElement(active = new spehs::GUICheckbox(context));
 		addElement(name = new spehs::GUIRectangle(context));
 		name->setString(handle->name);
-		lineDiagram = new spehs::LineDiagram(context.batchManager);
+		lineDiagram = new spehs::LineDiagram2(context.batchManager);
 		lineDiagram->setRenderState(false);
 		lineDiagram->setSize(batchManager.window.getWidth(), batchManager.window.getHeight());
 		lineDiagram->setCapacity(200);
@@ -48,10 +48,16 @@ namespace codex
 		handle->clearHistory();
 		for (size_t i = 0; i < history.size(); i++)
 		{
-			if (history[i].state == gpio::PinState::high)
-				lineDiagram->pushBack(1.0f);
-			else if (history[i].state == gpio::PinState::low)
-				lineDiagram->pushBack(0.0f);
+			if (history[i].state == gpio::PinState::high || history[i].state == gpio::PinState::low)
+			{
+				if (timeOrigin == spehs::time::zero)
+					timeOrigin = history[i].time;
+				const spehs::time::Time relativeToInit = history[i].time - timeOrigin;
+				const spehs::vec2 point(relativeToInit.asMilliseconds(), history[i].state == gpio::PinState::high ? 1.0f : 0.0f);
+				lineDiagram->pushBack(point);
+			}
+			else
+				spehs::log::warning("PinReader history contains an invalid pin state");
 		}
 		
 		lineDiagram->setRenderState(getRenderState() && getMouseHover());
@@ -140,6 +146,7 @@ namespace codex
 			pinReaderHandle->name = name;
 			pinReaderHandle->setActive(false);
 			pinReaderHandle->setPin(pin);
+			pinReaderHandle.setRemoteUpdateInterval(spehs::time::fromSeconds(1.0f));
 
 			//Add element
 			pinReaderList->addElement(new Element(getGUIContext(), pinReaderHandle));

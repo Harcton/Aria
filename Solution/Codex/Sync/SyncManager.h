@@ -31,6 +31,7 @@ namespace codex
 				createResponse,
 				update,
 				remove,
+				updateInterval,
 			};
 			enum class TypeCompatibility : uint8_t
 			{

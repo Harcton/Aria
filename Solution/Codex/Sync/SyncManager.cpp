@@ -293,6 +293,24 @@ namespace codex
 					}
 				}
 				break;
+				case PacketType::updateInterval:
+				{
+					Entry::Id id;
+					buffer.read(id);
+					spehs::time::Time interval;
+					buffer.read(interval);
+					Entry* entry = findEntry(id);
+					if (entry)
+					{
+						entry->interval = interval;
+					}
+					else
+					{
+						spehs::log::error("codex::sync::Manager: receive handler: PacketType::updateInterval: Unknown remote entry id!");
+						return true;
+					}
+				}
+				break;
 				}
 			}
 			return true;
@@ -338,6 +356,17 @@ namespace codex
 						else
 							spehs::log::info("codex::sync::Manager: failed to send " + packetName + " for instance of type: " + typeName);
 					}
+				}
+
+				//Set update interval
+				if (entries[i]->sendRemoteUpdateInterval)
+				{
+					protocol::WriteBuffer buffer;
+					buffer.write(Manager::PacketType::updateInterval);
+					buffer.write(entries[i]->id);
+					buffer.write(entries[i]->requestedRemoteUpdateInterval);
+					if (socket.sendPacket(buffer))
+						entries[i]->sendRemoteUpdateInterval = false;
 				}
 
 				//Update

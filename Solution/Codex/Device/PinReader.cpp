@@ -35,6 +35,23 @@ namespace codex
 				buffer.read(at(i));
 		}
 
+		gpio::PinState PinReaderHistory::stateAtTime(const spehs::time::Time& time) const
+		{
+			if (empty() || time < front().time || time > back().time)
+				return gpio::PinState::invalid;
+			size_t i = 0;
+			while (at(i).time < time)
+			{
+				i++;
+			}
+			if (i == 0)
+				return front().state;
+			if (time - at(i - 1).time < at(i).time - time)
+				return at(i - 1).state;
+			else
+				return at(i).state;
+		}
+
 
 
 		PinReaderGhost::PinReaderGhost()
@@ -119,7 +136,6 @@ namespace codex
 			: pin(gpio::Pin::pin_none)
 			, clearHistory(false)
 			, active(false)
-			, lastReadTime(0)
 		{
 
 		}
@@ -181,10 +197,8 @@ namespace codex
 
 		bool PinReaderShell::syncUpdate(const spehs::time::Time deltaTime)
 		{
-			if (history.size() * sizeof(spehs::time::Time) > 1400)
+			if (history.size() * sizeof(PinReaderHistoryEntry) > 1400)
 				return true;//Default MTU is around 1500, preferably keep it below that
-			if (spehs::time::now() - lastReadTime >= spehs::time::fromSeconds(1.0f))
-				return true;
 			return false;
 		}
 
