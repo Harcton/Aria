@@ -24,9 +24,11 @@
 #include <Codex/SocketTCP.h>
 #include <Codex/Device/Servo.h>
 #include <Codex/Device/PinReader.h>
+#include <Codex/Device/PinReaderPWM.h>
 #include <Codex/Sync/SyncManager.h>
 #include <GhostCodex/ServoCreator.h>
 #include <GhostCodex/PinReaderCreator.h>
+#include <GhostCodex/PinReaderPWMCreator.h>
 //ARM0
 
 
@@ -68,6 +70,7 @@ int main(const int argc, const char** argv)
 	codex::sync::Manager syncManager(socket);
 	syncManager.registerType<codex::device::ServoGhost>(codex::device::ServoShell::getSyncTypeName(), codex::device::ServoShell::getSyncTypeId(), codex::device::ServoShell::getSyncTypeVersion());
 	syncManager.registerType<codex::device::PinReaderGhost>(codex::device::PinReaderShell::getSyncTypeName(), codex::device::PinReaderShell::getSyncTypeId(), codex::device::PinReaderShell::getSyncTypeVersion());
+	syncManager.registerType<codex::device::PinReaderPWMGhost>(codex::device::PinReaderPWMShell::getSyncTypeName(), codex::device::PinReaderPWMShell::getSyncTypeId(), codex::device::PinReaderPWMShell::getSyncTypeVersion());
 	if (!syncManager.initialize())
 	{
 		std::getchar();
@@ -75,6 +78,7 @@ int main(const int argc, const char** argv)
 	}
 	codex::ServoCreator servoCreator(guiContext, syncManager);
 	codex::PinReaderCreator pinReaderCreator(guiContext, syncManager);
+	codex::PinReaderPWMCreator pinReaderPWMCreator(guiContext, syncManager);
 	
 	//Update & render loop
 	bool run = true;
@@ -91,17 +95,24 @@ int main(const int argc, const char** argv)
 		//Test update...
 		socket.update();
 		syncManager.update((spehs::time::Time)deltaTimeSystem.deltaTime.value);
-		const float elementsHeight = servoCreator.getHeight() + pinReaderCreator.getHeight();
+		const float elementsHeight = servoCreator.getHeight() + pinReaderCreator.getHeight() + pinReaderPWMCreator.getHeight();
 		float penPositionY = (0.5f * window.getHeight()) - (0.5f * elementsHeight);
+		//Servo creator
 		servoCreator.setPositionGlobal(servoCreator.batchManager.window.getWidth() / 2 - servoCreator.getWidth() / 2, penPositionY);
 		penPositionY += servoCreator.getHeight();
 		servoCreator.inputUpdate();
 		servoCreator.visualUpdate();
+		//Pin reader creator
 		pinReaderCreator.setPositionGlobal(pinReaderCreator.batchManager.window.getWidth() / 2 - pinReaderCreator.getWidth() / 2, penPositionY);
 		penPositionY += pinReaderCreator.getHeight();
 		pinReaderCreator.inputUpdate();
 		pinReaderCreator.visualUpdate();
-
+		//Pin reader PWM creator
+		pinReaderPWMCreator.setPositionGlobal(pinReaderPWMCreator.batchManager.window.getWidth() / 2 - pinReaderPWMCreator.getWidth() / 2, penPositionY);
+		penPositionY += pinReaderPWMCreator.getHeight();
+		pinReaderPWMCreator.inputUpdate();
+		pinReaderPWMCreator.visualUpdate();
+		
 		//Render
 		window.renderBegin();
 		batchManager.render();

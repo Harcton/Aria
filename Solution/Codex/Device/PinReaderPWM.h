@@ -18,7 +18,12 @@ namespace codex
 
 	namespace device
 	{
-		typedef std::vector<float> PWMHistory;
+		class PWMHistory : public std::vector<float>
+		{
+		public:
+			void write(protocol::WriteBuffer& buffer) const;
+			void read(protocol::ReadBuffer& buffer);
+		};
 
 		class PinReaderPWMGhost : public sync::IType
 		{
@@ -38,6 +43,8 @@ namespace codex
 
 			void setPin(const gpio::Pin pin);
 			void setActive(const bool isActive);
+			void setSampleSize(const size_t size);
+			void setSampleRate(const spehs::time::Time interval);
 			void clearHistory();
 
 			const PWMHistory& getHistory() const { return history; }
@@ -46,10 +53,12 @@ namespace codex
 			std::string name;
 
 		private:
-			gpio::Pin pin;
 			PWMHistory history;
 			bool active;
 			bool requestUpdate;
+			gpio::Pin pin;
+			size_t sampleSize;
+			spehs::time::Time sampleRate;
 		};
 
 		class PinReaderPWMShell final : public ThreadedDevice, public sync::IType
@@ -61,6 +70,8 @@ namespace codex
 
 			void setActive(const bool isActive);
 			void setPin(const gpio::Pin pin);
+			void setSampleSize(const size_t size);
+			void setSampleRate(const spehs::time::Time interval);
 			void getHistory(PWMHistory& deposit) const;
 
 			//Sync type
@@ -79,13 +90,16 @@ namespace codex
 			void onStop() override;
 
 			std::recursive_mutex mutex;
-			gpio::Pin pin;
-			bool clearHistory;
+			PWMHistory history;
 			bool active;
-			PinReaderHistory pinReaderHistory;
-			PWMHistory pwmHistory;
+			bool requestUpdate;
+			bool clearHistory;
+			gpio::Pin pin;
+			size_t highStateSampleCount;
+			size_t lowStateSampleCount;
+			size_t sampleSize;
+			spehs::time::Time sampleRate;
 			spehs::time::Time lastReadTime;
-
 		};
 	}
 }

@@ -210,5 +210,32 @@ namespace codex
 				return;
 			}
 		}
+
+		void writeToBuffer(WriteBuffer& buffer, const std::string& string)
+		{
+			const size_t size = string.size();
+			buffer.write(size);
+			for (size_t i = 0; i < size; i++)
+				buffer.write(string[i]);
+		}
+
+		void readFromBuffer(ReadBuffer& buffer, std::string& string)
+		{
+			size_t size;
+			buffer.read(size);
+			string.resize(size);
+			for (size_t i = 0; i < size; i++)
+				buffer.read(string[i]);
+		}
+
+		void writeToBuffer(WriteBuffer& buffer, const spehs::time::Time& time)
+		{
+			buffer.write(time.value);
+		}
+
+		void readFromBuffer(ReadBuffer& buffer, spehs::time::Time& time)
+		{
+			buffer.read(time.value);
+		}
 	}
 }

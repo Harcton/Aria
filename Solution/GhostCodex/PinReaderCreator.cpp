@@ -52,8 +52,8 @@ namespace codex
 			{
 				if (timeOrigin == spehs::time::zero)
 					timeOrigin = history[i].time;
-				const spehs::time::Time relativeToInit = history[i].time - timeOrigin;
-				const spehs::vec2 point(relativeToInit.asMilliseconds(), history[i].state == gpio::PinState::high ? 1.0f : 0.0f);
+				const spehs::time::Time relativeToOrigin = history[i].time - timeOrigin;
+				const spehs::vec2 point(relativeToOrigin.asSeconds(), history[i].state == gpio::PinState::high ? 1.0f : 0.0f);
 				lineDiagram->pushBack(point);
 			}
 			else

@@ -74,11 +74,13 @@ namespace codex
 		, syncManager(_syncManager)
 	{
 		addElement(nameEditor = new spehs::GUIStringEditor(context));
-		nameEditor->setString("pin reader name");
+		nameEditor->setString("pin reader PWM name");
 		addElement(pinEditor = new spehs::GUIScalarEditor<unsigned>(context, "pin", 3));
 		addElement(createButton = new spehs::GUIRectangle(context));
 		createButton->setString("create");
 		createButton->setJustification(GUIRECT_TEXT_JUSTIFICATION_CENTER_BIT);
+		addElement(sampleRateEditor = new spehs::GUIScalarEditor<unsigned>(context, "sample rate / s", 1000));
+		addElement(sampleSizeEditor = new spehs::GUIScalarEditor<unsigned>(context, "sample size / value", 100));
 		addElement(pinReaderPWMList = new spehs::GUIRectangleScrollList(context));
 	}
 
@@ -137,9 +139,12 @@ namespace codex
 		if (pinReaderHandle)
 		{
 			//Servo configuration setup
+			pinReaderHandle.setRemoteUpdateInterval(spehs::time::fromSeconds(1.0f / 10.0f));
 			pinReaderHandle->name = name;
 			pinReaderHandle->setActive(false);
 			pinReaderHandle->setPin(pin);
+			pinReaderHandle->setSampleSize(sampleSizeEditor->getEditorValue());
+			pinReaderHandle->setSampleRate(spehs::time::fromSeconds(1.0f / (float)sampleRateEditor->getEditorValue()));
 
 			//Add element
 			pinReaderPWMList->addElement(new Element(getGUIContext(), pinReaderHandle));

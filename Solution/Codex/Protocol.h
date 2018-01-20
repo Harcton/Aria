@@ -74,7 +74,7 @@ namespace codex
 			PortType port;
 		};
 		Endpoint commandLineArgumentsToEndpoint(const int argc, const char** argv);
-
+		
 		/*
 			An abstract base class for read/write buffers.
 			Buffer read/write handles endianness conversion.
@@ -119,8 +119,12 @@ namespace codex
 			template<class T>
 			typename std::enable_if<!has_write<T, void(T::*)(WriteBuffer&) const>::value, void>::type write(const T& t)
 			{
-				spehs::log::info(typeid(T).name());
-				SPEHS_ASSERT(false && "To use 'WriteBuffer::write<T>(const T&)' for a class type, the type T must have a 'void write(WriteBuffer&) const' method!");//NOTE: cannot use static assert because of g++ and SFINAE
+				writeToBuffer(*this, t);
+//				spehs::log::info(typeid(T).name());
+//				SPEHS_ASSERT(false && "To use 'WriteBuffer::write<T>(const T&)' for a class type, the type T must have a 'void write(WriteBuffer&) const' method!");
+//#ifdef _WIN32 // NOTE: cannot use static assert because of g++ and SFINAE
+//				static_assert(false, "Class type T doesn't have a const write method.");
+//#endif
 			}
 			//Mutable class, has mutable write
 			template<class T>
@@ -138,8 +142,12 @@ namespace codex
 			template<class T>
 			typename std::enable_if<!has_write<T, void(T::*)(WriteBuffer&)>::value && !has_write<T, void(T::*)(WriteBuffer&) const>::value, void>::type write(T& t)
 			{
-				spehs::log::info(typeid(T).name());
-				SPEHS_ASSERT(false && "To use 'WriteBuffer::write<T>(T&)' for a class type, the type T must have a 'void write(WriteBuffer&)' or 'void write(WriteBuffer&) const' method!");//NOTE: cannot use static assert because of g++ and SFINAE
+				writeToBuffer(*this, t);
+//				spehs::log::info(typeid(T).name());
+//				SPEHS_ASSERT(false && "To use 'WriteBuffer::write<T>(T&)' for a class type, the type T must have a 'void write(WriteBuffer&)' or 'void write(WriteBuffer&) const' method!");
+//#ifdef _WIN32 // NOTE: cannot use static assert because of g++ and SFINAE
+//				static_assert(false, "Class type T doesn't have mutable or const write method.");
+//#endif
 			}
 			//Isn't class
 			template<typename T>
@@ -161,27 +169,6 @@ namespace codex
 						data[offset++] = ((const unsigned char*)&t)[--endOffset];
 					}
 				}
-			}
-			//Specialized cases
-			void write(spehs::time::Time& t)
-			{
-				write(t.value);
-			}
-			void write(const spehs::time::Time& t)
-			{
-				write(t.value);
-			}
-			void write(std::string& t)
-			{
-				write(t.size());
-				for (size_t i = 0; i < t.size(); i++)
-					write(t[i]);
-			}
-			void write(const std::string& t)
-			{
-				write(t.size());
-				for (size_t i = 0; i < t.size(); i++)
-					write(t[i]);
 			}
 
 			const unsigned char* operator[](const size_t index) const { return &data[index]; }
@@ -214,8 +201,12 @@ namespace codex
 			template<class T>
 			typename std::enable_if<!has_read<T, void(T::*)(ReadBuffer&)>::value, void>::type read(T& t)
 			{
-				spehs::log::info(typeid(T).name());
-				SPEHS_ASSERT(false && "To use 'ReadBuffer::read<T>(T&)' for a class type, the type T must have a 'void read(ReadBuffer&)' method!");//NOTE: cannot use static assert because of g++ and SFINAE
+				readFromBuffer(*this, t);
+//				spehs::log::info(typeid(T).name());
+//				SPEHS_ASSERT(false && "To use 'ReadBuffer::read<T>(T&)' for a class type, the type T must have a 'void read(ReadBuffer&)' method!");
+//#ifdef _WIN32 // NOTE: cannot use static assert because of g++ and SFINAE
+//				static_assert(false, "Class type T doesn't have a mutable read method.");
+//#endif
 			}
 			//Isn't class
 			template<typename T>
@@ -242,19 +233,6 @@ namespace codex
 				}
 
 				offset += bytes;
-			}
-			//Specialized cases
-			void read(spehs::time::Time& t)
-			{
-				read(t.value);
-			}
-			void read(std::string& t)
-			{
-				size_t sizeBytes;
-				read(sizeBytes);
-				t.resize(sizeBytes);
-				for (size_t i = 0; i < sizeBytes; i++)
-					read(t[i]);
 			}
 
 			/* Translates offset by a set amount of bytes. */
@@ -292,5 +270,26 @@ namespace codex
 			VersionType handshakeVersion;//Version of handshake protocol.
 			bool valid;
 		};
+
+		template<typename T>
+		void writeToBuffer(WriteBuffer& buffer, const std::vector<T>& vector)
+		{
+			const size_t size = vector.size();
+			buffer.write(size);
+			for (size_t i = 0; i < size; i++)
+				buffer.write(vector.size());
+		}
+		template<typename T>
+		void readFromBuffer(ReadBuffer& buffer, std::vector<T>& vector)
+		{
+			size_t size;
+			buffer.read(size);
+			for (size_t i = 0; i < size; i++)
+				buffer.read(vector.size());
+		}
+		void writeToBuffer(WriteBuffer& buffer, const std::string& string);
+		void readFromBuffer(ReadBuffer& buffer, std::string& string);
+		void writeToBuffer(WriteBuffer& buffer, const spehs::time::Time& time);
+		void readFromBuffer(ReadBuffer& buffer, spehs::time::Time& time);
 	}
 }

@@ -160,7 +160,8 @@ namespace codex
 			stop();
 			while (isRunning()) {/*Blocks*/ }
 			std::lock_guard<std::recursive_mutex> lock(mutex);
-			spehs::log::info("ServoShell destructor.");
+			if (debugLevel >= 1)
+				spehs::log::info("ServoShell destructor.");
 		}
 
 		void ServoShell::setActive(const bool isActive)

@@ -51,6 +51,8 @@ namespace codex
 
 		spehs::GUIStringEditor* nameEditor;
 		spehs::GUIScalarEditor<unsigned>* pinEditor;
+		spehs::GUIScalarEditor<unsigned>* sampleRateEditor;
+		spehs::GUIScalarEditor<unsigned>* sampleSizeEditor;
 		spehs::GUIRectangle* createButton;
 		spehs::GUIRectangleScrollList* pinReaderPWMList;
 	};

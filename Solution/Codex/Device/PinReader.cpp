@@ -55,6 +55,9 @@ namespace codex
 
 
 		PinReaderGhost::PinReaderGhost()
+			: pin(gpio::Pin::pin_none)
+			, active(false)
+			, requestUpdate(true)
 		{
 
 		}
@@ -142,7 +145,9 @@ namespace codex
 
 		PinReaderShell::~PinReaderShell()
 		{
-
+			stop();
+			while (isRunning()) {/*Blocks*/ }
+			std::lock_guard<std::recursive_mutex> lock(mutex);
 		}
 
 		void PinReaderShell::setActive(const bool isActive)
@@ -197,7 +202,7 @@ namespace codex
 
 		bool PinReaderShell::syncUpdate(const spehs::time::Time deltaTime)
 		{
-			if (history.size() * sizeof(PinReaderHistoryEntry) > 1400)
+			if (sizeof(size_t) + history.size() * (sizeof(PinReaderHistoryEntry::state) + sizeof(PinReaderHistoryEntry::time)) > 1400)
 				return true;//Default MTU is around 1500, preferably keep it below that
 			return false;
 		}
