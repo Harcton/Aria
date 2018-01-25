@@ -21,9 +21,9 @@ namespace codex
 		addElement(active = new spehs::GUICheckbox(context));
 		addElement(name = new spehs::GUIRectangle(context));
 		name->setString(handle->name);
-		lineDiagram = new spehs::LineDiagram2(context.batchManager);
+		lineDiagram = new spehs::LineDiagram2(getBatchManager());
 		lineDiagram->setRenderState(false);
-		lineDiagram->setSize(batchManager.window.getWidth(), batchManager.window.getHeight());
+		lineDiagram->setSize(getWindow().getWidth(), getWindow().getHeight());
 		lineDiagram->setCapacity(200);
 		setDepth(getDepth());
 	}
@@ -97,7 +97,7 @@ namespace codex
 	{
 		GUIRectangleColumn::inputUpdate();
 
-		if (inputManager.isKeyPressed(MOUSEBUTTON_LEFT))
+		if (getInputManager().isKeyPressed(MOUSEBUTTON_LEFT))
 		{//Mouse button pressed
 
 			if (createButton->getMouseHover())

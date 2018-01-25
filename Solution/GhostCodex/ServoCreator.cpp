@@ -62,7 +62,7 @@ namespace codex
 	{
 		GUIRectangleColumn::inputUpdate();
 
-		if (inputManager.isKeyPressed(MOUSEBUTTON_LEFT))
+		if (getInputManager().isKeyPressed(MOUSEBUTTON_LEFT))
 		{//Mouse button pressed
 
 			if (createButton->getMouseHover())

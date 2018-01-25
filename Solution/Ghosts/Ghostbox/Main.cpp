@@ -34,7 +34,7 @@ void runWindow(const std::string& windowName)
 	spehs::ShaderManager shaderManager;
 	spehs::BatchManager batchManager(window, shaderManager, camera, "ghostbox");
 	spehs::InputManager inputManager(window);
-	spehs::Console console(batchManager, inputManager);
+	spehs::Console console(inputManager, &batchManager);
 	spehs::time::DeltaTimeSystem deltaTimeSystem;
 	spehs::GUIContext guiContext(batchManager, inputManager, deltaTimeSystem);
 	spehs::GUIRectangle rect(guiContext);

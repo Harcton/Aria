@@ -65,7 +65,7 @@ int main(const int argc, const char** argv)
 	spehs::BatchManager batchManager(window, shaderManager, camera, "arm0");
 	spehs::time::DeltaTimeSystem deltaTimeSystem;
 	spehs::GUIContext guiContext(batchManager, inputManager, deltaTimeSystem);
-	spehs::Console console(batchManager, inputManager);
+	spehs::Console console(inputManager, &batchManager);
 
 	codex::sync::Manager syncManager(socket);
 	syncManager.registerType<codex::device::ServoGhost>(codex::device::ServoShell::getSyncTypeName(), codex::device::ServoShell::getSyncTypeId(), codex::device::ServoShell::getSyncTypeVersion());
@@ -98,17 +98,17 @@ int main(const int argc, const char** argv)
 		const float elementsHeight = servoCreator.getHeight() + pinReaderCreator.getHeight() + pinReaderPWMCreator.getHeight();
 		float penPositionY = (0.5f * window.getHeight()) - (0.5f * elementsHeight);
 		//Servo creator
-		servoCreator.setPositionGlobal(servoCreator.batchManager.window.getWidth() / 2 - servoCreator.getWidth() / 2, penPositionY);
+		servoCreator.setPositionGlobal(window.getWidth() / 2 - servoCreator.getWidth() / 2, penPositionY);
 		penPositionY += servoCreator.getHeight();
 		servoCreator.inputUpdate();
 		servoCreator.visualUpdate();
 		//Pin reader creator
-		pinReaderCreator.setPositionGlobal(pinReaderCreator.batchManager.window.getWidth() / 2 - pinReaderCreator.getWidth() / 2, penPositionY);
+		pinReaderCreator.setPositionGlobal(window.getWidth() / 2 - pinReaderCreator.getWidth() / 2, penPositionY);
 		penPositionY += pinReaderCreator.getHeight();
 		pinReaderCreator.inputUpdate();
 		pinReaderCreator.visualUpdate();
 		//Pin reader PWM creator
-		pinReaderPWMCreator.setPositionGlobal(pinReaderPWMCreator.batchManager.window.getWidth() / 2 - pinReaderPWMCreator.getWidth() / 2, penPositionY);
+		pinReaderPWMCreator.setPositionGlobal(window.getWidth() / 2 - pinReaderPWMCreator.getWidth() / 2, penPositionY);
 		penPositionY += pinReaderPWMCreator.getHeight();
 		pinReaderPWMCreator.inputUpdate();
 		pinReaderPWMCreator.visualUpdate();
