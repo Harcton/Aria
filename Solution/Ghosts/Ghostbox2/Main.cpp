@@ -2,6 +2,7 @@
 #include <boost/system/error_code.hpp>//->Works
 #include <Codex/Device/Servo.h>
 #include <Codex/Device/PinReader.h>
+#include <Codex/Device/PinReaderPWM.h>
 #include <Codex/Sync/SyncManager.h>
 #include <Codex/Aria.h>
 #include <SpehsEngine/Core/Core.h>
@@ -25,6 +26,7 @@ int main(const int argc, const char** argv)
 		codex::sync::Manager syncManager(socket);
 		syncManager.registerType<codex::device::ServoShell>(codex::device::ServoGhost::getSyncTypeName(), codex::device::ServoGhost::getSyncTypeId(), codex::device::ServoGhost::getSyncTypeVersion());
 		syncManager.registerType<codex::device::PinReaderShell>(codex::device::PinReaderGhost::getSyncTypeName(), codex::device::PinReaderGhost::getSyncTypeId(), codex::device::PinReaderGhost::getSyncTypeVersion());
+		syncManager.registerType<codex::device::PinReaderPWMShell>(codex::device::PinReaderPWMGhost::getSyncTypeName(), codex::device::PinReaderPWMGhost::getSyncTypeId(), codex::device::PinReaderPWMGhost::getSyncTypeVersion());
 		if (syncManager.initialize())
 		{
 			spehs::time::Time deltaTime = 0;

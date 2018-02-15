@@ -27,6 +27,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Device\ThreadedDevice.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Device\Ublox_M8N.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Device\PinReader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Manipulator.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Sync\SyncEntry.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)GPIO.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)IOService.cpp" />
@@ -51,6 +52,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Device\ThreadedDevice.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Device\Ublox_M8N.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Device\PinReader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Manipulator.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Sync\SyncEntry.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)GPIO.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)IOService.h" />
