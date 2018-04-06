@@ -18,12 +18,14 @@
 #include <SpehsEngine/Rendering/Window.h>
 #include <SpehsEngine/Rendering/GLContext.h>
 #include <SpehsEngine/GUI/GUIRectangle.h>
-#include <Codex/Device/Servo.h>
-#include <Codex/Sync/SyncManager.h>
-#include <Codex/Manipulator.h>
-#include <Codex/Protocol.h>
-#include <Codex/Codex.h>
-#include <Codex/Aria.h>
+#include "SpehsEngine/Net/Net.h"
+#include "SpehsEngine/Sync/Sync.h"
+#include "SpehsEngine/GPIO/GPIO.h"
+#include "SpehsEngine/GPIO/Device/Servo.h"
+#include "SpehsEngine/Sync/SyncManager.h"
+#include "SpehsEngine/GPIO/Manipulator.h"
+#include "SpehsEngine/Net/Protocol.h"
+#include "SpehsEngine/Net/Aria.h"
 #include <thread>
 
 //void runWindow(std::string windowName, spehs::Appvars& appvars)
@@ -96,12 +98,14 @@ int main(const int argc, const char** argv)
 	inifile.read();
 
 	//Initialize libraries
-	spehs::CoreLib core;
-	spehs::RenderingLib rendering(core);
-	spehs::InputLib input(rendering);
-	spehs::AudioLib audio(core);
-	spehs::GUILib gui(rendering, audio);
-	codex::initialize(argc, argv);
+	spehs::CoreLib coreLib;
+	spehs::RenderingLib renderingLib(coreLib);
+	spehs::InputLib inputLib(renderingLib);
+	spehs::AudioLib audioLib(coreLib);
+	spehs::GUILib guiLib(renderingLib, audioLib);
+	spehs::NetLib netLib(coreLib);
+	spehs::SyncLib syncLib(netLib);
+	spehs::GPIOLib gpioLib(syncLib);
 
 	const size_t threadCount = 1;
 	std::thread* threads[threadCount];
@@ -120,93 +124,5 @@ int main(const int argc, const char** argv)
 		delete threads[i];
 	}
 
-	codex::uninitialize();
 	return 0;
 }
-
-/*
-
-
-std::vector<codex::ServoJoint*> rotatingJoints;
-for (size_t i = 0; i < 6; i++)
-{
-if (rotatingJoints.empty())
-rotatingJoints.push_back(new codex::ServoJoint(nullptr));
-else
-{
-rotatingJoints.push_back(new codex::ServoJoint(rotatingJoints.back()));
-rotatingJoints.back()->localTranslate(glm::vec3(spehs::rng::random<float>(-1.0f, 1.0f), spehs::rng::random<float>(-1.0f, 1.0f), spehs::rng::random<float>(-1.0f, 1.0f)));
-}
-rotatingJoints.back()->localRotate(glm::quat(glm::vec3(spehs::rng::random<float>(-1.0f, 1.0f), spehs::rng::random<float>(-1.0f, 1.0f), spehs::rng::random<float>(-1.0f, 1.0f))));
-}
-std::vector<spehs::Line*> hierarchyLines;
-for (int i = 0; i < (int)rotatingJoints.size() - 1; i++)
-{
-hierarchyLines.push_back(batchManager.createLine(0));
-hierarchyLines.back()->setCameraMatrixState(false);
-const float colorMultiplier = (float)i / float((int)rotatingJoints.size() - 1);
-hierarchyLines.back()->setColor(spehs::Color(int(255 * colorMultiplier), int(255 * colorMultiplier), int(255 * colorMultiplier)));
-}
-float cameraAngle = 0.0f;
-float visualScale = 100.0f;
-const float visualScaleChangeSpeed = 10.0f;
-
-//Update & render loop
-bool run = true;
-spehs::time::Time deltaTime = 0;
-while (run)
-{
-const spehs::time::Time beginTime = spehs::time::now();
-
-//Spehs update
-deltaTimeSystem.deltaTimeSystemUpdate();
-inputManager.update();
-spehs::audio::AudioEngine::update();
-consoleVisualizer.update(deltaTimeSystem.deltaTime);
-if (inputManager.isQuitRequested() || inputManager.isKeyPressed(KEYBOARD_ESCAPE))
-run = false;
-camera.update();
-
-//Test update...
-if (inputManager.isKeyDown(KEYBOARD_SPACE))
-{
-for (size_t i = 0; i < 10; i++)
-{
-polygons.push_back(batchManager.createPolygon(3, 0, 1.0f, 1.0f));
-polygons.back()->setCameraMatrixState(false);
-polygons.back()->setPosition(spehs::rng::random<float>(0.0f, (float)window.getWidth()), spehs::rng::random<float>(0.0f, (float)window.getHeight()));
-}
-}
-if (inputManager.isKeyDown(KEYBOARD_LEFT))
-cameraAngle += deltaTime.asSeconds();
-if (inputManager.isKeyDown(KEYBOARD_RIGHT))
-cameraAngle -= deltaTime.asSeconds();
-if (inputManager.isKeyDown(KEYBOARD_PAGEUP))
-visualScale += visualScaleChangeSpeed * deltaTime.asSeconds();
-if (inputManager.isKeyDown(KEYBOARD_PAGEDOWN))
-visualScale = std::max(1.0f, visualScale - visualScaleChangeSpeed * deltaTime.asSeconds());
-const spehs::vec2 center(window.getWidth() / 2, window.getHeight() / 2);
-for (size_t i = 0; i < hierarchyLines.size(); i++)
-{
-codex::ServoJoint& rj1 = *rotatingJoints[i];
-codex::ServoJoint& rj2 = *rotatingJoints[i + 1];
-const glm::vec3 p1 = rj1.getGlobalPosition();
-const glm::vec3 p2 = rj2.getGlobalPosition();
-const float xFactor = cos(cameraAngle);
-const float zFactor = cos(cameraAngle + HALF_PI);
-const spehs::vec2 sp1(p1.x * xFactor + p1.y * zFactor, p1.y);
-const spehs::vec2 sp2(p2.x * xFactor + p2.y * zFactor, p2.y);
-hierarchyLines[i]->setPoints(center + visualScale * sp1, center + visualScale * sp2);
-hierarchyLines[i]->setLineWidth(0.2f * visualScale);
-}
-
-//Render
-window.renderBegin();
-batchManager.render();
-consoleVisualizer.render("FPS: " + std::to_string((int)(1.0f / deltaTime.asSeconds())));
-window.renderEnd();
-
-deltaTime = spehs::time::now() - beginTime;
-}
-
-*/

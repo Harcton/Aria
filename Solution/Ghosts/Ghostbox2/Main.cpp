@@ -1,32 +1,37 @@
-#include <Codex/Codex.h>
+
 #include <boost/system/error_code.hpp>//->Works
-#include <Codex/Device/Servo.h>
-#include <Codex/Device/PinReader.h>
-#include <Codex/Device/PinReaderPWM.h>
-#include <Codex/Sync/SyncManager.h>
-#include <Codex/Aria.h>
-#include <SpehsEngine/Core/Core.h>
+#include "SpehsEngine/GPIO/Device/Servo.h"
+#include "SpehsEngine/GPIO/Device/PinReader.h"
+#include "SpehsEngine/GPIO/Device/PinReaderPWM.h"
+#include "SpehsEngine/Sync/SyncManager.h"
+#include "SpehsEngine/Net/Aria.h"
+#include "SpehsEngine/Core/Core.h"
+#include "SpehsEngine/Net/Net.h"
+#include "SpehsEngine/Sync/Sync.h"
+#include "SpehsEngine/GPIO/GPIO.h"
 
 int main(const int argc, const char** argv)
 {
-	spehs::CoreLib core;
-	codex::initialize(argc, argv);
+	spehs::CoreLib coreLib;
+	spehs::NetLib netLib(coreLib);
+	spehs::SyncLib syncLib(netLib);
+	spehs::GPIOLib gpioLib(syncLib);
 
 	bool keepRunning = true;
 	while (keepRunning)
 	{
-		codex::IOService ioService;
-		codex::SocketTCP socket(ioService);
-		codex::aria::Connector connector(socket, "arm0Shell", "arm0Ghost", 41623);
-		if (connector.enter(codex::protocol::Endpoint("192.168.10.51", codex::protocol::defaultAriaPort)))
+		spehs::IOService ioService;
+		spehs::SocketTCP socket(ioService);
+		spehs::aria::Connector connector(socket, "arm0Shell", "arm0Ghost", 41623);
+		if (connector.enter(spehs::net::Endpoint("192.168.10.51", spehs::net::defaultAriaPort)))
 			spehs::log::info("yay!");
 		else
 			spehs::log::info("nay!");
 
-		codex::sync::Manager syncManager(socket);
-		syncManager.registerType<codex::device::ServoShell>(codex::device::ServoGhost::getSyncTypeName(), codex::device::ServoGhost::getSyncTypeId(), codex::device::ServoGhost::getSyncTypeVersion());
-		syncManager.registerType<codex::device::PinReaderShell>(codex::device::PinReaderGhost::getSyncTypeName(), codex::device::PinReaderGhost::getSyncTypeId(), codex::device::PinReaderGhost::getSyncTypeVersion());
-		syncManager.registerType<codex::device::PinReaderPWMShell>(codex::device::PinReaderPWMGhost::getSyncTypeName(), codex::device::PinReaderPWMGhost::getSyncTypeId(), codex::device::PinReaderPWMGhost::getSyncTypeVersion());
+		spehs::sync::Manager syncManager(socket);
+		syncManager.registerType<spehs::device::ServoShell>(spehs::device::ServoGhost::getSyncTypeName(), spehs::device::ServoGhost::getSyncTypeId(), spehs::device::ServoGhost::getSyncTypeVersion());
+		syncManager.registerType<spehs::device::PinReaderShell>(spehs::device::PinReaderGhost::getSyncTypeName(), spehs::device::PinReaderGhost::getSyncTypeId(), spehs::device::PinReaderGhost::getSyncTypeVersion());
+		syncManager.registerType<spehs::device::PinReaderPWMShell>(spehs::device::PinReaderPWMGhost::getSyncTypeName(), spehs::device::PinReaderPWMGhost::getSyncTypeId(), spehs::device::PinReaderPWMGhost::getSyncTypeVersion());
 		if (syncManager.initialize())
 		{
 			spehs::time::Time deltaTime = 0;
@@ -40,7 +45,6 @@ int main(const int argc, const char** argv)
 		}
 	}
 
-	codex::uninitialize();
 	std::getchar();
 	return 0;
 }

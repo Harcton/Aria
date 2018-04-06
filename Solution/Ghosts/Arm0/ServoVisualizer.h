@@ -2,7 +2,7 @@
 #include <SpehsEngine/Core/Vector.h>
 #include <glm/gtc/quaternion.hpp>
 
-namespace codex
+namespace spehs
 {
 	namespace device
 	{
@@ -23,7 +23,7 @@ namespace spehs
 class ServoVisualizer
 {
 public:
-	ServoVisualizer(spehs::BatchManager& _batchManager, codex::device::ServoGhost& _servo);
+	ServoVisualizer(spehs::BatchManager& _batchManager, spehs::device::ServoGhost& _servo);
 	~ServoVisualizer();
 	
 	void update(const spehs::time::Time& deltaTime);
@@ -33,7 +33,7 @@ public:
 	void setRootScreenPosition(const spehs::vec2& pos);
 
 	spehs::BatchManager& batchManager;
-	codex::device::ServoGhost& servo;
+	spehs::device::ServoGhost& servo;
 
 private:
 	ServoVisualizer* parent;

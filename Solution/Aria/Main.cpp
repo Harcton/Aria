@@ -14,10 +14,11 @@
 //#include <SpehsEngine/Input/Input.h>
 //#include <SpehsEngine/GUI/GUI.h>
 //#include <SpehsEngine/GUI/GUIRectangle.h>
-#include <Codex/Codex.h>
-#include <Codex/SocketTCP.h>
-#include <Codex/IOService.h>
-#include <Codex/Aria.h>
+#include "SpehsEngine/Core/Core.h"
+#include "SpehsEngine/Net/Net.h"
+#include "SpehsEngine/Net/SocketTCP.h"
+#include "SpehsEngine/Net/IOService.h"
+#include "SpehsEngine/Net/Aria.h"
 #include <atomic>
 #include <functional>
 
@@ -39,18 +40,18 @@ int main(const int argc, const char** argv)
 	//spehs::time::DeltaTimeSystem deltaTimeSystem;
 	//spehs::GUIContext guiContext(batchManager, inputManager, deltaTimeSystem);
 	//spehs::Console console(batchManager, inputManager);
-	codex::initialize(argc, argv);
+	spehs::CoreLib coreLib;
+	spehs::NetLib netLib(coreLib);
 
-	codex::protocol::PortType port = codex::protocol::defaultAriaPort;
+	spehs::net::PortType port = spehs::net::defaultAriaPort;
 	if (argc > 1)
 		port = std::atoi(argv[1]);
 
-	codex::aria::Server aria;
+	spehs::aria::Server aria;
 	aria.start(port);
 	while (aria.isRunning())
 	{
 	}
 
-	codex::uninitialize();
 	return 0;
 }

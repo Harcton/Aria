@@ -1,19 +1,23 @@
-#include <Codex/Codex.h>
 #include <boost/system/error_code.hpp>//->Works
-#include <Codex/Device/HC_SR04.h>
-#include <Codex/Device/RS232_PinReader.h>
-#include <Codex/Device/PIR_MotionSensor.h>
+#include "SpehsEngine/GPIO/Device/HC_SR04.h"
+#include "SpehsEngine/GPIO/Device/RS232_PinReader.h"
+#include "SpehsEngine/GPIO/Device/PIR_MotionSensor.h"
+#include "SpehsEngine/Core/Core.h"
+#include "SpehsEngine/Core/Log.h"
+#include "SpehsEngine/Net/Net.h"
+#include "SpehsEngine/Sync/Sync.h"
+#include "SpehsEngine/GPIO/GPIO.h"
 #include <glm/glm.hpp>
 #include <iostream>
 #include <boost/system/error_code.hpp>
-#include "SpehsEngine/Core/Core.h"
-#include "SpehsEngine/Core/Log.h"
 
 
 int main(const int argc, const char** argv)
 {
-	spehs::CoreLib core;
-	codex::initialize(argc, argv);
+	spehs::CoreLib coreLib;
+	spehs::NetLib netLib(coreLib);
+	spehs::SyncLib syncLib(netLib);
+	spehs::GPIOLib gpioLib(syncLib);
 
 	spehs::log::info("Sandshell");
 		
@@ -25,11 +29,10 @@ int main(const int argc, const char** argv)
 	//{ /* Keep running */ }
 	//spehs::log::info("main end"); return 0;
 	
-
 	while (true)
 	{
-		codex::device::RS232_PinReader reader;
-		reader.setPin(codex::gpio::pin_35/*, codex::gpio::pin_37*/);
+		spehs::device::RS232_PinReader reader;
+		reader.setPin(spehs::gpio::pin_35/*, codex::gpio::pin_37*/);
 		reader.setReadInterval(spehs::time::fromSeconds(1.0f / 9600.0f));
 		//reader.setReadInterval(spehs::time::fromSeconds(1.0f / 4800.0f));
 		
@@ -68,6 +71,4 @@ int main(const int argc, const char** argv)
 				
 		std::getchar();
 	}
-
-	codex::uninitialize();
 }

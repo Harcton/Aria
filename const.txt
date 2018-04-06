@@ -19,6 +19,9 @@ ld returned 1 exit status -> Check Linker/library dependencies.
 	/usr/bin/ld: cannot find -l... check the following:
 		Generated .a file is named with the lib- prefix
 		NO l- or lib- prefix in the linker input!
+		The order of input libraries matters!
+			Check project settings/Linker/Input/Library dependencies
+			The right order is high to low
 	
 Full rebuild: Core and Codex succeed, shell project fails and prints some errors regarding undefined reference
 	Afterwards, building the shell project causes it to succeed.

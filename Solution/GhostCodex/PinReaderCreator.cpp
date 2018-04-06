@@ -4,14 +4,14 @@
 #include "SpehsEngine/GUI/GUICheckbox.h"
 #include "SpehsEngine/GUI/GUIStringEditor.h"
 #include "SpehsEngine/GUI/GUIRectangleScrollList.h"
-#include "Codex/Sync/SyncManager.h"
+#include "SpehsEngine/Sync/SyncManager.h"
 #include "PinReaderCreator.h"
 
 
 
-namespace codex
+namespace spehs
 {
-	PinReaderCreator::Element::Element(spehs::GUIContext& context, const sync::Handle<codex::device::PinReaderGhost>& _handle)
+	PinReaderCreator::Element::Element(spehs::GUIContext& context, const spehs::sync::Handle<spehs::device::PinReaderGhost>& _handle)
 		: spehs::GUIRectangleRow(context)
 		, handle(_handle)
 	{
@@ -44,16 +44,16 @@ namespace codex
 		SPEHS_ASSERT(handle);
 		handle->setActive(active->getEditorValue());
 
-		codex::device::PinReaderHistory history = handle->getHistory();
+		spehs::device::PinReaderHistory history = handle->getHistory();
 		handle->clearHistory();
 		for (size_t i = 0; i < history.size(); i++)
 		{
-			if (history[i].state == gpio::PinState::high || history[i].state == gpio::PinState::low)
+			if (history[i].state == spehs::gpio::PinState::high || history[i].state == spehs::gpio::PinState::low)
 			{
 				if (timeOrigin == spehs::time::zero)
 					timeOrigin = history[i].time;
 				const spehs::time::Time relativeToOrigin = history[i].time - timeOrigin;
-				const spehs::vec2 point(relativeToOrigin.asSeconds(), history[i].state == gpio::PinState::high ? 1.0f : 0.0f);
+				const spehs::vec2 point(relativeToOrigin.asSeconds(), history[i].state == spehs::gpio::PinState::high ? 1.0f : 0.0f);
 				lineDiagram->pushBack(point);
 			}
 			else
@@ -75,7 +75,7 @@ namespace codex
 		lineDiagram->setDepth(depth + 10);
 	}
 
-	PinReaderCreator::PinReaderCreator(spehs::GUIContext& context, sync::Manager& _syncManager)
+	PinReaderCreator::PinReaderCreator(spehs::GUIContext& context, spehs::sync::Manager& _syncManager)
 		: GUIRectangleColumn(context)
 		, syncManager(_syncManager)
 	{
@@ -116,8 +116,8 @@ namespace codex
 
 	void PinReaderCreator::tryCreate()
 	{
-		const codex::gpio::Pin pin = codex::gpio::getPinNumberAsEnum(pinEditor->getEditorValue());
-		if (pin == codex::gpio::Pin::pin_none)
+		const spehs::gpio::Pin pin = spehs::gpio::getPinNumberAsEnum(pinEditor->getEditorValue());
+		if (pin == spehs::gpio::Pin::pin_none)
 		{
 			spehs::log::info("Cannot create a pin reader with invalid pin.");
 			return;
@@ -139,7 +139,7 @@ namespace codex
 			}
 		}
 
-		sync::Handle<codex::device::PinReaderGhost> pinReaderHandle = syncManager.create<codex::device::PinReaderGhost>();
+		spehs::sync::Handle<spehs::device::PinReaderGhost> pinReaderHandle = syncManager.create<spehs::device::PinReaderGhost>();
 		if (pinReaderHandle)
 		{
 			//Servo configuration setup

@@ -1,11 +1,11 @@
 #include "ServoVisualizer.h"
 #include <SpehsEngine/Rendering/BatchManager.h>
 #include <SpehsEngine/Core/Time.h>
-#include <Codex/Device/Servo.h>
+#include <SpehsEngine/GPIO/Device/Servo.h>
 
 
 
-ServoVisualizer::ServoVisualizer(spehs::BatchManager& _batchManager, codex::device::ServoGhost& _servo)
+ServoVisualizer::ServoVisualizer(spehs::BatchManager& _batchManager, spehs::device::ServoGhost& _servo)
 	: batchManager(_batchManager)
 	, servo(_servo)
 	, parent(nullptr)

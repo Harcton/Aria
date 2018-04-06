@@ -2,8 +2,8 @@
 #include "SpehsEngine/GUI/GUIRectangleColumn.h"
 #include "SpehsEngine/GUI/GUIRectangleRow.h"
 #include "SpehsEngine/GUI/GUIScalarEditor.h"
-#include "Codex/Sync/SyncHandle.h"
-#include "Codex/Device/PinReader.h"
+#include "SpehsEngine/Sync/SyncHandle.h"
+#include "SpehsEngine/GPIO/Device/PinReader.h"
 
 namespace spehs
 {
@@ -11,10 +11,6 @@ namespace spehs
 	class GUICheckbox;
 	class LineDiagram;
 	class LineDiagram2;
-}
-
-namespace codex
-{
 	namespace sync
 	{
 		class Manager;
@@ -25,14 +21,14 @@ namespace codex
 		class Element : public spehs::GUIRectangleRow
 		{
 		public:
-			Element(spehs::GUIContext& context, const sync::Handle<codex::device::PinReaderGhost>& _handle);
+			Element(spehs::GUIContext& context, const spehs::sync::Handle<spehs::device::PinReaderGhost>& _handle);
 			~Element();
 
 			void inputUpdate() override;
 			void setRenderState(const bool state) override;
 			void setDepth(const int16_t depth) override;
 
-			sync::Handle<codex::device::PinReaderGhost> handle;
+			spehs::sync::Handle<spehs::device::PinReaderGhost> handle;
 		private:
 			spehs::GUIRectangle* remove;
 			spehs::GUICheckbox* active;
@@ -41,12 +37,12 @@ namespace codex
 			spehs::time::Time timeOrigin = 0;
 		};
 	public:
-		PinReaderCreator(spehs::GUIContext& context, sync::Manager& _syncManager);
+		PinReaderCreator(spehs::GUIContext& context, spehs::sync::Manager& _syncManager);
 		~PinReaderCreator();
 
 		void inputUpdate() override;
 
-		sync::Manager& syncManager;
+		spehs::sync::Manager& syncManager;
 
 	private:
 		void tryCreate();

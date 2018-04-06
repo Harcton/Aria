@@ -2,17 +2,13 @@
 #include "SpehsEngine/GUI/GUIRectangleColumn.h"
 #include "SpehsEngine/GUI/GUIRectangleRow.h"
 #include "SpehsEngine/GUI/GUIScalarEditor.h"
-#include "Codex/Sync/SyncHandle.h"
-#include "Codex/Device/Servo.h"
+#include "SpehsEngine/Sync/SyncHandle.h"
+#include "SpehsEngine/GPIO/Device/Servo.h"
 
 namespace spehs
 {
 	class GUIStringEditor;
 	class GUICheckbox;
-}
-
-namespace codex
-{
 	namespace sync
 	{
 		class Manager;
@@ -21,11 +17,11 @@ namespace codex
 	class ServoElement : public spehs::GUIRectangleRow
 	{
 	public:
-		ServoElement(spehs::GUIContext& context, const sync::Handle<codex::device::ServoGhost>& _handle);
+		ServoElement(spehs::GUIContext& context, const sync::Handle<spehs::device::ServoGhost>& _handle);
 
 		void inputUpdate() override;
 
-		sync::Handle<codex::device::ServoGhost> handle;
+		sync::Handle<spehs::device::ServoGhost> handle;
 
 	private:
 		spehs::GUIRectangle* remove;

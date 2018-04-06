@@ -1,15 +1,15 @@
 #include <SpehsEngine/GUI/GUICheckbox.h>
 #include <SpehsEngine/GUI/GUIStringEditor.h>
 #include <SpehsEngine/GUI/GUIRectangleScrollList.h>
-#include <Codex/Device/Servo.h>
-#include <Codex/Sync/SyncManager.h>
+#include "SpehsEngine/GPIO/Device/Servo.h"
+#include "SpehsEngine/Sync/SyncManager.h"
 #include "ServoCreator.h"
 
 
 
-namespace codex
+namespace spehs
 {
-	ServoElement::ServoElement(spehs::GUIContext& context, const sync::Handle<codex::device::ServoGhost>& _handle)
+	ServoElement::ServoElement(spehs::GUIContext& context, const sync::Handle<spehs::device::ServoGhost>& _handle)
 		: spehs::GUIRectangleRow(context)
 		, handle(_handle)
 	{
@@ -81,8 +81,8 @@ namespace codex
 
 	void ServoCreator::tryCreate()
 	{
-		const codex::gpio::Pin pin = codex::gpio::getPinNumberAsEnum(pinEditor->getEditorValue());
-		if (pin == codex::gpio::Pin::pin_none)
+		const spehs::gpio::Pin pin = spehs::gpio::getPinNumberAsEnum(pinEditor->getEditorValue());
+		if (pin == spehs::gpio::Pin::pin_none)
 		{
 			spehs::log::info("Cannot create a servo with invalid pin.");
 			return;
@@ -104,7 +104,7 @@ namespace codex
 			}
 		}
 		
-		sync::Handle<codex::device::ServoGhost> servoHandle = syncManager.create<codex::device::ServoGhost>();
+		sync::Handle<spehs::device::ServoGhost> servoHandle = syncManager.create<spehs::device::ServoGhost>();
 		if (servoHandle)
 		{
 			//Servo configuration setup

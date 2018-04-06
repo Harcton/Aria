@@ -17,20 +17,22 @@
 #include <SpehsEngine/Rendering/ShaderManager.h>
 #include <SpehsEngine/Rendering/Window.h>
 #include <SpehsEngine/Rendering/TextureManager.h>
+#include "SpehsEngine/Net/Net.h"
+#include "SpehsEngine/Sync/Sync.h"
+#include "SpehsEngine/GPIO/GPIO.h"
 //CODEX
-#include <Codex/Aria.h>
-#include <Codex/Codex.h>
-#include <Codex/IOService.h>
-#include <Codex/SocketTCP.h>
-#include <Codex/Manipulator.h>
-#include <Codex/Device/Servo.h>
-#include <Codex/Device/PinReader.h>
-#include <Codex/Device/PinReaderPWM.h>
-#include <Codex/Sync/SyncManager.h>
-#include <Codex/Manipulator.h>
-#include <GhostCodex/ServoCreator.h>
-#include <GhostCodex/PinReaderCreator.h>
-#include <GhostCodex/PinReaderPWMCreator.h>
+#include "SpehsEngine/Net/Aria.h"
+#include "SpehsEngine/Net/IOService.h"
+#include "SpehsEngine/Net/SocketTCP.h"
+#include "SpehsEngine/GPIO/Manipulator.h"
+#include "SpehsEngine/GPIO/Device/Servo.h"
+#include "SpehsEngine/GPIO/Device/PinReader.h"
+#include "SpehsEngine/GPIO/Device/PinReaderPWM.h"
+#include "SpehsEngine/Sync/SyncManager.h"
+#include "SpehsEngine/GPIO/Manipulator.h"
+#include "GhostCodex/ServoCreator.h"
+#include "GhostCodex/PinReaderCreator.h"
+#include "GhostCodex/PinReaderPWMCreator.h"
 //ARM0
 
 
@@ -38,20 +40,21 @@
 int main(const int argc, const char** argv)
 {
 	//Spehs engine init
-	spehs::CoreLib core;
+	spehs::CoreLib coreLib;
+	spehs::NetLib netLib(coreLib);
+	spehs::SyncLib syncLib(netLib);
+	spehs::GPIOLib gpioLib(syncLib);
 	spehs::Inifile inifile("arm0");
 	spehs::Inivar<unsigned>& windowWidth = inifile.get("Window", "width", 900u);
 	spehs::Inivar<unsigned>& windowHeight = inifile.get("Window", "height", 600u);
 	inifile.update();
 	
-	//Codex init
-	codex::initialize(argc, argv);
 	//Arm0 init
 	spehs::time::delay(spehs::time::fromSeconds(1.0f));
-	codex::IOService ioService;
-	codex::SocketTCP socket(ioService);
-	codex::aria::Connector connector(socket, "arm0Ghost", "arm0Shell", 41623);
-	if (connector.enter(codex::protocol::Endpoint("192.168.10.51", codex::protocol::defaultAriaPort)))
+	spehs::IOService ioService;
+	spehs::SocketTCP socket(ioService);
+	spehs::aria::Connector connector(socket, "arm0Ghost", "arm0Shell", 41623);
+	if (connector.enter(spehs::net::Endpoint("192.168.10.51", spehs::net::defaultAriaPort)))
 		spehs::log::info("yay!");
 	else
 	{
@@ -60,10 +63,10 @@ int main(const int argc, const char** argv)
 		return 1;
 	}
 	
-	spehs::AudioLib audio(core);
-	spehs::RenderingLib rendering(core);
-	spehs::InputLib input(rendering);
-	spehs::GUILib gui(input, audio);
+	spehs::AudioLib audioLib(coreLib);
+	spehs::RenderingLib renderingLib(coreLib);
+	spehs::InputLib inputLib(renderingLib);
+	spehs::GUILib guiLib(inputLib, audioLib);
 	spehs::Window window(windowWidth, windowHeight); window.setBorderless(true); window.setTitle("Arm0 ghost");
 	spehs::InputManager inputManager(window);
 	spehs::Camera2D camera(window);
@@ -74,10 +77,10 @@ int main(const int argc, const char** argv)
 	spehs::Console console;
 	spehs::ConsoleVisualizer consoleVisualizer(console, inputManager, batchManager);
 
-	codex::sync::Manager syncManager(socket);
-	syncManager.registerType<codex::device::ServoGhost>(codex::device::ServoShell::getSyncTypeName(), codex::device::ServoShell::getSyncTypeId(), codex::device::ServoShell::getSyncTypeVersion());
-	syncManager.registerType<codex::device::PinReaderGhost>(codex::device::PinReaderShell::getSyncTypeName(), codex::device::PinReaderShell::getSyncTypeId(), codex::device::PinReaderShell::getSyncTypeVersion());
-	syncManager.registerType<codex::device::PinReaderPWMGhost>(codex::device::PinReaderPWMShell::getSyncTypeName(), codex::device::PinReaderPWMShell::getSyncTypeId(), codex::device::PinReaderPWMShell::getSyncTypeVersion());
+	spehs::sync::Manager syncManager(socket);
+	syncManager.registerType<spehs::device::ServoGhost>(spehs::device::ServoShell::getSyncTypeName(), spehs::device::ServoShell::getSyncTypeId(), spehs::device::ServoShell::getSyncTypeVersion());
+	syncManager.registerType<spehs::device::PinReaderGhost>(spehs::device::PinReaderShell::getSyncTypeName(), spehs::device::PinReaderShell::getSyncTypeId(), spehs::device::PinReaderShell::getSyncTypeVersion());
+	syncManager.registerType<spehs::device::PinReaderPWMGhost>(spehs::device::PinReaderPWMShell::getSyncTypeName(), spehs::device::PinReaderPWMShell::getSyncTypeId(), spehs::device::PinReaderPWMShell::getSyncTypeVersion());
 	if (!syncManager.initialize())
 	{
 		std::getchar();
@@ -85,7 +88,7 @@ int main(const int argc, const char** argv)
 	}
 
 	//Manipulator
-	codex::Manipulator manipulator(syncManager);
+	spehs::Manipulator manipulator(syncManager);
 	for (size_t i = 0; i < 6; i++)
 		manipulator.pushBack();
 	//Set manipulator transformation settings
@@ -100,7 +103,7 @@ int main(const int argc, const char** argv)
 
 	manipulator[0].setLocalPosition(glm::vec3(0.0f, 0.0f, 0.0f));
 	manipulator[0].setLocalAxis(glm::vec3(0.0f, 1.0f, 0.0f));
-	manipulator[0].getServoGhost().setPin(codex::gpio::pin_18);
+	manipulator[0].getServoGhost().setPin(spehs::gpio::pin_18);
 	manipulator[0].getServoGhost().setAngleLimits(spehs::time::fromMilliseconds(500), spehs::time::fromMilliseconds(2700), -PI * 0.5f, PI * 0.5f);
 	manipulator[0].getServoGhost().setRotationSpeed(1.0f);
 	manipulator[0].getServoGhost().setTargetAngle(0.0f);
@@ -108,7 +111,7 @@ int main(const int argc, const char** argv)
 
 	manipulator[1].setLocalPosition(glm::vec3(0.045f, 0.05f, 0.0f));
 	manipulator[1].setLocalAxis(glm::vec3(0.0f, 0.0f, 1.0f));
-	manipulator[1].getServoGhost().setPin(codex::gpio::pin_33);
+	manipulator[1].getServoGhost().setPin(spehs::gpio::pin_33);
 	manipulator[1].getServoGhost().setAngleLimits(spehs::time::fromMilliseconds(1500), spehs::time::fromMilliseconds(2700), -PI * 0.5f, PI * 0.5f);
 	manipulator[1].getServoGhost().setRotationSpeed(1.0f);
 	manipulator[1].getServoGhost().setTargetAngle(0.0f);
@@ -116,7 +119,7 @@ int main(const int argc, const char** argv)
 
 	manipulator[2].setLocalPosition(glm::vec3(0.0f, 0.13f, 0.0f));
 	manipulator[2].setLocalAxis(glm::vec3(0.0f, 0.0f, -1.0f));
-	manipulator[2].getServoGhost().setPin(codex::gpio::pin_31);
+	manipulator[2].getServoGhost().setPin(spehs::gpio::pin_31);
 	manipulator[2].getServoGhost().setAngleLimits(spehs::time::fromMilliseconds(1500), spehs::time::fromMilliseconds(2700), -PI * 0.5f, PI * 0.5f);
 	manipulator[2].getServoGhost().setRotationSpeed(1.0f);
 	manipulator[2].getServoGhost().setTargetAngle(0.0f);
@@ -124,7 +127,7 @@ int main(const int argc, const char** argv)
 
 	manipulator[3].setLocalPosition(glm::vec3(-0.02f, 0.023f, 0.0f));
 	manipulator[3].setLocalAxis(glm::vec3(1.0f, 0.0f, 0.0f));
-	manipulator[3].getServoGhost().setPin(codex::gpio::pin_40);
+	manipulator[3].getServoGhost().setPin(spehs::gpio::pin_40);
 	manipulator[3].getServoGhost().setAngleLimits(spehs::time::fromMilliseconds(500), spehs::time::fromMilliseconds(2700), -PI * 0.5f, PI * 0.5f);
 	manipulator[3].getServoGhost().setRotationSpeed(1.0f);
 	manipulator[3].getServoGhost().setTargetAngle(0.0f);
@@ -132,7 +135,7 @@ int main(const int argc, const char** argv)
 
 	manipulator[4].setLocalPosition(glm::vec3(0.145f, 0.0f, 0.0f));
 	manipulator[4].setLocalAxis(glm::vec3(1.0f, 0.0f, 0.0f));
-	manipulator[4].getServoGhost().setPin(codex::gpio::pin_32);
+	manipulator[4].getServoGhost().setPin(spehs::gpio::pin_32);
 	manipulator[4].getServoGhost().setAngleLimits(spehs::time::fromMilliseconds(500), spehs::time::fromMilliseconds(2250), -PI * 0.5f, PI * 0.5f);
 	manipulator[4].getServoGhost().setRotationSpeed(1.0f);
 	manipulator[4].getServoGhost().setTargetAngle(0.0f);
@@ -140,7 +143,7 @@ int main(const int argc, const char** argv)
 
 	manipulator[5].setLocalPosition(glm::vec3(0.02f, 0.0f, 0.0f));
 	manipulator[5].setLocalAxis(glm::vec3(1.0f, 0.0f, 0.0f));
-	manipulator[5].getServoGhost().setPin(codex::gpio::pin_29);
+	manipulator[5].getServoGhost().setPin(spehs::gpio::pin_29);
 	manipulator[5].getServoGhost().setAngleLimits(spehs::time::fromMilliseconds(500), spehs::time::fromMilliseconds(2250), -PI * 0.5f, PI * 0.5f);
 	manipulator[5].getServoGhost().setRotationSpeed(1.0f);
 	manipulator[5].getServoGhost().setTargetAngle(0.0f);
@@ -203,8 +206,8 @@ int main(const int argc, const char** argv)
 		const spehs::vec2 center(window.getWidth() / 2, window.getHeight() / 2);
 		for (size_t i = 0; i < hierarchyLines.size(); i++)
 		{
-			const codex::ServoJoint& rj1 = manipulator[i];
-			const codex::ServoJoint& rj2 = manipulator[i + 1];
+			const spehs::ServoJoint& rj1 = manipulator[i];
+			const spehs::ServoJoint& rj2 = manipulator[i + 1];
 			const glm::vec3 p1 = rj1.getGlobalPosition();
 			const glm::vec3 p2 = rj2.getGlobalPosition();
 			const float xFactor = cos(cameraAngle);
@@ -225,15 +228,13 @@ int main(const int argc, const char** argv)
 		spehs::log::info("Rendering took " + std::to_string(lapTimer.get().asMilliseconds()) + " ms");
 		spehs::log::info("Program cycle took " + std::to_string(cycleTimer.get().asMilliseconds()) + " ms");
 	}
-
-	codex::uninitialize();
 }
 
 /*
 	Initialization
-	//codex::ServoCreator servoCreator(guiContext, syncManager);
-	//codex::PinReaderCreator pinReaderCreator(guiContext, syncManager);
-	//codex::PinReaderPWMCreator pinReaderPWMCreator(guiContext, syncManager);
+	//spehs::ServoCreator servoCreator(guiContext, syncManager);
+	//spehs::PinReaderCreator pinReaderCreator(guiContext, syncManager);
+	//spehs::PinReaderPWMCreator pinReaderPWMCreator(guiContext, syncManager);
 
 	Update
 	//const float elementsHeight = servoCreator.getHeight() + pinReaderCreator.getHeight() + pinReaderPWMCreator.getHeight();
